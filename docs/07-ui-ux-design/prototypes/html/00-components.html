@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="en" data-theme="neo-light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component showcase · NEO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@5"
+      rel="stylesheet"
+      type="text/css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css"
+      rel="stylesheet"
+      type="text/css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css"
+      rel="stylesheet"
+      type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+      @theme {
+        --font-sans:
+          Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+        --font-mono:
+          ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          'Liberation Mono', monospace;
+
+        --color-base-100: #ffffff;
+        --color-base-200: #f3f4f6;
+        --color-base-300: #e5e7eb;
+        --color-base-content: #111827;
+
+        --color-background: #ffffff;
+        --color-background-secondary: #f9fafb;
+        --color-surface: #ffffff;
+        --color-surface-raised: #f9fafb;
+        --color-border: #e5e7eb;
+        --color-border-light: #f3f4f6;
+        --color-border-strong: #d1d5db;
+
+        --color-text-primary: #111827;
+        --color-text-secondary: #6b7280;
+        --color-text-tertiary: #9ca3af;
+        --color-text-inverse: #ffffff;
+
+        --color-primary: #2563eb;
+        --color-primary-hover: #1d4ed8;
+        --color-primary-active: #1e40af;
+        --color-primary-content: #ffffff;
+        --color-primary-muted: #eff6ff;
+
+        --color-success: #10b981;
+        --color-success-bg: #d1fae5;
+        --color-success-fg: #047857;
+        --color-error: #ef4444;
+        --color-error-bg: #fee2e2;
+        --color-error-fg: #b91c1c;
+        --color-warning: #f59e0b;
+        --color-warning-bg: #fef3c7;
+        --color-warning-fg: #92400e;
+        --color-info: #3b82f6;
+        --color-info-bg: #dbeafe;
+        --color-info-fg: #1d4ed8;
+        --color-focus-ring: #2563eb;
+      }
+    </style>
+    <style>
+      .icon {
+        display: inline-block;
+        line-height: 1;
+        vertical-align: -0.125em;
+      }
+      .icon-xs {
+        font-size: 16px;
+      }
+      .icon-sm {
+        font-size: 20px;
+      }
+      .icon-md {
+        font-size: 24px;
+      }
+      .icon-lg {
+        font-size: 32px;
+      }
+      .icon-xl {
+        font-size: 48px;
+      }
+      [data-theme='neo-dark'] .logo-light { display: none; }
+      [data-theme='neo-light'] .logo-dark { display: none; }
+      [data-theme='neo-light'] {
+        color-scheme: light;
+        --color-base-100: #ffffff;
+        --color-base-200: #f3f4f6;
+        --color-base-300: #e5e7eb;
+        --color-base-content: #111827;
+        --color-primary: #2563eb;
+        --color-primary-content: #ffffff;
+        --color-secondary: #6b7280;
+        --color-secondary-content: #ffffff;
+        --color-accent: #2563eb;
+        --color-accent-content: #ffffff;
+        --color-neutral: #111827;
+        --color-neutral-content: #ffffff;
+        --color-info: #3b82f6;
+        --color-info-content: #ffffff;
+        --color-success: #10b981;
+        --color-success-content: #ffffff;
+        --color-warning: #f59e0b;
+        --color-warning-content: #111827;
+        --color-error: #ef4444;
+        --color-error-content: #ffffff;
+        --color-background: #ffffff;
+        --color-background-secondary: #f9fafb;
+        --color-surface: #ffffff;
+        --color-surface-raised: #f9fafb;
+        --color-border: #e5e7eb;
+        --color-border-light: #f3f4f6;
+        --color-border-strong: #d1d5db;
+        --color-text-primary: #111827;
+        --color-text-secondary: #6b7280;
+        --color-text-tertiary: #9ca3af;
+        --color-text-inverse: #ffffff;
+        --color-primary-hover: #1d4ed8;
+        --color-primary-active: #1e40af;
+        --color-primary-muted: #eff6ff;
+        --color-success-bg: #d1fae5;
+        --color-success-fg: #047857;
+        --color-error-bg: #fee2e2;
+        --color-error-fg: #b91c1c;
+        --color-warning-bg: #fef3c7;
+        --color-warning-fg: #92400e;
+        --color-info-bg: #dbeafe;
+        --color-info-fg: #1d4ed8;
+        --color-focus-ring: #2563eb;
+        --radius-selector: 9999px;
+        --radius-field: 9999px;
+        --radius-box: 0.5rem;
+        --size-selector: 0.25rem;
+        --size-field: 0.25rem;
+      }
+      [data-theme='neo-dark'] {
+        color-scheme: dark;
+        --color-base-100: #111827;
+        --color-base-200: #1f2937;
+        --color-base-300: #374151;
+        --color-base-content: #f9fafb;
+        --color-primary: #3b82f6;
+        --color-primary-content: #0b1220;
+        --color-secondary: #d1d5db;
+        --color-secondary-content: #0b1220;
+        --color-accent: #3b82f6;
+        --color-accent-content: #0b1220;
+        --color-neutral: #1f2937;
+        --color-neutral-content: #f9fafb;
+        --color-info: #60a5fa;
+        --color-info-content: #0b1220;
+        --color-success: #34d399;
+        --color-success-content: #0b1220;
+        --color-warning: #fbbf24;
+        --color-warning-content: #0b1220;
+        --color-error: #f87171;
+        --color-error-content: #0b1220;
+        --color-background: #0b1220;
+        --color-background-secondary: #111827;
+        --color-surface: #111827;
+        --color-surface-raised: #1f2937;
+        --color-border: #374151;
+        --color-border-light: #1f2937;
+        --color-border-strong: #4b5563;
+        --color-text-primary: #f9fafb;
+        --color-text-secondary: #d1d5db;
+        --color-text-tertiary: #9ca3af;
+        --color-text-inverse: #0b1220;
+        --color-primary-hover: #60a5fa;
+        --color-primary-active: #2563eb;
+        --color-primary-muted: #172554;
+        --color-success-bg: #064e3b;
+        --color-success-fg: #6ee7b7;
+        --color-error-bg: #450a0a;
+        --color-error-fg: #fca5a5;
+        --color-warning-bg: #451a03;
+        --color-warning-fg: #fcd34d;
+        --color-info-bg: #172554;
+        --color-info-fg: #93c5fd;
+        --color-focus-ring: #3b82f6;
+        --radius-selector: 9999px;
+        --radius-field: 9999px;
+        --radius-box: 0.5rem;
+        --size-selector: 0.25rem;
+        --size-field: 0.25rem;
+      }
+      body {
+        background-color: var(--color-background);
+        color: var(--color-text-primary);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+      :focus-visible {
+        outline: 2px solid var(--color-focus-ring);
+        outline-offset: 2px;
+      }
+      .theme-switcher {
+        position: fixed;
+        right: 1rem;
+        bottom: 1rem;
+        z-index: 60;
+        display: flex;
+        gap: 0.25rem;
+        padding: 0.25rem;
+        border-radius: 999px;
+        border: 1px solid var(--color-base-300);
+        background: var(--color-base-100);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+      }
+      .theme-switcher button {
+        font: inherit;
+        font-size: 12px;
+        line-height: 1;
+        padding: 0.35rem 0.7rem;
+        border-radius: 999px;
+        border: 0;
+        background: transparent;
+        color: var(--color-base-content);
+        opacity: 0.65;
+        cursor: pointer;
+      }
+      .theme-switcher button[aria-pressed='true'] {
+        background: var(--color-base-200);
+        opacity: 1;
+        .btn {
+          border-radius: 9999px !important;
+        }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          var t = window.localStorage.getItem('neo-theme');
+          if (t !== 'neo-light' && t !== 'neo-dark') {
+            t = window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'neo-dark'
+              : 'neo-light';
+          }
+          document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body class="bg-background text-text-primary min-h-screen">
+    <div class="theme-switcher" role="group" aria-label="Colour theme">
+      <button type="button" data-theme-value="neo-light" aria-pressed="true">
+        Light
+      </button>
+      <button type="button" data-theme-value="neo-dark" aria-pressed="false">
+        Dark
+      </button>
+    </div>
+    <script>
+      (function () {
+        var key = 'neo-theme';
+        function apply(theme) {
+          document.documentElement.setAttribute('data-theme', theme);
+          Array.prototype.forEach.call(
+            document.querySelectorAll('.theme-switcher button'),
+            function (button) {
+              button.setAttribute(
+                'aria-pressed',
+                String(button.getAttribute('data-theme-value') === theme)
+              );
+            }
+          );
+        }
+        apply(
+          document.documentElement.getAttribute('data-theme') || 'neo-light'
+        );
+        Array.prototype.forEach.call(
+          document.querySelectorAll('.theme-switcher button'),
+          function (button) {
+            button.addEventListener('click', function () {
+              var theme = button.getAttribute('data-theme-value');
+              try {
+                window.localStorage.setItem(key, theme);
+              } catch (error) {}
+              apply(theme);
+            });
+          }
+        );
+      })();
+    </script>
+    <div class="flex min-h-screen">
+      <aside
+        class="bg-surface border-border hidden w-64 shrink-0 flex-col border-r lg:flex">
+        <div class="flex h-16 items-center gap-2 px-5">
+          <a href="04-dashboard.html" class="flex items-center gap-2"
+            ><img src="../../brand/svg/logo-mark-light.svg" alt="" aria-hidden="true" class="logo-light h-6 w-6" /><img src="../../brand/svg/logo-mark-dark.svg" alt="" aria-hidden="true" class="logo-dark h-6 w-6" /><span class="text-text-primary text-lg font-semibold tracking-tight">NEO</span></a
+          >
+        </div>
+        <nav class="flex-1 px-3 py-4" aria-label="Primary">
+          <ul class="flex flex-col gap-1">
+            <li>
+              <a
+                href="04-dashboard.html"
+                class="flex items-center gap-3 rounded-full px-3 py-2 text-sm font-medium transition-colors text-text-secondary hover:bg-surface-raised hover:text-text-primary"
+                ><i class="ph ph-squares-four icon-sm" aria-hidden="true"></i
+                ><span>Dashboard</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="05-transfer.html"
+                class="flex items-center gap-3 rounded-full px-3 py-2 text-sm font-medium transition-colors text-text-secondary hover:bg-surface-raised hover:text-text-primary"
+                ><i
+                  class="ph ph-arrows-left-right icon-sm"
+                  aria-hidden="true"></i
+                ><span>Transfer</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="08-transactions.html"
+                class="flex items-center gap-3 rounded-full px-3 py-2 text-sm font-medium transition-colors text-text-secondary hover:bg-surface-raised hover:text-text-primary"
+                ><i class="ph ph-receipt icon-sm" aria-hidden="true"></i
+                ><span>Transactions</span></a
+              >
+            </li>
+          </ul>
+        </nav>
+        <div class="border-border border-t p-3">
+          <div class="flex items-center gap-3 rounded-full px-2 py-2">
+            <span
+              aria-hidden="true"
+              class="bg-primary-muted text-primary flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold"
+              >JD</span
+            >
+            <div class="min-w-0 flex-1">
+              <p class="text-text-primary truncate text-sm font-medium">
+                Jordan Doe
+              </p>
+              <p class="text-text-tertiary truncate text-xs">ACC-0001</p>
+            </div>
+            <a
+              href="02-sign-in.html"
+              class="text-text-secondary hover:text-text-primary text-xs font-medium"
+              >Sign out</a
+            >
+          </div>
+        </div>
+      </aside>
+      <div class="flex min-w-0 flex-1 flex-col">
+        <header
+          class="bg-surface border-border flex h-16 items-center justify-between border-b px-4 lg:hidden">
+          <a href="04-dashboard.html" class="flex items-center gap-2"
+            ><img src="../../brand/svg/logo-mark-light.svg" alt="" aria-hidden="true" class="logo-light h-6 w-6" /><img src="../../brand/svg/logo-mark-dark.svg" alt="" aria-hidden="true" class="logo-dark h-6 w-6" /><span class="text-text-primary text-lg font-semibold tracking-tight">NEO</span></a
+          >
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              class="btn btn-ghost btn-sm"
+              aria-label="Open navigation">
+              <i class="ph ph-list icon-sm" aria-hidden="true"></i></button
+            ><span
+              aria-hidden="true"
+              class="bg-primary-muted text-primary flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold"
+              >JD</span
+            >
+          </div>
+        </header>
+        <main class="flex-1">
+          <div class="mx-auto max-w-6xl px-4 py-8 lg:px-8">
+            <div class="mb-6">
+              <h1
+                class="text-text-primary text-2xl font-semibold tracking-tight">
+                Component showcase
+              </h1>
+              <p class="text-text-secondary mt-1 text-sm">
+                The foundational building blocks from
+                <code>07-ui-ux-design.md</code>, in both themes.
+              </p>
+            </div>
+
+            <section
+              class="bg-surface border-border rounded-xl border p-6 shadow-sm">
+              <h2 class="text-text-primary text-sm font-semibold">
+                Colour tokens
+              </h2>
+              <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div>
+                  <div
+                    class="border-border h-12 rounded-full border bg-primary"></div>
+                  <p class="text-text-secondary mt-1 text-xs">primary</p>
+                </div>
+                <div>
+                  <div
+                    class="border-border h-12 rounded-full border bg-success"></div>
+                  <p class="text-text-secondary mt-1 text-xs">success</p>
+                </div>
+                <div>
+                  <div
+                    class="border-border h-12 rounded-full border bg-warning"></div>
+                  <p class="text-text-secondary mt-1 text-xs">warning</p>
+                </div>
+                <div>
+                  <div
+                    class="border-border h-12 rounded-full border bg-error"></div>
+                  <p class="text-text-secondary mt-1 text-xs">error</p>
+                </div>
+                <div>
+                  <div
+                    class="border-border h-12 rounded-full border bg-surface"></div>
+                  <p class="text-text-secondary mt-1 text-xs">surface</p>
+                </div>
+                <div>
+                  <div
+                    class="border-border h-12 rounded-full border bg-surface-raised"></div>
+                  <p class="text-text-secondary mt-1 text-xs">surface-raised</p>
+                </div>
+                <div>
+                  <div
+                    class="border-border h-12 rounded-full border bg-primary-muted"></div>
+                  <p class="text-text-secondary mt-1 text-xs">primary-muted</p>
+                </div>
+                <div>
+                  <div
+                    class="border-border h-12 rounded-full border"
+                    style="background: var(--color-text-tertiary)"></div>
+                  <p class="text-text-secondary mt-1 text-xs">text-tertiary</p>
+                </div>
+              </div>
+            </section>
+
+            <section
+              class="bg-surface border-border mt-6 rounded-xl border p-6 shadow-sm">
+              <h2 class="text-text-primary text-sm font-semibold">Buttons</h2>
+              <div class="mt-4 flex flex-wrap items-center gap-3">
+                <button class="btn btn-primary btn-md">Primary</button>
+                <button class="btn btn-outline btn-md">Secondary</button>
+                <button class="btn btn-ghost btn-md">Ghost</button>
+                <button class="btn btn-error btn-md">Danger</button>
+                <button class="btn btn-primary btn-md" disabled>
+                  Disabled
+                </button>
+              </div>
+            </section>
+
+            <section
+              class="bg-surface border-border mt-6 rounded-xl border p-6 shadow-sm">
+              <h2 class="text-text-primary text-sm font-semibold">
+                Status badges
+              </h2>
+              <div class="mt-4 flex flex-wrap items-center gap-3">
+                <span
+                  class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-success-bg text-success-fg"
+                  >Completed</span
+                ><span
+                  class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-info-bg text-info-fg"
+                  >Processing</span
+                ><span
+                  class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-warning-bg text-warning-fg"
+                  >Pending</span
+                ><span
+                  class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-error-bg text-error-fg"
+                  >Failed</span
+                >
+                <span
+                  class="bg-background-secondary text-text-secondary inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
+                  >Neutral</span
+                >
+              </div>
+            </section>
+
+            <section
+              class="bg-surface border-border mt-6 rounded-xl border p-6 shadow-sm">
+              <h2 class="text-text-primary text-sm font-semibold">Alerts</h2>
+              <div class="mt-4 flex flex-col gap-3">
+                <div
+                  class="bg-success-bg text-success-fg border-success rounded-full border p-4 text-sm">
+                  Transfer completed successfully.
+                </div>
+                <div
+                  class="bg-error-bg text-error-fg border-error rounded-full border p-4 text-sm"
+                  role="alert">
+                  Transfer failed: insufficient funds.
+                </div>
+                <div
+                  class="bg-warning-bg text-warning-fg border-warning rounded-full border p-4 text-sm">
+                  This transfer is pending confirmation.
+                </div>
+                <div
+                  class="bg-info-bg text-info-fg border-info rounded-full border p-4 text-sm">
+                  Processing — updates automatically.
+                </div>
+              </div>
+            </section>
+
+            <section
+              class="bg-surface border-border mt-6 rounded-xl border p-6 shadow-sm">
+              <h2 class="text-text-primary text-sm font-semibold">
+                Form fields
+              </h2>
+              <div class="mt-4 grid gap-5 sm:grid-cols-2">
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-text-primary text-sm font-medium"
+                    >Default</label
+                  >
+                  <input class="input w-full" placeholder="you@example.com" />
+                  <p class="text-text-secondary text-xs">Helper text.</p>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-text-primary text-sm font-medium"
+                    >Error</label
+                  >
+                  <input
+                    class="input border-error w-full"
+                    value="not-an-email" />
+                  <p class="text-error-fg text-xs">
+                    Enter a valid email address.
+                  </p>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-text-primary text-sm font-medium"
+                    >Disabled</label
+                  >
+                  <input class="input w-full" value="Read only" disabled />
+                </div>
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-text-primary text-sm font-medium"
+                    >Amount</label
+                  >
+                  <div class="relative">
+                    <span
+                      class="text-text-tertiary pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm"
+                      >$</span
+                    >
+                    <input
+                      class="input w-full pl-7 tabular-nums"
+                      value="250.00" />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section
+              class="bg-surface border-border mt-6 rounded-xl border p-6 shadow-sm">
+              <h2 class="text-text-primary text-sm font-semibold">
+                Loading, empty &amp; error states
+              </h2>
+              <div class="mt-4 grid gap-4 sm:grid-cols-3">
+                <div class="bg-surface-raised rounded-full p-4">
+                  <div class="skeleton h-4 w-2/3"></div>
+                  <div class="skeleton mt-2 h-4 w-1/2"></div>
+                  <div class="skeleton mt-2 h-4 w-5/6"></div>
+                </div>
+                <div
+                  class="bg-surface-raised flex flex-col items-center justify-center rounded-full p-6 text-center">
+                  <p class="text-text-primary text-sm font-medium">
+                    No transactions yet
+                  </p>
+                  <p class="text-text-secondary mt-1 text-xs">
+                    Your activity will appear here.
+                  </p>
+                </div>
+                <div
+                  class="bg-surface-raised flex flex-col items-center justify-center rounded-full p-6 text-center">
+                  <p class="text-error-fg text-sm font-medium">
+                    Couldn&rsquo;t load balance
+                  </p>
+                  <button class="btn btn-outline btn-xs mt-3">Retry</button>
+                </div>
+              </div>
+            </section>
+          </div>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

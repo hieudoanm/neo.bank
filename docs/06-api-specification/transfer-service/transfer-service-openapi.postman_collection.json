@@ -1,0 +1,272 @@
+{
+  "info": {
+    "name": "NEO Bank \u2014 Transfer Service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Transfer Service. Saga orchestrator. Creates transfer aggregates,\ntracks saga state, applies compensating actions on failure, marks\ntransfers completed/failed, and manages orchestration-level idempotency.\nOwns transfers and orchestration idempotency keys.\n",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api/v1"
+    }
+  ],
+  "item": [
+    {
+      "name": "POST /transfers",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/transfers",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "transfers"
+          ]
+        },
+        "description": "Initiate a transfer to another account",
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "202",
+          "status": "OK",
+          "code": 202,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": "{}"
+        },
+        {
+          "name": "400",
+          "status": "Client Error",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "401",
+          "status": "Client Error",
+          "code": 401,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "404",
+          "status": "Client Error",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "409",
+          "status": "Client Error",
+          "code": 409,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "429",
+          "status": "Client Error",
+          "code": 429,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "500",
+          "status": "Server Error",
+          "code": 500,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "503",
+          "status": "Server Error",
+          "code": 503,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        }
+      ]
+    },
+    {
+      "name": "GET /transfers/{transferId}",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/transfers/{transferId}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "transfers",
+            ":transferId"
+          ],
+          "variable": [
+            {
+              "key": "transferId",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ]
+        },
+        "description": "Get transfer status",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "200",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": "{}"
+        },
+        {
+          "name": "401",
+          "status": "Client Error",
+          "code": 401,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "404",
+          "status": "Client Error",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "429",
+          "status": "Client Error",
+          "code": 429,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "500",
+          "status": "Server Error",
+          "code": 500,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "503",
+          "status": "Server Error",
+          "code": 503,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        }
+      ]
+    }
+  ]
+}
