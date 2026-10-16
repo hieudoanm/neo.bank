@@ -5,7 +5,10 @@ go 1.27.2
 require github.com/gocql/gocql/v2 v2.1.2
 
 require (
-	github.com/golang/snappy v0.0.3 // indirect
-	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
-	gopkg.in/inf.v0 v0.9.1 // indirect
+	github.com/gin-gonic/gin v1.10.1
+	github.com/gocql/gocql v1.6.0
+	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/google/uuid v1.4.0
+	github.com/segmentio/kafka-go v0.4.47
+	golang.org/x/crypto v0.31.0
 )
