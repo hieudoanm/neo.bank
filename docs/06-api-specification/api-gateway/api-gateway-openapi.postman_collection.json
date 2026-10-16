@@ -1,0 +1,106 @@
+{
+  "info": {
+    "name": "NEO Bank \u2014 API Gateway",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "API Gateway service. Single entry point for all client requests.\nHandles routing, authentication validation, rate limiting, CORS,\nand correlation/request IDs. No domain business logic.\n",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "GET /healthz",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/healthz",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "healthz"
+          ]
+        },
+        "description": "Liveness health check"
+      },
+      "response": [
+        {
+          "name": "200",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": "{}"
+        },
+        {
+          "name": "503",
+          "status": "Server Error",
+          "code": 503,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": "{}"
+        }
+      ]
+    },
+    {
+      "name": "GET /readyz",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/readyz",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "readyz"
+          ]
+        },
+        "description": "Readiness health check"
+      },
+      "response": [
+        {
+          "name": "200",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": "{}"
+        },
+        {
+          "name": "503",
+          "status": "Server Error",
+          "code": 503,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": "{}"
+        }
+      ]
+    }
+  ]
+}
