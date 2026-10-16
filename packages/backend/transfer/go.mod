@@ -6,7 +6,7 @@ require github.com/gocql/gocql/v2 v2.1.2
 
 require (
 	github.com/gin-gonic/gin v1.12.0
-	github.com/gocql/gocql v1.6.0
+	github.com/gocql/gocql v1.7.0
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.4.0
 	github.com/segmentio/kafka-go v0.4.47
