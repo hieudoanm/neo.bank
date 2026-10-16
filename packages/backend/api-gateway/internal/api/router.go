@@ -11,7 +11,7 @@ import (
 	"github.com/hieudoanm/neo.bank/packages/backend/api-gateway/internal/api/middleware"
 )
 
-func NewRouter(authMiddleware *middleware.AuthMiddleware, authServiceURL string) *gin.Engine {
+func NewRouter(authMiddleware *middleware.AuthMiddleware, authServiceURL, accountServiceURL string) *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(requestIDMiddleware())
@@ -22,6 +22,10 @@ func NewRouter(authMiddleware *middleware.AuthMiddleware, authServiceURL string)
 	r.GET("/readyz", healthHandler)
 
 	authProxy, err := newReverseProxy(authServiceURL)
+	if err != nil {
+		panic(err)
+	}
+	accountProxy, err := newReverseProxy(accountServiceURL)
 	if err != nil {
 		panic(err)
 	}
@@ -38,6 +42,7 @@ func NewRouter(authMiddleware *middleware.AuthMiddleware, authServiceURL string)
 	protected.Use(authMiddleware.RequireAuth)
 	{
 		protected.GET("/accounts/me", meHandler)
+		protected.Any("/accounts/*anything", gin.WrapH(accountProxy))
 	}
 
 	return r

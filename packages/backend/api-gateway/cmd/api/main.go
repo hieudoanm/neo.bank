@@ -31,7 +31,7 @@ func main() {
 	}
 
 	authMiddleware := middleware.NewAuthMiddleware(keyManager)
-	router := api.NewRouter(authMiddleware, cfg.AuthServiceURL)
+	router := api.NewRouter(authMiddleware, cfg.AuthServiceURL, cfg.AccountServiceURL)
 
 	server := &http.Server{
 		Addr:         ":" + cfg.Port,

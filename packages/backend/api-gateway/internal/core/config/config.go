@@ -7,26 +7,28 @@ import (
 )
 
 type Config struct {
-	Port            string
-	Environment     string
-	JWTPublicKeyPEM []byte
-	JWTKeyID        string
-	AuthServiceURL  string
-	CORSOrigins     []string
-	ReadTimeout     time.Duration
-	WriteTimeout    time.Duration
+	Port              string
+	Environment       string
+	JWTPublicKeyPEM   []byte
+	JWTKeyID          string
+	AuthServiceURL    string
+	AccountServiceURL string
+	CORSOrigins       []string
+	ReadTimeout       time.Duration
+	WriteTimeout      time.Duration
 }
 
 func Load() (*Config, error) {
 	cfg := &Config{
-		Port:            getEnv("PORT", "8080"),
-		Environment:     getEnv("APP_ENV", "development"),
-		JWTPublicKeyPEM: []byte(getEnv("JWT_PUBLIC_KEY_PEM", "")),
-		JWTKeyID:        getEnv("JWT_KEY_ID", ""),
-		AuthServiceURL:  getEnv("AUTH_SERVICE_URL", "http://localhost:8081"),
-		CORSOrigins:     splitEnv("CORS_ORIGINS", "*"),
-		ReadTimeout:     10 * time.Second,
-		WriteTimeout:    10 * time.Second,
+		Port:              getEnv("PORT", "8080"),
+		Environment:       getEnv("APP_ENV", "development"),
+		JWTPublicKeyPEM:   []byte(getEnv("JWT_PUBLIC_KEY_PEM", "")),
+		JWTKeyID:          getEnv("JWT_KEY_ID", ""),
+		AuthServiceURL:    getEnv("AUTH_SERVICE_URL", "http://localhost:8081"),
+		AccountServiceURL: getEnv("ACCOUNT_SERVICE_URL", "http://localhost:8082"),
+		CORSOrigins:       splitEnv("CORS_ORIGINS", "*"),
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      10 * time.Second,
 	}
 
 	var missing []string

@@ -79,4 +79,13 @@ export const authApi = {
     }),
 }
 
-export { HttpError, API_BASE }
+type BalanceResponse = {
+  accountId: string
+  balanceCents: number
+  currency: string
+}
+
+export const accountsApi = {
+  getBalance: (accountId: string) =>
+    request<BalanceResponse>(`/api/v1/accounts/${accountId}/balance`),
+}
