@@ -5,6 +5,7 @@ USE auth_keyspace;
 CREATE TABLE IF NOT EXISTS users (
   user_id UUID,
   email TEXT,
+  account_id UUID,
   password_hash TEXT,
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
