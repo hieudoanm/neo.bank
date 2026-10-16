@@ -7,7 +7,7 @@ require (
 	github.com/gocql/gocql/v2 v2.1.2
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
-	golang.org/x/crypto v0.52.0
+	golang.org/x/crypto v0.58.0
 )
 
 require (
