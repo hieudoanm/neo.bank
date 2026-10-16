@@ -1,0 +1,142 @@
+openapi: 3.0.3
+info:
+  title: NEO Bank — Transaction Service
+  version: 1.0.0
+  description: |
+    Transaction Service. Append-only read model for transaction history.
+    Consumes transfer lifecycle events to build a denormalised view.
+    Provides paginated transaction queries. Owns transaction read model.
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+  - url: https://api.neo.bank/api/v1
+    description: Production server
+paths:
+  /accounts/{accountId}/transactions:
+    get:
+      summary: Get transaction history for an account
+      operationId: listTransactions
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: accountId
+          required: true
+          description: ID of the account
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: cursor
+          description: Pagination cursor
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: limit
+          description: "Page size (default: 20, max: 100)"
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/X-Request-ID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionListResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+        '503':
+          $ref: '#/components/responses/ErrorResponse'
+components:
+  schemas:
+    TransactionResponse:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          format: uuid
+        transferId:
+          type: string
+          format: uuid
+          nullable: true
+        type:
+          type: string
+          enum: [debit, credit]
+        amountCents:
+          type: integer
+        counterpartyAccountId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, completed, failed, reversed]
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required: [transactionId, type, amountCents, counterpartyAccountId, createdAt]
+    TransactionListResponse:
+      type: object
+      properties:
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionResponse'
+        nextCursor:
+          type: string
+          nullable: true
+        hasMore:
+          type: boolean
+      required: [transactions, nextCursor, hasMore]
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+            requestId:
+              type: string
+              format: uuid
+          required: [code, message, requestId]
+  headers:
+    X-Request-ID:
+      description: Unique identifier for the request
+      schema:
+        type: string
+        format: uuid
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    ErrorResponse:
+      description: Error response
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

@@ -1,0 +1,338 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "NEO Bank \u2014 Transfer Service",
+    "version": "1.0.0",
+    "description": "Transfer Service. Saga orchestrator. Creates transfer aggregates,\ntracks saga state, applies compensating actions on failure, marks\ntransfers completed/failed, and manages orchestration-level idempotency.\nOwns transfers and orchestration idempotency keys.\n"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/api/v1",
+      "description": "Development server"
+    },
+    {
+      "url": "https://api.neo.bank/api/v1",
+      "description": "Production server"
+    }
+  ],
+  "paths": {
+    "/transfers": {
+      "post": {
+        "summary": "Initiate a transfer to another account",
+        "operationId": "createTransfer",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "description": "Required. Unique key for the transfer request. Repeating a request\nwith the same key and an identical payload returns the cached\noriginal response without re-executing the transfer; reusing the\nkey with a different payload returns 409 IDEMPOTENCY_KEY_EXISTS.\n",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9_-]{1,255}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/X-Request-ID"
+              },
+              "Idempotency-Key": {
+                "$ref": "#/components/headers/Idempotency-Key"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/transfers/{transferId}": {
+      "get": {
+        "summary": "Get transfer status",
+        "operationId": "getTransfer",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transferId",
+            "required": true,
+            "description": "ID of the transfer",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/X-Request-ID"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDetailResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TransferRequest": {
+        "type": "object",
+        "description": "The source account is derived server-side from the authenticated user\n(the JWT subject) and is never supplied by the client. Currency is the\nsource account's currency; it is not part of the request.\n",
+        "properties": {
+          "destinationAccountId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amountCents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9999999999
+          }
+        },
+        "required": [
+          "destinationAccountId",
+          "amountCents"
+        ]
+      },
+      "TransferResponse": {
+        "type": "object",
+        "properties": {
+          "transferId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "processing",
+              "completed",
+              "failed",
+              "reversed"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "amountCents": {
+            "type": "integer"
+          },
+          "sourceAccountId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "destinationAccountId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "failureReason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "transferId",
+          "status",
+          "createdAt"
+        ]
+      },
+      "TransferDetailResponse": {
+        "type": "object",
+        "properties": {
+          "transferId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceAccountId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "destinationAccountId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amountCents": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "processing",
+              "completed",
+              "failed",
+              "reversed"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "failureReason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "transferId",
+          "sourceAccountId",
+          "destinationAccountId",
+          "amountCents",
+          "status",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "details": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "requestId": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "code",
+              "message",
+              "requestId"
+            ]
+          }
+        }
+      }
+    },
+    "headers": {
+      "X-Request-ID": {
+        "description": "Unique identifier for the request",
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "Idempotency-Key": {
+        "description": "Idempotency key for the request",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "responses": {
+      "ErrorResponse": {
+        "description": "Error response",
+        "headers": {
+          "X-Request-ID": {
+            "$ref": "#/components/headers/X-Request-ID"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  }
+}

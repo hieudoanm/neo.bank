@@ -1,0 +1,50 @@
+```mermaid
+flowchart TB
+    U[Account Holder / Operator]
+
+    subgraph Client["Client Layer"]
+        WEB[React + TypeScript + Vite]
+    end
+
+    subgraph Edge["Edge & Gateway"]
+        GW[API Gateway]
+    end
+
+    subgraph Services["Domain Microservices"]
+        AUTH[Auth Service]
+        ACCT[Account Service]
+        TRANS[Transfer Service]
+        TX[Transaction Service]
+    end
+
+    subgraph Messaging["Event Backbone"]
+        KAFKA[Apache Kafka]
+    end
+
+    subgraph Persistence["Private Data Stores (Per-Service)"]
+        CASS_AUTH[(Cassandra - Auth)]
+        CASS_ACCT[(Cassandra - Account)]
+        CASS_TRANS[(Cassandra - Transfer)]
+        CASS_TX[(Cassandra - Transaction)]
+    end
+
+    U --> WEB
+    WEB --> GW
+    GW --> AUTH
+    GW --> ACCT
+    GW --> TRANS
+    GW --> TX
+
+    AUTH --> CASS_AUTH
+    ACCT --> CASS_ACCT
+    TRANS --> CASS_TRANS
+    TX --> CASS_TX
+
+    AUTH -. domain events .-> KAFKA
+    ACCT -. account events .-> KAFKA
+    TRANS -. transfer saga events .-> KAFKA
+    TX -. consumes events .-> KAFKA
+    KAFKA -.-> ACCT
+    KAFKA -.-> TRANS
+    KAFKA -.-> TX
+```

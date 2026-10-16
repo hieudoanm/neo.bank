@@ -1,0 +1,52 @@
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant GW as API Gateway
+    participant TS as Transfer Service (Orchestrator)
+    participant AS as Account Service
+    participant TXS as Transaction Service
+    participant K as Kafka
+
+    U->>F: Submit transfer (dest, amount)
+    F->>GW: POST /transfers
+    GW->>TS: POST /transfers
+    TS->>AS: GET /accounts/{dest} (sync pre-check/validation)
+    AS-->>TS: Destination exists/valid
+    TS->>TS: Create transfer pending (private DB)
+    TS-->>K: transfer.initiated (key=source_account_id)
+    GW-->>F: 202 Accepted {transfer_id,status:pending}
+
+    K-->>TS: transfer.initiated
+    TS-->>K: account.debit.requested
+
+    K-->>AS: account.debit.requested
+    AS->>AS: Idempotent debit (check funds, non-negative, private DB)
+    AS-->>K: account.debited (or account.debit.failed)
+
+    alt debit succeeded
+        K-->>TS: account.debited
+        TS-->>K: account.credit.requested (destination)
+        K-->>AS: account.credit.requested
+        AS->>AS: Idempotent credit (private DB)
+        AS-->>K: account.credited (or account.credit.failed)
+        alt credit succeeded
+            K-->>TS: account.credited
+            TS->>TS: Mark transfer completed (private DB)
+            TS-->>K: transfer.completed
+            K-->>TXS: transfer.completed
+            TXS->>TXS: Project transaction entries (private DB)
+        else credit failed
+            K-->>TS: account.credit.failed
+            TS-->>K: account.credit.requested (source reversal/compensation)
+            K-->>AS: account.credit.requested (reversal)
+            AS->>AS: Idempotent credit back to source
+            AS-->>K: account.credited (reversal)
+            TS->>TS: Mark transfer failed (private DB)
+            TS-->>K: transfer.failed
+        end
+    else debit failed
+        K-->>TS: account.debit.failed
+        TS->>TS: Mark transfer failed (private DB)
+        TS-->>K: transfer.failed
+        K-->>TXS: transfer.failed (no entries)
+    end
