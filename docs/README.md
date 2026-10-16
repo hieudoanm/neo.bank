@@ -172,8 +172,8 @@ See [`01-requirements.md`](01-requirements.md) for complete NFR specification.
 ### Key targets
 
 - Performance: registration < 500ms, login < 300ms, balance < 100ms, transfer < 200ms (p95)
-- Availability: 99.9%, RF=3 Cassandra, Kafka RF=3 min.insync.replicas=2
-- Consistency: balances never negative, transfer atomicity, idempotency guarantee
+- Availability: 99.9%, production RF=3 Cassandra and Kafka RF=3 min.insync.replicas=2 (local/CI run single-node RF=1)
+- Consistency: balances never negative, per-account atomic updates with saga compensation, idempotency guarantee
 - Security: JWT RS256, Argon2id passwords, hashed refresh tokens, TLS 1.2+, rate limiting
 - Observability: structured JSON logs, Prometheus metrics, correlation IDs
 

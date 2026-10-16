@@ -24,11 +24,13 @@ This document specifies the non-functional requirements (NFRs) for NEO Bank, org
 | ID      | Requirement                                                                    | Target |
 | ------- | ------------------------------------------------------------------------------ | ------ |
 | NFR-010 | The API shall be available 99.9% of the time (excluding planned maintenance).  | 99.9%  |
-| NFR-011 | The system shall tolerate single AZ failure without data loss.                 | Must   |
-| NFR-012 | Cassandra shall be configured with RF=3 and QUORUM consistency.                | Must   |
-| NFR-013 | Kafka shall be configured with replication factor 3 and min.insync.replicas=2. | Must   |
+| NFR-011 | In production, the system shall tolerate single AZ failure without data loss.  | Must   |
+| NFR-012 | In production, Cassandra shall be configured with RF=3 across 3 AZs and QUORUM consistency. | Must   |
+| NFR-013 | In production, Kafka shall be configured with replication factor 3 and min.insync.replicas=2. | Must   |
 
 **Rationale:** 99.9% availability allows ~8.77 hours of downtime per year. Cassandra RF=3 across AZs ensures no data loss on single AZ failure. QUORUM consistency (2 of 3) balances availability with consistency. Kafka RF=3 with min.insync.replicas=2 ensures producers can write as long as 2 of 3 replicas are in sync.
+
+**Environment scoping:** NFR-011..013 describe the **production** profile. Local development and CI run a single Cassandra node and a single Kafka broker: `SimpleStrategy` with `replication_factor: 1`, queries at `ONE`/`LOCAL_ONE`, and Kafka `replication.factor=1` with `min.insync.replicas=1` (a `QUORUM` read on a single-node cluster equals `ONE`). The production profile is the one under test for availability claims; the single-node profile only exercises correctness. See [`docker.md`](../08-tech-stack/infrastructure/docker.md#3-compose-topology) and [`local-development.md`](../11-deployment/local-development.md).
 
 **See also:** [`docs/11-deployment.md`](../11-deployment.md), [`docs/12-operations.md`](../12-operations.md), [`Kubernetes`](../08-tech-stack/infrastructure/kubernetes.md).
 
@@ -39,12 +41,12 @@ This document specifies the non-functional requirements (NFRs) for NEO Bank, org
 | ID      | Requirement                                                                         | Target |
 | ------- | ----------------------------------------------------------------------------------- | ------ |
 | NFR-020 | Account balances shall never go negative (enforced by lightweight transactions).    | Must   |
-| NFR-021 | Transfer atomicity: either both debit and credit succeed, or neither.               | Must   |
+| NFR-021 | Transfer consistency: every balance change is atomic (LWT, never negative), and the saga with compensation guarantees no funds are lost or created across accounts. | Must   |
 | NFR-022 | No transfer shall be processed more than once (idempotency guarantee).              | Must   |
 | NFR-023 | All financial events shall be durably persisted in Cassandra before acknowledgment. | Must   |
 | NFR-024 | Kafka events shall be persisted with acks=all.                                      | Must   |
 
-**Rationale:** Financial integrity is non-negotiable. Cassandra lightweight transactions (Paxos) provide compare-and-set semantics for balance updates, preventing negative balances under concurrent debits. The saga pattern with compensation ensures atomicity across services. Idempotency keys tracked per transfer prevent double-processing on consumer redelivery. `acks=all` ensures Kafka events are not lost on broker failure.
+**Rationale:** Financial integrity is non-negotiable. Cassandra lightweight transactions (Paxos) provide compare-and-set semantics for each balance update, preventing negative balances under concurrent debits. Each debit and credit is a separate atomic statement and they are **not** atomic with respect to one another; the saga pattern with compensation makes cross-account transfers consistent (no funds lost or created) without distributed transactions. Idempotency keys tracked per transfer prevent double-processing on consumer redelivery. `acks=all` ensures Kafka events are not lost on broker failure.
 
 **See also:** [`docs/04-architecture.md#32-saga-pattern-for-transfers`](../04-architecture.md#32-saga-pattern-for-transfers), [`docs/05-data-model.md`](../05-data-model.md), [`Cassandra`](../08-tech-stack/backend/cassandra.md), [`Kafka`](../08-tech-stack/backend/kafka.md).
 

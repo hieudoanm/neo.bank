@@ -13,13 +13,13 @@ Build small, deterministic, non-root images with a multi-stage build.
 Every service is an independent Go module with its own binary, so each owns a small Dockerfile. The example below is `auth-service`; `api-gateway`, `account-service`, `transfer-service`, and `transaction-service` follow the same shape.
 
 ```dockerfile
-# packages/auth-service/Dockerfile
+# packages/backend/auth/Dockerfile
 FROM golang:1.22-alpine AS build
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 go build -o /out/auth-service ./cmd/auth-service
+RUN CGO_ENABLED=0 go build -o /out/auth-service ./cmd/api
 RUN CGO_ENABLED=0 go build -o /out/migrate ./cmd/migrate
 
 FROM gcr.io/distroless/static-debian12 AS runtime
@@ -42,8 +42,8 @@ Rules:
 ### Frontend
 
 ```dockerfile
-# packages/frontend/Dockerfile
-FROM node:20-alpine AS build
+# packages/frontend/app/Dockerfile
+FROM node:22-alpine AS build
 WORKDIR /src
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
@@ -61,7 +61,7 @@ ENTRYPOINT ["nginx", "-g", "daemon off;"]
 Keep the context small and explicit.
 
 ```dockerignore
-# packages/auth-service/.dockerignore
+# packages/backend/auth/.dockerignore
 .git
 **/*_test.go
 coverage.out
@@ -85,23 +85,40 @@ One command brings up the full stack for local development.
 # docker-compose.yaml (excerpt)
 services:
   zookeeper:
-    image: bitnami/zookeeper:3.9@sha256:...
+    image: confluentinc/cp-zookeeper:7.4.0
     environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ZOOKEEPER_TICK_TIME=2000
+    healthcheck:
+      test: ["CMD-SHELL", "cub zk-ready localhost:2181 30"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
 
   kafka:
-    image: bitnami/kafka:3.x@sha256:...
+    image: confluentinc/cp-kafka:7.4.0
     environment:
-      - KAFKA_CFG_NODE_ID=0
-      - KAFKA_CFG_PROCESS_ROLES=controller,broker
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      # ZooKeeper mode (the stack is ZooKeeper-based, not KRaft):
+      # set KAFKA_ZOOKEEPER_CONNECT and leave KAFKA_NODE_ID/KAFKA_CLUSTER_ID unset.
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      # Single broker (local): replication factor 1 everywhere, otherwise
+      # internal topics with RF=3 never come up on one node.
+      - KAFKA_DEFAULT_REPLICATION_FACTOR=1
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
+      - KAFKA_MIN_INSYNC_REPLICAS=1
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=false
     healthcheck:
-      test: ["CMD", "kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list"]
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 12
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_healthy
 
   cassandra:
     image: cassandra:4.1@sha256:...
@@ -115,7 +132,7 @@ services:
 
   api-gateway:
     build:
-      context: ./packages/api-gateway
+      context: ./packages/backend/api-gateway
       dockerfile: Dockerfile
     depends_on:
       - auth-service
@@ -127,7 +144,7 @@ services:
 
   auth-service:
     build:
-      context: ./packages/auth-service
+      context: ./packages/backend/auth
       dockerfile: Dockerfile
     depends_on:
       cassandra:
@@ -142,7 +159,7 @@ services:
 
   frontend:
     build:
-      context: ./packages/frontend
+      context: ./packages/frontend/app
       dockerfile: Dockerfile
     depends_on:
       - api-gateway
@@ -155,12 +172,15 @@ volumes:
 
 Rules:
 
-- Services: `zookeeper`, `kafka`, `cassandra`, `api-gateway`, `auth-service`, `account-service`, `transfer-service`, `transaction-service`, `frontend`. `account-service`, `transfer-service`, and `transaction-service` follow the `auth-service` shape (build context `./packages/<service>`, health-gated `depends_on`, their own keyspace variable).
+- Services: `zookeeper`, `kafka`, `cassandra`, `api-gateway`, `auth-service`, `account-service`, `transfer-service`, `transaction-service`, `frontend`. `account-service`, `transfer-service`, and `transaction-service` follow the `auth-service` shape (build context `./packages/backend/<service>`, health-gated `depends_on`, their own keyspace variable).
 - Use `depends_on` with `condition: service_healthy` so each service waits for Cassandra, not just the container start.
 - Every stateful service declares a `healthcheck`; startup order follows health, not hope.
 - Named volumes for state (`cassandra_data`); `docker-compose down -v` is the explicit reset.
 - Configuration comes from environment variables sourced from `.env`; no secrets baked into the Compose file.
-- Pin image digests (`@sha256:...`) for reproducibility; tags are a convenience for local development.
+- **Kafka runs in ZooKeeper mode** here: set `KAFKA_ZOOKEEPER_CONNECT` and do **not** also set `KAFKA_NODE_ID`/`KAFKA_PROCESS_ROLES`/`KAFKA_CLUSTER_ID` (KRaft and ZooKeeper settings must not be combined — a mixed config fails to start).
+- **Local/CI single broker ⇒ RF=1** for every internal topic (`default`, `offsets`, transaction state log) and `min.insync.replicas=1`. Production keeps RF=3 / `min.insync.replicas=2` (see [`NFR-012`, `NFR-013`](../../01-requirements/non-functional-requirements.md#availability)).
+- With `KAFKA_AUTO_CREATE_TOPICS_ENABLE=false`, the `transfers` and `transfers.dlq` topics are created by an explicit init step (`kafka-topics --create`), never by the first producer write.
+- Pin image tags (`confluentinc/cp-kafka:7.4.0`, `confluentinc/cp-zookeeper:7.4.0`, `cassandra:4.1`) and pin digests (`@sha256:...`) for reproducibility; local Compose, CI service containers, and the docs must use the same tags.
 
 ## 4. Healthchecks & Startup
 
@@ -182,11 +202,11 @@ Rules:
 | Stage | Image | Purpose |
 |-------|-------|---------|
 | Build | `golang:1.22-alpine` | Compile Go binaries |
-| Build | `node:20-alpine` | Build frontend assets |
+| Build | `node:22-alpine` | Build frontend assets |
 | Runtime | `gcr.io/distroless/static-debian12` | Run the Go gateway and services |
 | Runtime | `nginx:alpine` | Serve static frontend |
 | Data | `cassandra:4.1` | Database |
-| Data | `bitnami/kafka:3.x` | Message broker |
+| Data | `confluentinc/cp-kafka:7.4.0` | Message broker |
 
 ## 7. Code Style & Rules
 

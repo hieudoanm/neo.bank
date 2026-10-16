@@ -15,7 +15,7 @@ A useful banking platform needs to make it possible to:
 - Register new bank accounts with secure credential management.
 - Authenticate users and maintain session security.
 - Display current account balance with transaction history context.
-- Execute transfers between accounts with atomicity guarantees.
+- Execute transfers between accounts with consistency guarantees (atomic per-account updates and saga compensation).
 - Track transaction status, failures, and audit trails.
 - Preserve data consistency across distributed systems.
 - Control access to financial data with strict authorisation.
@@ -69,7 +69,7 @@ The implementation covers frontend development, API design, distributed database
 
 ### Goal 3: Ensure financial data integrity
 
-The application maintains balance consistency, transfer atomicity, and audit trails for all financial operations.
+The application maintains balance consistency, transfer consistency (saga compensation across accounts), and audit trails for all financial operations.
 
 ### Goal 4: Establish secure authentication and authorisation
 
@@ -110,7 +110,7 @@ The application must preserve audit information for every transaction, including
 - Source and destination account identifiers.
 - Transfer amount in minor units.
 - Timestamp (ISO 8601 UTC).
-- Transaction status (pending, completed, failed, reversed).
+- Transaction status (pending, processing, completed, failed, reversed).
 - Idempotency key for duplicate detection.
 - Correlation ID for tracing across services.
 
@@ -128,7 +128,7 @@ The primary workflow is:
 6. NEO Bank validates the request (sufficient funds, valid destination, positive amount).
 7. The transfer is published to Kafka for asynchronous processing.
 8. The user sees the transfer status update from pending to completed.
-9. Both source and destination balances are updated atomically.
+9. Both source and destination balances are updated, each with its own atomic (LWT) statement; if the credit fails, the saga compensates by reversing the debit.
 10. The user can review the transaction in their history.
 
 Every stage should provide meaningful feedback, including loading states, validation errors, processing progress, and recovery instructions.

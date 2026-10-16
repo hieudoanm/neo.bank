@@ -10,7 +10,7 @@ The system enforces idempotency for mutating operations using the `Idempotency-K
 
 ## User-visible behaviour
 
-- Client provides an idempotency key in the request header (`Idempotency-Key`); transfer requests may also carry `idempotencyKey` in the body.
+- Client provides the idempotency key in the `Idempotency-Key` request header. The key is never sent in the request body.
 - Repeated requests with the same idempotency key and identical payload return the cached original response (including the original status code, `202 Accepted` for transfers).
 - The same key with a different payload returns `409 IDEMPOTENCY_KEY_EXISTS`.
 - No duplicate financial operations occur (no double debit/credit).
@@ -21,8 +21,7 @@ The system enforces idempotency for mutating operations using the `Idempotency-K
 
 | Field | Type | Location | Constraints |
 |-------|------|----------|-------------|
-| Idempotency-Key | string | Header | Canonical mechanism; optional, UUID format recommended |
-| idempotencyKey | string | Body | Optional (transfer requests only); must match the header if both are present |
+| Idempotency-Key | string | Header | Canonical mechanism. Required on `POST /api/v1/transfers`; optional but supported on other mutating endpoints. 1–255 chars matching `[a-zA-Z0-9_-]` |
 
 ## Outputs
 
@@ -112,7 +111,7 @@ Response (409 - same key with a different payload):
 - Idempotency keys expire after configurable period (default 24 hours).
 - Kafka consumers are idempotent under duplicate message delivery.
 - Idempotency key check completes within 10 ms (p95) — planned target; no NFR currently defines a latency target for the idempotency check ([`NFR-003`](../01-requirements/non-functional-requirements.md#performance) covers balance inquiry only).
-- Every mutating operation enforces an idempotency key per [`NFR-022`](../01-requirements/non-functional-requirements.md#consistency-and-durability).
+- `POST /api/v1/transfers` requires an idempotency key per [`NFR-022`](../01-requirements/non-functional-requirements.md#consistency-and-durability); other mutating endpoints support the header optionally.
 
 ## Cross-references
 

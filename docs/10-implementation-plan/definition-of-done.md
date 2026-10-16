@@ -52,9 +52,9 @@ A phase is complete when:
 
 ### Phase 5: Kafka Consumer DoD
 
-- [ ] Kafka consumer processes `transfer.initiated` events.
+- [ ] The Account Service consumes `account.debit.requested`/`account.credit.requested`, and the Transfer Service advances the saga on the resulting events.
 - [ ] Idempotency check prevents double processing.
-- [ ] Lightweight transaction (Paxos) used for atomic debit/credit.
+- [ ] Lightweight transactions (Paxos) used for atomic per-account debit and credit, with saga compensation.
 - [ ] Transfer status updated to `completed` or `failed`.
 - [ ] Transaction entries recorded for both accounts.
 - [ ] Compensation reverses debit on credit failure.

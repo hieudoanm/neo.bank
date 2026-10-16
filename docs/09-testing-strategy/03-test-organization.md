@@ -6,8 +6,10 @@ Defines the directory structure for backend and frontend tests so that tests are
 
 ## 1. Backend Test Structure
 
+Each service is an independent Go module under `packages/backend/<service>/`, so this structure repeats per service:
+
 ```text
-packages/backend/
+packages/backend/<service>/
 ├── cmd/
 │   ├── api/
 │   │   └── main_test.go          # API entry point tests
@@ -76,7 +78,7 @@ packages/backend/
 ## 2. Frontend Test Structure
 
 ```text
-packages/frontend/
+packages/frontend/app/
 ├── src/
 │   ├── components/
 │   │   ├── auth/

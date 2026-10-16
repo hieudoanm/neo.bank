@@ -23,7 +23,7 @@ Each microservice owns a private Cassandra keyspace. Cross-service direct databa
 | Service             | Data Model File                                                            | Tables                                                     | Keyspace               |
 | ------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------- | ---------------------- |
 | Auth Service        | [`README.md`](./05-data-model/auth-service/README.md)               | `users`, `users_by_email`, `refresh_tokens`, `refresh_tokens_by_user`, `audit_events` | `auth_keyspace`        |
-| Account Service     | [`README.md`](./05-data-model/account-service/README.md)         | `accounts`, `audit_events`                                 | `account_keyspace`     |
+| Account Service     | [`README.md`](./05-data-model/account-service/README.md)         | `accounts`, `accounts_by_user`, `processed_commands`, `audit_events` | `account_keyspace`     |
 | Transfer Service    | [`README.md`](./05-data-model/transfer-service/README.md)       | `transfers`, `transfers_by_account`, `idempotency_keys`, `audit_events` | `transfer_keyspace`    |
 | Transaction Service | [`README.md`](./05-data-model/transaction-service/README.md) | `transactions`, `audit_events`                             | `transaction_keyspace` |
 
@@ -36,6 +36,7 @@ Each microservice owns a private Cassandra keyspace. Cross-service direct databa
 5. **Audit logging:** All security-relevant events are recorded in an append-only audit log. Each service writes its own `audit_events` table in its own keyspace; there is no shared audit store.
 6. **Immutable history:** Transaction records are immutable; corrections create new records.
 7. **UUID v7 for identifiers:** All entities use UUID v7 for time-ordered, unique identifiers.
+8. **Lookup tables, never secondary indexes:** Every non-primary-key access path is a dedicated table partitioned by the lookup column (`accounts_by_user`, `users_by_email`, `transfers_by_account`). This keeps queries single-partition, avoids eventual-consistency surprises, and stays portable to Amazon Keyspaces, which rejects `CREATE INDEX`. Note: the Keyspaces LWT apply `IF balance_cents >= ?` — a conditional debit on a non-key column — is supported today but is verified against the managed service before each deployment (see [`cloud-deployment-aws.md`](./11-deployment/cloud-deployment-aws.md#keyspaces-amazon-keyspaces)).
 
 ## 4. Relationships
 
@@ -109,12 +110,13 @@ Ownership rule: each service writes only to its own keyspace. The Transfer Servi
 1. Transfer Service consumes `transfer.initiated` from Kafka topic `transfers`.
 2. If a completed idempotency record already exists for the key, skip (idempotent).
 3. Transfer Service marks its own transfer as processing (UPDATE transfers SET status = 'processing' WHERE transfer_id = ?).
-4. Transfer Service issues `account.debit`; Account Service executes the debit in `account_keyspace` as a single lightweight transaction: UPDATE accounts SET balance_cents = balance_cents - ?, updated_at = ? WHERE account_id = ? IF balance_cents >= ?. If the condition fails, Account Service emits `account.debit.failed`.
-5. On `account.debited`, Transfer Service issues `account.credit`; Account Service executes the credit in `account_keyspace` as a separate statement. If the credit fails, Account Service emits `account.credit.failed` and Transfer Service triggers compensation by commanding Account Service to reverse the debit (credit the source account back).
-6. Transaction Service consumes `account.debited` and `account.credited` and projects transaction rows into `transaction_keyspace` (the read model); it never writes to another service's keyspace.
-7. On success, Transfer Service marks its transfer completed (UPDATE transfers SET status = 'completed' WHERE transfer_id = ?) and records the idempotency key with the cached response: INSERT INTO idempotency_keys (idempotency_key, operation_type, resource_id, expires_at, created_at, response_status, response_body) VALUES (?, ?, ?, ?, ?, ?, ?) USING TTL ?.
-8. On failure, after compensation, Transfer Service marks its transfer failed (UPDATE transfers SET status = 'failed', failure_reason = ? WHERE transfer_id = ?).
-9. Each service records its own `audit_events` in its own keyspace.
+4. Transfer Service issues `account.debit.requested`; Account Service claims the command in `account_keyspace.processed_commands` (INSERT ... IF NOT EXISTS) and executes the debit as a single lightweight transaction: UPDATE accounts SET balance_cents = balance_cents - ?, updated_at = ? WHERE account_id = ? IF balance_cents >= ?. If the condition fails, Account Service emits `account.debit.failed`.
+5. On `account.debited`, Transfer Service issues `account.credit.requested`; Account Service claims the command and executes the credit in `account_keyspace` as a separate statement. If the credit fails, Account Service emits `account.credit.failed` and Transfer Service triggers compensation by commanding Account Service to reverse the debit (credit the source account back).
+6. Account Service records the command outcome (result event, resulting balance) on the `processed_commands` row so a redelivery re-emits the same result without moving funds again.
+7. Transaction Service consumes `account.debited` and `account.credited` and projects transaction rows into `transaction_keyspace` (the read model); it never writes to another service's keyspace.
+8. On success, Transfer Service marks its transfer completed (UPDATE transfers SET status = 'completed' WHERE transfer_id = ?) and records the idempotency key with the cached response: INSERT INTO idempotency_keys (idempotency_key, operation_type, resource_id, expires_at, created_at, response_status, response_body) VALUES (?, ?, ?, ?, ?, ?, ?) USING TTL ?.
+9. On failure, after compensation, Transfer Service marks its transfer failed (UPDATE transfers SET status = 'failed', failure_reason = ? WHERE transfer_id = ?).
+10. Each service records its own `audit_events` in its own keyspace.
 
 **Consistency note:** Cassandra has no `BEGIN`/`ROLLBACK`. Each lightweight transaction (paxos) is a single statement, so the debit and the credit are not atomic with respect to one another. Cross-account consistency is achieved by the saga: a completed debit that cannot be credited is reversed by a compensating credit to the source account.
 
@@ -124,40 +126,61 @@ Ownership rule: each service writes only to its own keyspace. The Transfer Servi
 
 Each service uses its own keyspace. There is no shared keyspace: each service owns its `audit_events` table inside its own keyspace.
 
+The replication strategy is **environment-dependent**; it is never a single hard-coded value.
+
+**Production (self-managed Cassandra on EKS/GKE):**
+
 ```cql
+-- One NetworkTopologyStrategy keyspace per service, RF=3 across 3 racks/AZs.
+-- Replace 'dc1' with the deployed datacenter name and set rack awareness
+-- (e.g. dc1.r1/r2/r3) in cassandra-rackdc.properties.
 CREATE KEYSPACE auth_keyspace
-WITH replication = {'class': 'NetworkTopologyStrategy', 'datacenter1': 3}
+WITH replication = {'class': 'NetworkTopologyStrategy', 'dc1': 3}
 AND durable_writes = true;
 
 CREATE KEYSPACE account_keyspace
-WITH replication = {'class': 'NetworkTopologyStrategy', 'datacenter1': 3}
+WITH replication = {'class': 'NetworkTopologyStrategy', 'dc1': 3}
 AND durable_writes = true;
 
 CREATE KEYSPACE transfer_keyspace
-WITH replication = {'class': 'NetworkTopologyStrategy', 'datacenter1': 3}
+WITH replication = {'class': 'NetworkTopologyStrategy', 'dc1': 3}
 AND durable_writes = true;
 
 CREATE KEYSPACE transaction_keyspace
-WITH replication = {'class': 'NetworkTopologyStrategy', 'datacenter1': 3}
+WITH replication = {'class': 'NetworkTopologyStrategy', 'dc1': 3}
 AND durable_writes = true;
 ```
 
+**Local development and CI (single node):**
+
+```cql
+CREATE KEYSPACE auth_keyspace
+WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
+-- account_keyspace, transfer_keyspace, transaction_keyspace: identical
+```
+
+**Amazon Keyspaces (managed):** do **not** issue `CREATE KEYSPACE` — replication is managed by AWS (`SingleRegionStrategy`, RF=3 across 3 AZs). Each service creates only its own tables inside the keyspace AWS provisioned. Keyspaces does **not** support `CREATE INDEX`, so every non-primary-key access path is a dedicated lookup table (for example `accounts_by_user`, `users_by_email`, `transfers_by_account`).
+
 ### 6.2 Consistency Levels
 
-- Reads: QUORUM
-- Writes: QUORUM
-- Lightweight transactions: SERIAL
+| Profile | Reads | Writes | Lightweight transactions |
+| ------- | ----- | ------ | ------------------------ |
+| Production (RF=3) | `QUORUM` | `QUORUM` | `SERIAL` |
+| Local / CI (RF=1) | `ONE` or `LOCAL_ONE` | `ONE` or `LOCAL_ONE` | `SERIAL` (equals `ONE` on one node) |
+
+Configure the level per query; do not rely on the cluster default. Where the per-service data model documents individual queries as “QUORUM read/write”, that annotation is the **production** level; local/CI runs the same queries at `ONE`/`LOCAL_ONE` (see the table above).
 
 ### 6.3 Replication
 
-- Replication factor: 3
-- Consistency: QUORUM (2 out of 3 replicas must acknowledge)
+- **Production:** replication factor 3; `QUORUM` (2 of 3 replicas must acknowledge) with `SERIAL` for conditional statements.
+- **Local/CI:** replication factor 1; `ONE`/`LOCAL_ONE`. A single-node cluster cannot exercise multi-replica availability — production durability is validated in the cloud deployment, not locally.
+- **AWS Keyspaces:** replication is managed; application code still uses `QUORUM`/`SERIAL`, which AWS honours.
 
 ## 7. Data Migration Strategy
 
 CQL migrations are versioned and applied in order. Each migration is a CQL script that is idempotent.
 
-Migrations live with the owning service under `packages/<service>/internal/db/migrations/` with filenames like `001_create_tables.cql`, `002_add_indexes.cql`, etc. Each service owns and applies only its own migrations.
+Migrations live with the owning service under `packages/backend/<service>/internal/db/migrations/` with filenames like `001_create_tables.cql`, `002_add_lookup_tables.cql`, etc. Each service owns and applies only its own migrations.
 
 Migration state is tracked in a `schema_migrations` table per keyspace:
 
@@ -180,5 +203,5 @@ CREATE TABLE schema_migrations (
 
 - Cassandra snapshots are taken regularly per keyspace.
 - Snapshots are stored in durable object storage (S3, GCS).
-- Point-in-time recovery is supported using Cassandra's incremental repair.
+- Point-in-time recovery uses Amazon Keyspaces PITR (production) or Cassandra incremental backups with commitlog archiving (self-managed); snapshots alone give last-snapshot, not arbitrary-point, recovery. See [`12-operations/backup-recovery.md`](./12-operations/backup-recovery.md).
 - Backup strategy is documented in [`12-operations/backup-recovery.md`](./12-operations/backup-recovery.md).

@@ -104,7 +104,7 @@ All jobs must pass for the workflow to succeed:
 5. **Security Scanning**: No **Critical/High** severity vulnerabilities (container and dependency scans)
 6. **Build Success**: Both backend and frontend must compile successfully
 7. **Test Passing**: All unit, integration, and E2E tests must pass
-8. **Terraform**: `terraform fmt -check`, `terraform validate`, and `terraform plan` must pass for changed infra
+8. **Terraform**: `terraform fmt -check`, `terraform validate`, and `terraform plan -out=tfplan` must pass for changed infra; apply uses the reviewed `tfplan` file (never `-auto-approve`)
 9. **Production Deploy Approval**: Production deployments require **manual approval** before applying changes
 
 ### AWS Deployment Workflow (`.github/workflows/deploy-aws.yml`)
@@ -115,9 +115,9 @@ Triggers on pushes to the `main` branch. Authenticates with **OIDC** (no static 
 2. **Setup Terraform** (`hashicorp/setup-terraform@v2`, version 1.8+)
 3. **Configure AWS credentials via OIDC** (`aws-actions/configure-aws-credentials@v4` with `role-to-assume`; requires `permissions: id-token: write`)
 4. **Terraform Init** (`terraform init` in `infrastructure/aws/`)
-5. **Terraform Format/Validate/Plan** (`terraform fmt -check`, `terraform validate`, `terraform plan`)
-6. **Manual Approval** (production environment protection rule)
-7. **Terraform Apply** (`terraform apply -auto-approve`)
+5. **Terraform Format/Validate/Plan** (`terraform fmt -check`, `terraform validate`, `terraform plan -out=tfplan`), then upload `tfplan` as a workflow artifact
+6. **Manual Approval** (GitHub production environment protection rule)
+7. **Terraform Apply** (`terraform apply tfplan`) — applies the exact plan that was reviewed. Never `-auto-approve`
    - Provisions EKS cluster, MSK cluster, Amazon Keyspaces (one keyspace per service), VPC, IAM roles
 8. **Deploy Workloads to EKS**
    ```bash
@@ -134,9 +134,9 @@ Similar structure with GCP-specific steps. Authenticates with **Workload Identit
 2. **Setup Terraform** (`hashicorp/setup-terraform@v2`)
 3. **Authenticate to GCP** (`google-github-actions/auth@v2` with Workload Identity Federation; requires `permissions: id-token: write`)
 4. **Terraform Init** (`terraform init` in `infrastructure/gcp/`)
-5. **Terraform Format/Validate/Plan** (`terraform fmt -check`, `terraform validate`, `terraform plan`)
-6. **Manual Approval** (production environment protection rule)
-7. **Terraform Apply** (`terraform apply -auto-approve`)
+5. **Terraform Format/Validate/Plan** (`terraform fmt -check`, `terraform validate`, `terraform plan -out=tfplan`), then upload `tfplan` as a workflow artifact
+6. **Manual Approval** (GitHub production environment protection rule)
+7. **Terraform Apply** (`terraform apply tfplan`) — applies the exact plan that was reviewed. Never `-auto-approve`
    - Provisions GKE cluster, Cassandra on GKE, Kafka on GKE (Strimzi), VPC, service accounts
 8. **Deploy Workloads to GKE** (PLANNED)
    ```bash

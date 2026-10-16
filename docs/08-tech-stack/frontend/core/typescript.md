@@ -112,17 +112,17 @@ import { fetchWrapper } from './fetchWrapper';
 export const api = {
   auth: {
     register: (data: RegisterRequest) =>
-      fetchWrapper.post<AuthResponse>('/auth/register', data),
+      fetchWrapper.post<AuthResponse>('/register', data),
     login: (data: LoginRequest) =>
-      fetchWrapper.post<AuthResponse>('/auth/login', data),
+      fetchWrapper.post<AuthResponse>('/login', data),
     refresh: (refreshToken: string) =>
-      fetchWrapper.post<TokenResponse>('/auth/refresh', { refreshToken }),
+      fetchWrapper.post<TokenResponse>('/refresh', { refreshToken }),
     logout: (refreshToken: string) =>
-      fetchWrapper.post<{ ok: boolean }>('/auth/logout', { refreshToken }),
+      fetchWrapper.post<{ ok: boolean }>('/logout', { refreshToken }),
   },
   accounts: {
-    getBalance: () =>
-      fetchWrapper.get<BalanceResponse>('/accounts/balance'),
+    getBalance: (accountId: AccountId) =>
+      fetchWrapper.get<BalanceResponse>(`/accounts/${accountId}/balance`),
   },
   transfers: {
     create: (data: CreateTransferRequest) =>
@@ -131,8 +131,8 @@ export const api = {
       fetchWrapper.get<TransferStatusResponse>(`/transfers/${transferId}`),
   },
   transactions: {
-    list: (cursor?: string) =>
-      fetchWrapper.get<TransactionListResponse>('/transactions', { cursor }),
+    list: (accountId: AccountId, cursor?: string) =>
+      fetchWrapper.get<TransactionListResponse>(`/accounts/${accountId}/transactions`, { cursor }),
   },
 };
 ```
@@ -176,10 +176,11 @@ import { z } from 'zod';
 export const transferSchema = z.object({
   destinationAccountId: z.string().uuid('Invalid account ID'),
   amountCents: z.number().int().positive('Amount must be positive'),
-  idempotencyKey: z.string().uuid().optional(),
 });
 
 export type CreateTransferRequest = z.infer<typeof transferSchema>;
+// The Idempotency-Key is sent as a request header (required for transfers),
+// not as a body field — see docs/06-api-specification.md §7.
 ```
 
 Rules:

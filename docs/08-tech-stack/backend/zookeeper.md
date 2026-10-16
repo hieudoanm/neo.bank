@@ -50,7 +50,7 @@ NEO Bank does not use Zookeeper directly from application code — only the Kafk
 ```yaml
 # docker-compose.yaml (excerpt)
 zookeeper:
-  image: confluentinc/cp-zookeeper:7.5.0
+  image: confluentinc/cp-zookeeper:7.4.0
   environment:
     ZOOKEEPER_CLIENT_PORT: 2181
     ZOOKEEPER_TICK_TIME: 2000

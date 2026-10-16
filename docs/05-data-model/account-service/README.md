@@ -29,15 +29,16 @@ Manages accounts and balances. Authoritative for account validation and balance 
 - Debit: `balance_cents -= amount` (must remain ≥ 0; enforced by LWT `IF balance_cents >= ?`).
 - Credit: `balance_cents += amount`.
 
-**Indexes:**
-- Secondary index on `user_id`. Direction: this lets the service query accounts **by** `user_id` (user → account). It does not give a mapping from account to user; that is the `user_id` column on the row itself.
+**Access paths (query-first):**
+- The row itself maps account → user via the `user_id` column.
+- The reverse path (user → accounts) is served by the `accounts_by_user` lookup table, **not** a secondary index. Amazon Keyspaces does not support `CREATE INDEX`, and the transfer/auth services already use the same lookup-table pattern.
 
 **Access patterns:**
 - `SELECT balance_cents FROM accounts WHERE account_id = ?` — balance inquiry (QUORUM read).
-- `SELECT * FROM accounts WHERE user_id = ?` — account lookup by owning user (secondary index, QUORUM read).
+- `SELECT account_id FROM accounts_by_user WHERE user_id = ?` — accounts owned by a user (single-partition read).
 - `UPDATE accounts SET balance_cents = balance_cents - ?, updated_at = ? WHERE account_id = ? IF balance_cents >= ?` — debit (single LWT, SERIAL consistency).
 - `UPDATE accounts SET balance_cents = balance_cents + ?, updated_at = ? WHERE account_id = ?` — credit (QUORUM write).
-- `INSERT INTO accounts ...` — account creation (on registration).
+- `INSERT INTO accounts ...` / `INSERT INTO accounts_by_user ...` — account creation (on registration).
 
 **CQL:**
 
@@ -50,8 +51,6 @@ CREATE TABLE accounts (
     created_at timestamp,
     updated_at timestamp
 );
-
-CREATE INDEX idx_accounts_user_id ON accounts (user_id);
 ```
 
 **Example queries:**
@@ -71,6 +70,74 @@ IF balance_cents >= ?;
 UPDATE accounts
 SET balance_cents = balance_cents + ?, updated_at = toTimestamp(now())
 WHERE account_id = ?;
+```
+
+### accounts_by_user
+
+Reverse lookup from a user to the account(s) they own. Replaces a secondary index on `accounts(user_id)`, which Amazon Keyspaces does not support. Partitioning by `user_id` makes "list this user's accounts" a single-partition read. Written in the same operation that creates the account.
+
+| Column     | Type      | Description                          |
+| ---------- | --------- | ------------------------------------ |
+| user_id    | uuid      | Partition key — owning user          |
+| account_id | uuid      | Clustering key — the user's account  |
+| created_at | timestamp | Account creation timestamp           |
+
+**Primary key:** `((user_id), account_id)`
+
+**Access patterns:**
+- `SELECT account_id FROM accounts_by_user WHERE user_id = ?` — list accounts for the authenticated user (for example to resolve the `accountId` returned at login).
+- `INSERT INTO accounts_by_user ...` — one row per account on creation.
+
+**CQL:**
+
+```cql
+CREATE TABLE accounts_by_user (
+    user_id uuid,
+    account_id uuid,
+    created_at timestamp,
+    PRIMARY KEY ((user_id), account_id)
+);
+```
+
+### processed_commands
+
+Command-side idempotency for balance movements. The saga delivers commands at-least-once, so the Account Service records each command it applies; a redelivered `account.debit.requested`/`account.credit.requested` with the same command `idempotency_key` re-emits the stored result instead of moving funds again. The transfer's request-level idempotency key lives in `transfer_keyspace` and is **not** readable here — this table is the Account Service's own record.
+
+| Column           | Type      | Description                                                                 |
+| ---------------- | --------- | --------------------------------------------------------------------------- |
+| idempotency_key  | text      | Primary key — command idempotency key (scoped to this transfer + movement)  |
+| transfer_id      | uuid      | Originating transfer                                                        |
+| account_id       | uuid      | Account debited/credited                                                    |
+| event_type       | text      | Command consumed: `account.debit.requested` or `account.credit.requested`   |
+| result_event_type| text      | Result emitted: `account.debited`/`account.debit.failed`/`account.credited`/`account.credit.failed` |
+| balance_cents    | bigint    | Resulting balance (null until applied)                                      |
+| failure_reason   | text      | Reason when the command failed                                              |
+| created_at       | timestamp | When the command was first seen (ISO 8601 UTC)                              |
+| applied_at       | timestamp | When the movement was applied (null while still pending)                    |
+
+**Primary key:** `(idempotency_key)`
+
+**Idempotency rule:** the consumer claims the command with `INSERT ... IF NOT EXISTS` (a *pending* row), applies the balance movement, then upserts the result onto the same row. A redelivery whose claim already exists does not move funds again: if a result is recorded it re-emits that result; if the row is still pending the previous attempt did not finish, so the consumer re-drives the movement for that same command. The claim and the `accounts` LWT are **separate** statements — Cassandra has no cross-table transaction — so this is not a single atomic unit; correctness relies on the command key being immutable and the movement being re-drivable (see [atomicity note](../../05-data-model.md#3-design-principles)).
+
+**Access patterns:**
+- `INSERT INTO processed_commands (...) IF NOT EXISTS` — claim a command.
+- `SELECT result_event_type, balance_cents, failure_reason FROM processed_commands WHERE idempotency_key = ?` — read a recorded result to re-emit.
+- `UPDATE processed_commands SET result_event_type = ?, balance_cents = ?, failure_reason = ?, applied_at = ? WHERE idempotency_key = ?` — record the outcome.
+
+**CQL:**
+
+```cql
+CREATE TABLE processed_commands (
+    idempotency_key text PRIMARY KEY,
+    transfer_id uuid,
+    account_id uuid,
+    event_type text,
+    result_event_type text,
+    balance_cents bigint,
+    failure_reason text,
+    created_at timestamp,
+    applied_at timestamp
+);
 ```
 
 ### audit_events
@@ -116,7 +183,7 @@ CREATE TABLE audit_events (
 
 - Service: **Account Service**
 - Keyspace: `account_keyspace`
-- Tables: `accounts`, `audit_events`
+- Tables: `accounts`, `accounts_by_user`, `processed_commands`, `audit_events`
 
 ## Cross-references
 

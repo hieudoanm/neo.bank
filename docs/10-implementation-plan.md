@@ -15,7 +15,7 @@ The implementation plan must:
 ## 2. Implementation Principles
 
 1. **Vertical slices first:** deliver complete workflows (register → login → balance → transfer → history) before expanding features.
-2. **Financial integrity first:** ensure balance consistency, transfer atomicity, and idempotency before any other features.
+2. **Financial integrity first:** ensure balance consistency, transfer consistency (saga compensation), and idempotency before any other features.
 3. **Security first:** implement authentication and authorisation before any protected operations.
 4. **Test-driven development:** write tests alongside implementation, not after.
 5. **Documentation updates:** update docs when behaviour or scope changes; record significant decisions as ADRs in `docs/decisions/` per AGENTS.md delivery rules.
@@ -30,11 +30,11 @@ The implementation plan must:
 | Phase 0  | [`phase-0-foundation.md`](./10-implementation-plan/phase-0-foundation.md)                       | Project structure, tooling, infrastructure | Week 1    |
 | Phase 1  | [`phase-1-data-model.md`](./10-implementation-plan/phase-1-data-model.md)                       | Cassandra schema, migrations, fixtures     | Weeks 1-2 |
 | Phase 2  | [`phase-2-authentication.md`](./10-implementation-plan/phase-2-authentication.md)               | Register, login, JWT, Argon2id             | Weeks 2-3 |
-| Phase 3  | [`phase-3-balance-inquiry.md`](./10-implementation-plan/phase-3-balance-inquiry.md)             | GET /accounts/me, dashboard                | Week 3    |
+| Phase 3  | [`phase-3-balance-inquiry.md`](./10-implementation-plan/phase-3-balance-inquiry.md)             | GET /accounts/{accountId}/balance, dashboard | Week 3    |
 | Phase 4  | [`phase-4-transfer-initiation.md`](./10-implementation-plan/phase-4-transfer-initiation.md)     | POST /transfers, Kafka producer            | Week 4    |
-| Phase 5  | [`phase-5-kafka-consumer.md`](./10-implementation-plan/phase-5-kafka-consumer.md)               | Kafka consumer, LWT, idempotency           | Weeks 4-5 |
-| Phase 6  | [`phase-6-transfer-status.md`](./10-implementation-plan/phase-6-transfer-status.md)             | GET /transfers/{id}, polling               | Week 5    |
-| Phase 7  | [`phase-7-transaction-history.md`](./10-implementation-plan/phase-7-transaction-history.md)     | GET /transactions, pagination              | Weeks 5-6 |
+| Phase 5  | [`phase-5-kafka-consumer.md`](./10-implementation-plan/phase-5-kafka-consumer.md)               | Saga execution, LWT, idempotency           | Weeks 4-5 |
+| Phase 6  | [`phase-6-transfer-status.md`](./10-implementation-plan/phase-6-transfer-status.md)             | GET /transfers/{transferId}, polling        | Week 5    |
+| Phase 7  | [`phase-7-transaction-history.md`](./10-implementation-plan/phase-7-transaction-history.md)     | GET /accounts/{accountId}/transactions, pagination | Weeks 5-6 |
 | Phase 8  | [`phase-8-security-idempotency.md`](./10-implementation-plan/phase-8-security-idempotency.md)   | Security, idempotency, performance tests   | Week 6    |
 | Phase 9  | [`phase-9-health-observability.md`](./10-implementation-plan/phase-9-health-observability.md)   | Health checks, logging, metrics            | Weeks 6-7 |
 | Phase 10 | [`phase-10-documentation-demo.md`](./10-implementation-plan/phase-10-documentation-demo.md)     | Documentation, demo                        | Week 7    |
@@ -45,7 +45,7 @@ The implementation plan must:
 See [`milestones.md`](./10-implementation-plan/milestones.md) for milestone details:
 
 - **Milestone 1: Core Authentication** (End of Week 3) — Registration, login, token refresh, logout.
-- **Milestone 2: Basic Banking** (End of Week 5) — Balance inquiry, transfer initiation, Kafka consumer, transfer status.
+- **Milestone 2: Basic Banking** (End of Week 5) — Balance inquiry, transfer initiation, saga execution (debit/credit consumers), transfer status.
 - **Milestone 3: Complete MVP** (End of Week 7) — Transaction history, security/idempotency tests, health/observability, documentation.
 - **Milestone 4: Cloud Deployment** (Optional, Week 8+) — Terraform for AWS/GCP, cloud deployment.
 
@@ -68,8 +68,8 @@ Phase 0 → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 
 - Phase 2 depends on Phase 1 (data model for users/refresh_tokens).
 - Phase 3 depends on Phase 2 (authentication for protected endpoints).
 - Phase 4 depends on Phase 3 (account validation for transfers).
-- Phase 5 depends on Phase 4 (transfer events to consume).
-- Phase 6 depends on Phase 5 (transfer status from consumer).
+- Phase 5 depends on Phase 4 (transfer events to consume; the Account Service applies the debit/credit, the Transfer Service advances the saga).
+- Phase 6 depends on Phase 5 (transfer status set by the saga).
 - Phase 7 depends on Phase 6 (transaction records from transfer completion).
 - Phase 8 depends on Phase 7 (security tests on complete flow).
 - Phase 9 depends on Phase 8 (observability on complete system).

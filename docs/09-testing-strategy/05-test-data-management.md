@@ -4,32 +4,43 @@
 
 Defines how test data is stored, isolated, and cleaned up across all test layers. Test data is never production data — it is synthetic, isolated, and cleaned up after every test run.
 
-## 1. Test Keyspace
+## 1. Test Keyspaces
 
-A separate Cassandra keyspace is used for all tests:
+Tests preserve the strict **one-keyspace-per-service** boundary: each service's tests create and use only that service's own test keyspace. There is no shared `neo_bank_test` keyspace, because a single shared keyspace would let tests read another service's tables — exactly what production forbids.
 
 ```sql
-CREATE KEYSPACE neo_bank_test
+CREATE KEYSPACE auth_keyspace_test
+WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}
+AND durable_writes = true;
+
+CREATE KEYSPACE account_keyspace_test
+WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}
+AND durable_writes = true;
+
+CREATE KEYSPACE transfer_keyspace_test
+WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}
+AND durable_writes = true;
+
+CREATE KEYSPACE transaction_keyspace_test
 WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}
 AND durable_writes = true;
 ```
 
 | Property | Value | Reason |
 |----------|-------|--------|
-| Keyspace name | `neo_bank_test` | Distinct from production keyspaces |
+| Keyspace names | `<service>_keyspace_test` | One per service; distinct from production keyspaces |
 | Replication strategy | `SimpleStrategy` | Single-node test environment |
 | Replication factor | 1 | Test environment has one node |
 | Durable writes | `true` | Test data survives restarts within the session |
 
-### Tables in Test Keyspace
+Cross-service integration tests drive the services through their public APIs (or the gateway); they never open a second service's keyspace.
 
-- `users` — synthetic user records
-- `accounts` — synthetic account records with balances
-- `transfers` — synthetic transfer records
-- `idempotency_keys` — synthetic idempotency keys
-- `transactions` — synthetic transaction records
-- `audit_events` — synthetic audit events
-- `schema_migrations` — tracks applied migrations
+### Tables per Test Keyspace
+
+- `auth_keyspace_test` — `users`, `users_by_email`, `refresh_tokens`, `refresh_tokens_by_user`, `audit_events`, `schema_migrations`
+- `account_keyspace_test` — `accounts`, `accounts_by_user`, `processed_commands`, `audit_events`, `schema_migrations`
+- `transfer_keyspace_test` — `transfers`, `transfers_by_account`, `idempotency_keys`, `audit_events`, `schema_migrations`
+- `transaction_keyspace_test` — `transactions`, `audit_events`, `schema_migrations`
 
 ## 2. Test Kafka Topic
 
@@ -56,7 +67,7 @@ retention.ms: 86400000  # 24 hours
 | Aspect | Test | Production |
 |--------|------|------------|
 | Data | Synthetic, deterministic | Real user data |
-| Keyspace | `neo_bank_test` | `auth_keyspace`, `account_keyspace`, etc. |
+| Keyspace | `<service>_keyspace_test` (one per service) | `auth_keyspace`, `account_keyspace`, etc. |
 | Kafka topic | `transfers-test` | `transfers` |
 | Retention | 24 hours | 7 days (configurable) |
 | Replication | 1 | 3 |
@@ -83,7 +94,7 @@ func TestTransfer_Initiate(t *testing.T) {
 
 Methods:
 
-- **Truncate tables after each test** — `TRUNCATE accounts, transfers, users` — each test starts clean.
+- **Truncate tables after each test** — `TRUNCATE accounts` (one table per statement; Cassandra has no multi-table `TRUNCATE`), scoped to the service's own test keyspace — each test starts clean.
 - **Delete specific rows** — `DELETE FROM accounts WHERE account_id = ?` — for targeted cleanup.
 - **No database transactions** — Cassandra has no transactions or transactional rollback; reset state by truncating tables or deleting the rows a test created.
 - **`defer` guarantees cleanup** — even failed tests trigger cleanup via `defer truncateTestTables(t)`.
@@ -92,7 +103,7 @@ Methods:
 
 After the full test suite completes:
 
-- Drop and recreate the test keyspace (clean slate).
+- Drop and recreate each service's test keyspace (clean slate) — never touch a production keyspace.
 - Delete the test Kafka topic and recreate it.
 - Reset all consumer offsets.
 
@@ -106,7 +117,7 @@ After the full test suite completes:
 
 | Rule | Enforcement |
 |------|-------------|
-| Test keyspace is separate from production | Different keyspace name; no cross-keyspace queries |
+| Each service's test keyspace is separate from production and from other services | Different keyspace name per service; no cross-keyspace queries |
 | Test Kafka topic is separate from production | Different topic name; separate consumer group |
 | No test data leaks to production | Test environment has no network path to production |
 | Cleanup is automatic | `defer` or `AfterEach` in every test |

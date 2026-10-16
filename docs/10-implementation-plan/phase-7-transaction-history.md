@@ -12,7 +12,7 @@ Implement the transaction history endpoint and frontend display with cursor-base
 
 | Deliverable | Description |
 |-------------|-------------|
-| Backend endpoint | `GET /transactions` with cursor-based pagination |
+| Backend endpoint | `GET /api/v1/accounts/{accountId}/transactions` with cursor-based pagination |
 | Frontend screen | Transactions list with pagination controls |
 | Transaction repository | CQL queries with cursor-based pagination |
 | Tests | Unit and integration tests for transactions endpoint and screen |
@@ -20,7 +20,7 @@ Implement the transaction history endpoint and frontend display with cursor-base
 ## Tasks
 
 - [ ] Implement transaction repository (CQL queries with cursor-based pagination).
-- [ ] Implement `GET /transactions` endpoint (authenticated, paginated list).
+- [ ] Implement `GET /api/v1/accounts/{accountId}/transactions` endpoint (authenticated, paginated list; the `accountId` comes from the login response / JWT `accountId` claim and must belong to the caller).
 - [ ] Implement Transactions screen (frontend, list with pagination).
 - [ ] Implement transaction list component (type, amount, counterparty, date).
 - [ ] Implement pagination controls (next cursor, load more).

@@ -6,7 +6,7 @@ P0 (FR-030..FR-043)
 
 ## Description
 
-Authenticated users can initiate transfers to other accounts. The system validates sufficient funds, valid destination account, positive amount, and rejects transfers to the same account. Transfers are published to Kafka for asynchronous processing. The system returns a transfer ID and initial status (pending) immediately. Kafka consumers process transfers atomically (debit source, credit destination) using lightweight transactions, update transfer status, and record transaction entries. The system enforces idempotency via idempotency keys.
+Authenticated users can initiate transfers to other accounts. The system validates sufficient funds, valid destination account, positive amount, and rejects transfers to the same account. Transfers are published to Kafka for asynchronous processing. The system returns a transfer ID and initial status (pending) immediately. Kafka consumers process each balance change atomically using lightweight transactions (debit source, then credit destination), coordinate the two via the saga, update transfer status, and record transaction entries. The debit and credit are separate statements — not one atomic unit — so a failed credit is compensated by reversing the debit. The system enforces idempotency via idempotency keys.
 
 ## User-visible behaviour
 
@@ -21,11 +21,13 @@ Authenticated users can initiate transfers to other accounts. The system validat
 
 ## Inputs
 
-| Field | Type | Required | Constraints |
-|-------|------|----------|-------------|
-| destinationAccountId | string (UUID v7) | Yes | Must exist, must not equal source account |
-| amountCents | integer | Yes | Must be > 0, in minor units (cents) |
-| idempotencyKey | string | No | Recommended for retry safety; UUID format |
+| Field | Type | Location | Required | Constraints |
+|-------|------|----------|----------|-------------|
+| destinationAccountId | string (UUID v7) | Body | Yes | Must exist, must not equal source account |
+| amountCents | integer | Body | Yes | Must be > 0, in minor units (cents) |
+| Idempotency-Key | string | Header | Yes | 1–255 chars matching `[a-zA-Z0-9_-]`; required for retry safety |
+
+The source account is derived server-side from the authenticated user and is never a request field.
 
 ## Outputs
 
@@ -94,12 +96,12 @@ On error:
 POST /api/v1/transfers
 Content-Type: application/json
 Authorization: Bearer <accessToken>
+Idempotency-Key: 550e8400-e29b-41d4-a716-446655440002
 
 Request:
 {
   "destinationAccountId": "550e8400-e29b-41d4-a716-446655440001",
-  "amountCents": 5000,
-  "idempotencyKey": "550e8400-e29b-41d4-a716-446655440002"
+  "amountCents": 5000
 }
 
 Response (202 Accepted):
@@ -159,7 +161,7 @@ Response (200):
 - Transfer to same account rejects request.
 - Amount ≤ 0 rejects request.
 - Transfer is published to Kafka with all details (keyed by source account ID).
-- Kafka consumer processes transfer atomically using Cassandra lightweight transactions.
+- Kafka consumer applies each balance change atomically using Cassandra lightweight transactions, coordinating the debit and credit with saga compensation.
 - Transfer status updates to `completed` or `failed`.
 - Transaction entries are recorded for both source and destination accounts.
 - Duplicate requests with the same idempotency key and an identical payload return the cached original `202` response (same `transferId`) without reprocessing.
@@ -171,7 +173,7 @@ Response (200):
 ## Cross-references
 
 - Functional requirements: [`FR-030..FR-043`](../01-requirements/functional-requirements.md#fund-transfer)
-- User story: [`US-004`](../03-user-stories/US-004.md)
+- User story: [`US-005`](../03-user-stories/US-005.md)
 - API specification: [`docs/06-api-specification.md`](../06-api-specification.md)
 - Saga pattern: [`docs/04-architecture.md`](../04-architecture.md#32-saga-pattern-for-transfers)
 - Kafka: [`docs/08-tech-stack/backend/kafka.md`](../08-tech-stack/backend/kafka.md)

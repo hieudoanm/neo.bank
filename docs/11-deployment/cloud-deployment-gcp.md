@@ -146,17 +146,18 @@ GitHub Actions uses **GCP Workload Identity Federation** to authenticate to GCP 
 cd infrastructure/gcp
 terraform init
 
-# Plan deployment
-terraform plan
+# Plan deployment (save the reviewed plan; never apply without reviewing it)
+terraform plan -out=tfplan
 
-# Apply deployment (provisions GKE, Cassandra on GKE, Kafka on GKE, networking, IAM)
-terraform apply
+# Apply the exact plan that was reviewed (CI applies the reviewed tfplan behind
+# a protected production environment; never -auto-approve)
+terraform apply tfplan
 
 # Deploy workloads to the cluster (same manifests as AWS; overlay differs)
 gcloud container clusters get-credentials neo-bank-production --region us-central1
 kubectl apply -k infrastructure/kubernetes/overlays/production
 
-# Destroy deployment
+# Destroy deployment — interactive confirmation only; never automated on shared environments
 terraform destroy
 ```
 

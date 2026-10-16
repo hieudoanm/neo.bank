@@ -138,7 +138,7 @@ Response (401):
 ## Cross-references
 
 - Functional requirements: [`FR-050..FR-052`](../01-requirements/functional-requirements.md#transaction-history)
-- User story: [`US-005`](../03-user-stories/US-005.md)
+- User story: [`US-008`](../03-user-stories/US-008.md)
 - API specification: [`docs/06-api-specification.md`](../06-api-specification.md)
 - Transaction Service: [`docs/04-architecture.md`](../04-architecture.md#46-transaction-service)
 - Data model: [`docs/05-data-model.md`](../05-data-model.md)

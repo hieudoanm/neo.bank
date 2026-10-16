@@ -43,13 +43,13 @@ _Part of [10-implementation-plan.md](../10-implementation-plan.md)._
 
 ### Deliverables
 
-- Balance inquiry endpoint (`GET /accounts/me`) returning balance in cents with currency.
+- Balance inquiry endpoint (`GET /api/v1/accounts/{accountId}/balance`) returning balance in cents with currency.
 - Dashboard frontend screen with balance display and quick actions.
-- Transfer initiation endpoint (`POST /transfers`) with validation.
+- Transfer initiation endpoint (`POST /api/v1/transfers`) with validation.
 - Transfer frontend screen with form and validation.
 - Kafka producer publishing transfer events.
-- Kafka consumer processing transfers with lightweight transactions.
-- Transfer status endpoint (`GET /transfers/{id}`) with polling.
+- Account and Transfer consumers processing transfers with lightweight transactions.
+- Transfer status endpoint (`GET /api/v1/transfers/{transferId}`) with polling.
 - Transfer status frontend screen showing pending → completed/failed.
 - Idempotency key handling for transfer requests.
 - Unit and integration tests for all banking endpoints.
@@ -72,7 +72,7 @@ _Part of [10-implementation-plan.md](../10-implementation-plan.md)._
 
 - [`FEATURE-03`](../02-features/FEATURE-03-Balance-Inquiry.md)
 - [`FEATURE-04`](../02-features/FEATURE-04-Fund-Transfer.md)
-- [`US-003`](../03-user-stories/US-003.md), [`US-004`](../03-user-stories/US-004.md)
+- [`US-004`](../03-user-stories/US-004.md), [`US-005`](../03-user-stories/US-005.md)
 
 ---
 
@@ -82,7 +82,7 @@ _Part of [10-implementation-plan.md](../10-implementation-plan.md)._
 
 ### Deliverables
 
-- Transaction history endpoint (`GET /transactions`) with cursor-based pagination.
+- Transaction history endpoint (`GET /api/v1/accounts/{accountId}/transactions`) with cursor-based pagination.
 - Transactions frontend screen with pagination.
 - Security tests (unauthorised access, rate limiting, input validation).
 - Idempotency tests (duplicate requests, duplicate events).

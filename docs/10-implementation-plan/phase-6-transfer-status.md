@@ -12,15 +12,15 @@ Implement the transfer status endpoint and frontend display. Phase 6 lets users 
 
 | Deliverable | Description |
 |-------------|-------------|
-| Backend endpoint | `GET /transfers/{transfer_id}` returning transfer status and details |
+| Backend endpoint | `GET /api/v1/transfers/{transferId}` returning transfer status and details |
 | Frontend screen | Transfer status screen with polling |
 | Status polling | Frontend polls every 2 seconds until terminal state |
-| Status badge | Visual indicator for pending/completed/failed/reversed |
+| Status badge | Visual indicator for pending/processing/completed/failed/reversed |
 | Tests | Unit and integration tests for status endpoint and screen |
 
 ## Tasks
 
-- [ ] Implement `GET /transfers/{transfer_id}` endpoint (authenticated, returns status).
+- [ ] Implement `GET /api/v1/transfers/{transferId}` endpoint (authenticated, returns status).
 - [ ] Implement Transfer Status screen (frontend, displays status and details).
 - [ ] Implement status polling (every 2 seconds, stops at terminal state).
 - [ ] Implement status badge component (color-coded by status).

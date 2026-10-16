@@ -116,7 +116,7 @@ Response (404):
 ## Cross-references
 
 - Functional requirements: [`FR-020..FR-024`](../01-requirements/functional-requirements.md#balance-inquiry)
-- User story: [`US-003`](../03-user-stories/US-003.md)
+- User story: [`US-004`](../03-user-stories/US-004.md)
 - API specification: [`docs/06-api-specification.md`](../06-api-specification.md)
 - Account Service: [`docs/04-architecture.md`](../04-architecture.md#44-account-service)
 - Data model: [`docs/05-data-model.md`](../05-data-model.md)

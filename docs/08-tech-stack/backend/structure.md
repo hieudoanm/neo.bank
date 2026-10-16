@@ -9,7 +9,7 @@ Defines Go project structure, code organization, and dependency injection patter
 ## Project Structure
 
 ```text
-packages/<service>/
+packages/backend/<service>/
 ├── cmd/
 │   ├── api/           # API server entry point (main.go)
 │   ├── consumer/      # Kafka consumer entry point (main.go)
@@ -70,7 +70,7 @@ func (h *TransferHandler) CreateTransfer(c *gin.Context) {
     }
 
     ctx := c.Request.Context()
-    transfer, err := h.transferService.InitiateTransfer(ctx, req)
+    transfer, err := h.transferService.InitiateTransfer(ctx, req, c.GetHeader("Idempotency-Key"))
     if err != nil {
         writeGinError(c, err, getRequestID(c))
         return
@@ -84,7 +84,7 @@ func (h *TransferHandler) CreateTransfer(c *gin.Context) {
 
 ```go
 // internal/services/transfer.go
-func (s *TransferService) InitiateTransfer(ctx context.Context, req CreateTransferRequest) (*TransferResponse, error) {
+func (s *TransferService) InitiateTransfer(ctx context.Context, req CreateTransferRequest, idempotencyKey string) (*TransferResponse, error) {
     // 1. Validate inputs
     // 2. Check account ownership
     // 3. Validate sufficient funds
@@ -107,7 +107,7 @@ func (r *AccountRepository) GetByUserID(ctx context.Context, userID uuid.UUID) (
 
 ### Dependency Injection
 
-Repositories → Services → Handlers → Router (`gin.New()`). Dependencies are constructed in `cmd/<service>/main.go` and injected downward:
+Repositories → Services → Handlers → Router (`gin.New()`). Dependencies are constructed in `cmd/api/main.go` and injected downward:
 
 ```go
 // cmd/api/main.go

@@ -39,13 +39,12 @@ func TestTransferService_InitiateTransfer_Success(t *testing.T) {
     svc := NewTransferService(mockRepo, nil, testLogger)
 
     req := CreateTransferRequest{
-        UserID:             "user-1",
+        UserID:               "user-1",
         DestinationAccountID: "acc-2",
-        AmountCents:        5000,
-        IdempotencyKey:     "idem-123",
+        AmountCents:          5000,
     }
 
-    resp, err := svc.InitiateTransfer(context.Background(), req)
+    resp, err := svc.InitiateTransfer(context.Background(), req, "idem-123")
 
     assert.NoError(t, err)
     assert.Equal(t, "pending", resp.Status)
@@ -61,17 +60,16 @@ func TestTransferService_InitiateTransfer_InsufficientFunds(t *testing.T) {
     svc := NewTransferService(mockRepo, nil, testLogger)
 
     req := CreateTransferRequest{
-        UserID:             "user-1",
+        UserID:               "user-1",
         DestinationAccountID: "acc-2",
-        AmountCents:        5000,
-        IdempotencyKey:     "idem-123",
+        AmountCents:          5000,
     }
 
-    resp, err := svc.InitiateTransfer(context.Background(), req)
+    resp, err := svc.InitiateTransfer(context.Background(), req, "idem-123")
 
     assert.Error(t, err)
     assert.Nil(t, resp)
-    assert.Contains(t, err.Error(), "insufficient funds")
+    assert.Contains(t, err.Error(), "Insufficient funds")
 }
 ```
 
@@ -114,7 +112,7 @@ func TestAccountRepository_DebitPreventsNegativeBalance(t *testing.T) {
     hosts := strings.Split(os.Getenv("CASSANDRA_CONTACT_POINTS"), ",")
     cluster := gocql.ClusterConfig{
         Hosts:    hosts,
-        Keyspace: "neo_bank_test",
+        Keyspace: "account_keyspace_test",  // each service uses its own *_test keyspace
         Timeout:  10 * time.Second,
     }
     session, err := cluster.CreateSession()

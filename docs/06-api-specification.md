@@ -28,6 +28,8 @@ NEO Bank is decomposed into independently deployable microservices. Each service
 
 All service OpenAPI files live in [`./06-api-specification/`](./06-api-specification/). Each file is independently versioned and deployable with its service.
 
+The Account Service also consumes saga commands and emits result events over Kafka; its async contract is specified separately in [`account-service-asyncapi.yaml`](./06-api-specification/account-service/account-service-asyncapi.yaml) (see [§13](#13-asynchronous-command--event-contracts)).
+
 ## 3. Base URL
 
 - Development: `http://localhost:8080/api/v1`
@@ -94,7 +96,7 @@ All error responses follow this structure:
 
 ## 7. Idempotency
 
-All mutating operations (POST, PUT, DELETE) support idempotency via the `Idempotency-Key` header.
+The canonical idempotency mechanism is the `Idempotency-Key` request **header**; the key is never sent in the request body.
 
 **Idempotency-Key header:**
 
@@ -102,13 +104,18 @@ All mutating operations (POST, PUT, DELETE) support idempotency via the `Idempot
 Idempotency-Key: <unique-key>
 ```
 
-If a request with the same idempotency key is repeated, the API returns the cached response from the original request without re-executing the operation.
+- `Idempotency-Key` is **required** on `POST /api/v1/transfers`.
+- It is optional but supported on other mutating endpoints.
+- Format: 1–255 characters matching `[a-zA-Z0-9_-]`.
+- Repeating a request with the same key and an **identical payload** returns the cached original response (status code and body) without re-executing the operation.
+- Reusing the key with a **different payload** returns `409 IDEMPOTENCY_KEY_EXISTS`.
+- Idempotency keys expire after a configurable period (default: 24 hours).
 
-Idempotency keys expire after a configurable period (default: 24 hours).
+The request body for `POST /api/v1/transfers` is `{ destinationAccountId, amountCents }`. The source account is derived server-side from the authenticated user; clients never supply a source account or currency.
 
 ## 8. Rate Limiting
 
-Rate limits are enforced per IP for auth endpoints and per user for authenticated endpoints:
+Rate limits are enforced **at the API Gateway** (the only component that sees every request), per IP for public auth endpoints and per authenticated user (JWT subject) for protected endpoints:
 
 | Endpoint                | Rate Limit                                           |
 | ----------------------- | ---------------------------------------------------- |
@@ -183,3 +190,26 @@ Clients should include this ID in support requests.
 - All CQL queries use parameterised queries
 - No sensitive data (passwords, tokens) in logs or error responses
 - TLS 1.2+ enforced for all HTTP traffic
+
+## 13. Asynchronous Command & Event Contracts
+
+Financial operations never run inside web request handlers. Transfers execute as a saga on the `transfers` Kafka topic; each service owns the commands it consumes and the events it produces. The balanced picture is:
+
+| Direction | Message | Producer | Consumer(s) |
+| --------- | ------- | -------- | ----------- |
+| Command | `account.debit.requested` | Transfer Service | Account Service |
+| Command | `account.credit.requested` | Transfer Service | Account Service |
+| Event | `account.debited` / `account.debit.failed` | Account Service | Transfer Service, Transaction Service |
+| Event | `account.credited` / `account.credit.failed` | Account Service | Transfer Service, Transaction Service |
+| Event | `transfer.initiated` | Transfer Service | Transfer Service (saga continuation) |
+| Event | `transfer.completed` / `transfer.failed` | Transfer Service | Transaction Service |
+
+Rules:
+
+- Messages are keyed by **source account ID** so all movements for one account stay ordered on one partition.
+- Every message carries `eventId`, `eventType`, `eventVersion`, `transferId`, `idempotencyKey`, `correlationId`, `causationId`, and OccursAt-style timestamps; consumers are idempotent per `idempotencyKey`.
+- The **Account Service** is the only consumer allowed to mutate a balance; the **Transfer Service** owns saga state and compensation; the **Transaction Service** only projects read-model rows.
+- Non-retryable messages are routed to `transfers.dlq`; consumers checkpoint offsets only after success.
+- The Account Service's command/event contract is specified as AsyncAPI in [`account-service-openapi` companion — `account-service-asyncapi.yaml`](./06-api-specification/account-service/account-service-asyncapi.yaml).
+
+Service-to-service reads (for example the Transfer Service's read-only pre-check that a destination account exists) use the owning service's REST API through the gateway; balance mutations use the async commands above.

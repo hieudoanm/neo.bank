@@ -62,7 +62,7 @@ All test data is synthetic and deterministic:
 - Deterministic and reproducible — same seed, same result every time.
 - Clean up after tests (truncate tables, reset offsets).
 - Fixtures are version-controlled alongside test code.
-- Balance changes in fixtures respect financial integrity rules (non-negative, atomic debit/credit pairs).
+- Balance changes in fixtures respect financial integrity rules (non-negative balances, compensated debit/credit pairs).
 
 ## 3. Test Seeds
 
@@ -71,7 +71,7 @@ Seed data is loaded before test suites via a seed script:
 ### Seed Script
 
 ```go
-// packages/backend/tests/seeds/seed.go
+// packages/backend/<service>/tests/seeds/seed.go
 func SeedTestData(session *gocql.Session) error {
     // Create test accounts
     // Create test users

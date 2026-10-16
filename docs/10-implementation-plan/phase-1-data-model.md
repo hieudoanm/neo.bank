@@ -23,7 +23,7 @@ Define and implement the Cassandra data model, migration runner, and test fixtur
 - [ ] Choose partition keys and clustering columns optimised for query-first access patterns.
 - [ ] Write CQL migration scripts (`001_create_accounts.cql`, `002_create_users.cql`, etc.).
 - [ ] Implement migration runner in Go (reads `.cql` files, tracks applied migrations).
-- [ ] Create test keyspace `neo_bank_test` in Cassandra (replication factor 1).
+- [ ] Create the per-service test keyspaces (`auth_keyspace_test`, `account_keyspace_test`, `transfer_keyspace_test`, `transaction_keyspace_test`) in Cassandra (`SimpleStrategy`, replication factor 1).
 - [ ] Write seed script for deterministic synthetic test data.
 - [ ] Verify schema with manual testing (CQL shell or Go client).
 - [ ] Document table definitions, indexes, and access patterns in `05-data-model.md`.

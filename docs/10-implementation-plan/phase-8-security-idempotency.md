@@ -13,6 +13,7 @@ Implement comprehensive security and idempotency tests. Phase 8 verifies that fi
 | Deliverable | Description |
 |-------------|-------------|
 | Security tests | Unauthorised access, rate limiting, input validation |
+| API Gateway rate limiting | Per-IP limits on the public auth routes and per-user (JWT subject) limits on authenticated routes; `429 RATE_LIMITED` in the error envelope with a `Retry-After` header (limits in [`06-api-specification.md` §8](../06-api-specification.md#8-rate-limiting)) |
 | Idempotency tests | Duplicate requests, duplicate Kafka events |
 | Performance tests | API response times, consumer throughput |
 | Security scans | Trivy filesystem and image scanning in CI |
@@ -22,6 +23,7 @@ Implement comprehensive security and idempotency tests. Phase 8 verifies that fi
 
 - [ ] Write security tests for unauthorised account access (404, not 403).
 - [ ] Write security tests for SQL/CQL injection prevention.
+- [ ] Implement API Gateway rate limiting: per-IP buckets on the public auth routes and per-user (JWT subject) buckets on authenticated routes, returning `429 RATE_LIMITED` with `Retry-After` and login lockout after 5 failed attempts in 15 minutes.
 - [ ] Write security tests for rate limiting (5 failures per 15 minutes).
 - [ ] Write idempotency tests for duplicate transfer requests (same key).
 - [ ] Write idempotency tests for duplicate Kafka events (at-least-once).
@@ -34,7 +36,7 @@ Implement comprehensive security and idempotency tests. Phase 8 verifies that fi
 
 - Unauthorised account access returns `404` (no information leakage).
 - SQL/CQL injection attempts rejected with `400 VALIDATION_ERROR`.
-- Rate limiting enforced on auth and authenticated endpoints.
+- Rate limiting enforced at the API Gateway on auth (per IP) and authenticated (per user) endpoints.
 - Duplicate transfer requests with same idempotency key handled correctly.
 - Duplicate Kafka events processed idempotently (no double debit/credit).
 - Performance targets met (API response times, consumer throughput).

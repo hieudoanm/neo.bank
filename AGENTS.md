@@ -31,12 +31,14 @@ When an implementation and a document disagree, stop and resolve the disagreemen
 ```text
 neo.bank/
 ├── packages/
-│   ├── frontend/            # React + TypeScript frontend
-│   ├── api-gateway/         # Go API gateway (routing, auth enforcement, rate limiting)
-│   ├── auth-service/        # Go Auth Service (auth_keyspace: users, refresh_tokens, audit_events)
-│   ├── account-service/     # Go Account Service (account_keyspace: accounts, audit_events)
-│   ├── transfer-service/    # Go Transfer Service — saga orchestrator (transfer_keyspace: transfers, transfers_by_account, idempotency_keys, audit_events)
-│   └── transaction-service/ # Go Transaction Service — read model (transaction_keyspace: transactions, audit_events)
+│   ├── backend/
+│   │   ├── api-gateway/      # Go API gateway (routing, auth enforcement, rate limiting)
+│   │   ├── auth/             # Go Auth Service (auth_keyspace: users, refresh_tokens, audit_events)
+│   │   ├── accounts/         # Go Account Service (account_keyspace: accounts, accounts_by_user, processed_commands, audit_events)
+│   │   ├── transfer/         # Go Transfer Service — saga orchestrator (transfer_keyspace: transfers, transfers_by_account, idempotency_keys, audit_events)
+│   │   └── transactions/     # Go Transaction Service — read model (transaction_keyspace: transactions, audit_events)
+│   └── frontend/
+│       └── app/              # React + TypeScript frontend
 ├── infrastructure/          # Terraform (AWS/GCP) and Kubernetes manifests (infrastructure/kubernetes/<service>/)
 ├── docker-compose.yaml      # Local topology: gateway + 4 services + frontend + cassandra + kafka + zookeeper
 ├── Makefile                 # Convenience commands
@@ -66,17 +68,19 @@ Run the relevant checks through the root Makefile or CI pipeline. Never weaken a
 
 ### Structure
 
-Each service lives in `packages/<service>/` and is an independent Go module. It owns its binary, its CQL migrations, and its Cassandra keyspace.
+Each service lives in `packages/backend/<service>/` and is an independent Go module. It owns its binary, its CQL migrations, and its Cassandra keyspace.
 
-- `cmd/<service>/main.go` — service entry point (API server, consumer, or migrator as applicable).
+- `cmd/api/main.go` — HTTP API server entry point.
+- `cmd/consumer/main.go` — Kafka consumer entry point.
+- `cmd/migrate/main.go` — Cassandra migration runner.
 - `internal/api/` — routes, middleware, handlers. Keep handlers thin.
 - `internal/core/` — configuration, logging, errors, security.
 - `internal/db/` — Cassandra connection and CQL migrations for this service's own keyspace.
 - `internal/repositories/` — explicit CQL queries and row mapping only.
 - `internal/services/` — business operations coordinating repositories.
 - `internal/models/` — Go structs for domain entities.
-- `internal/consumers/` — Kafka consumer logic.
-- `internal/producers/` — Kafka producer logic.
+- `internal/consumer/` — Kafka consumer logic.
+- `internal/producer/` — Kafka producer logic.
 
 Kubernetes manifests for each service live under `infrastructure/kubernetes/<service>/`. Health endpoints are served per service: gateway exposes `GET /healthz` and `GET /readyz` at the root, outside `/api/v1`.
 

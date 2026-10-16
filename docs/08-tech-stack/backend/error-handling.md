@@ -172,7 +172,7 @@ func (h *TransferHandler) CreateTransfer(c *gin.Context) {
     }
 
     ctx := c.Request.Context()
-    transfer, err := h.transferService.InitiateTransfer(ctx, req)
+    transfer, err := h.transferService.InitiateTransfer(ctx, req, c.GetHeader("Idempotency-Key"))
     if err != nil {
         writeGinError(c, err, getRequestID(c))
         return
@@ -185,7 +185,7 @@ func (h *TransferHandler) CreateTransfer(c *gin.Context) {
 ### Service pattern
 
 ```go
-func (s *TransferService) InitiateTransfer(ctx context.Context, req CreateTransferRequest) (*TransferResponse, error) {
+func (s *TransferService) InitiateTransfer(ctx context.Context, req CreateTransferRequest, idempotencyKey string) (*TransferResponse, error) {
     if req.Amount <= 0 {
         return nil, fmt.Errorf("validate amount: %w", errors.ErrInvalidAmount)
     }

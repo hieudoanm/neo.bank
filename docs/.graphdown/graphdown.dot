@@ -136,6 +136,7 @@ digraph graphdown {
   "04-architecture/svg/02-account-registration-flow.svg" [label="02-account-registration-flow.svg", shape=ellipse, style=filled, fillcolor="#f5b942"];
   "04-architecture/svg/03-transfer-saga-flow.svg" [label="03-transfer-saga-flow.svg", shape=ellipse, style=filled, fillcolor="#f5b942"];
   "06-api-specification" [label="06-api-specification", shape=ellipse, style=filled, fillcolor="#f5b942"];
+  "06-api-specification/account-service/account-service-asyncapi.yaml" [label="account-service-asyncapi.yaml", shape=ellipse, style=filled, fillcolor="#f5b942"];
   "06-api-specification/account-service/account-service-openapi.yaml" [label="account-service-openapi.yaml", shape=ellipse, style=filled, fillcolor="#f5b942"];
   "06-api-specification/api-gateway/api-gateway-openapi.yaml" [label="api-gateway-openapi.yaml", shape=ellipse, style=filled, fillcolor="#f5b942"];
   "06-api-specification/auth-service/auth-service-openapi.yaml" [label="auth-service-openapi.yaml", shape=ellipse, style=filled, fillcolor="#f5b942"];
@@ -191,6 +192,8 @@ digraph graphdown {
   "01-requirements/functional-requirements.md" -> "06-api-specification.md" [color="#333333", arrowsize=0.6];
   "01-requirements/non-functional-requirements.md" -> "04-architecture.md" [color="#333333", arrowsize=0.6];
   "01-requirements/non-functional-requirements.md" -> "06-api-specification.md" [color="#333333", arrowsize=0.6];
+  "01-requirements/non-functional-requirements.md" -> "08-tech-stack/infrastructure/docker.md" [color="#333333", arrowsize=0.6];
+  "01-requirements/non-functional-requirements.md" -> "11-deployment/local-development.md" [color="#333333", arrowsize=0.6];
   "01-requirements/non-functional-requirements.md" -> "11-deployment.md" [color="#333333", arrowsize=0.6];
   "01-requirements/non-functional-requirements.md" -> "12-operations.md" [color="#333333", arrowsize=0.6];
   "01-requirements/non-functional-requirements.md" -> "08-tech-stack/infrastructure/kubernetes.md" [color="#333333", arrowsize=0.6];
@@ -229,6 +232,7 @@ digraph graphdown {
   "02-features/FEATURE-01-Account-Registration.md" -> "06-api-specification.md" [color="#333333", arrowsize=0.6];
   "02-features/FEATURE-01-Account-Registration.md" -> "08-tech-stack/backend/jwt.md" [color="#333333", arrowsize=0.6];
   "02-features/FEATURE-01-Account-Registration.md" -> "04-architecture.md" [color="#333333", arrowsize=0.6];
+  "02-features/FEATURE-02-Authentication.md" -> "05-data-model/account-service/README.md" [color="#333333", arrowsize=0.6];
   "02-features/FEATURE-02-Authentication.md" -> "01-requirements/non-functional-requirements.md" [color="#333333", arrowsize=0.6];
   "02-features/FEATURE-02-Authentication.md" -> "01-requirements/non-functional-requirements.md" [color="#333333", arrowsize=0.6];
   "02-features/FEATURE-02-Authentication.md" -> "01-requirements/functional-requirements.md" [color="#333333", arrowsize=0.6];
@@ -238,7 +242,7 @@ digraph graphdown {
   "02-features/FEATURE-02-Authentication.md" -> "04-architecture.md" [color="#333333", arrowsize=0.6];
   "02-features/FEATURE-03-Balance-Inquiry.md" -> "01-requirements/non-functional-requirements.md" [color="#333333", arrowsize=0.6];
   "02-features/FEATURE-03-Balance-Inquiry.md" -> "01-requirements/functional-requirements.md" [color="#333333", arrowsize=0.6];
-  "02-features/FEATURE-03-Balance-Inquiry.md" -> "03-user-stories/US-003.md" [color="#333333", arrowsize=0.6];
+  "02-features/FEATURE-03-Balance-Inquiry.md" -> "03-user-stories/US-004.md" [color="#333333", arrowsize=0.6];
   "02-features/FEATURE-03-Balance-Inquiry.md" -> "06-api-specification.md" [color="#333333", arrowsize=0.6];
   "02-features/FEATURE-03-Balance-Inquiry.md" -> "04-architecture.md" [color="#333333", arrowsize=0.6];
   "02-features/FEATURE-03-Balance-Inquiry.md" -> "05-data-model.md" [color="#333333", arrowsize=0.6];
@@ -247,13 +251,13 @@ digraph graphdown {
   "02-features/FEATURE-04-Fund-Transfer.md" -> "01-requirements/non-functional-requirements.md" [color="#333333", arrowsize=0.6];
   "02-features/FEATURE-04-Fund-Transfer.md" -> "01-requirements/non-functional-requirements.md" [color="#333333", arrowsize=0.6];
   "02-features/FEATURE-04-Fund-Transfer.md" -> "01-requirements/functional-requirements.md" [color="#333333", arrowsize=0.6];
-  "02-features/FEATURE-04-Fund-Transfer.md" -> "03-user-stories/US-004.md" [color="#333333", arrowsize=0.6];
+  "02-features/FEATURE-04-Fund-Transfer.md" -> "03-user-stories/US-005.md" [color="#333333", arrowsize=0.6];
   "02-features/FEATURE-04-Fund-Transfer.md" -> "06-api-specification.md" [color="#333333", arrowsize=0.6];
   "02-features/FEATURE-04-Fund-Transfer.md" -> "04-architecture.md" [color="#333333", arrowsize=0.6];
   "02-features/FEATURE-04-Fund-Transfer.md" -> "08-tech-stack/backend/kafka.md" [color="#333333", arrowsize=0.6];
   "02-features/FEATURE-04-Fund-Transfer.md" -> "02-features/FEATURE-07-Idempotency.md" [color="#333333", arrowsize=0.6];
   "02-features/FEATURE-05-Transaction-History.md" -> "01-requirements/functional-requirements.md" [color="#333333", arrowsize=0.6];
-  "02-features/FEATURE-05-Transaction-History.md" -> "03-user-stories/US-005.md" [color="#333333", arrowsize=0.6];
+  "02-features/FEATURE-05-Transaction-History.md" -> "03-user-stories/US-008.md" [color="#333333", arrowsize=0.6];
   "02-features/FEATURE-05-Transaction-History.md" -> "06-api-specification.md" [color="#333333", arrowsize=0.6];
   "02-features/FEATURE-05-Transaction-History.md" -> "04-architecture.md" [color="#333333", arrowsize=0.6];
   "02-features/FEATURE-05-Transaction-History.md" -> "05-data-model.md" [color="#333333", arrowsize=0.6];
@@ -314,6 +318,7 @@ digraph graphdown {
   "03-user-stories/US-004.md" -> "06-api-specification.md" [color="#333333", arrowsize=0.6];
   "03-user-stories/US-004.md" -> "03-user-stories/US-009.md" [color="#333333", arrowsize=0.6];
   "03-user-stories/US-004.md" -> "03-user-stories/US-012.md" [color="#333333", arrowsize=0.6];
+  "03-user-stories/US-005.md" -> "05-data-model/transfer-service/README.md" [color="#333333", arrowsize=0.6];
   "03-user-stories/US-005.md" -> "02-features/FEATURE-04-Fund-Transfer.md" [color="#333333", arrowsize=0.6];
   "03-user-stories/US-005.md" -> "01-requirements/functional-requirements.md" [color="#333333", arrowsize=0.6];
   "03-user-stories/US-005.md" -> "01-requirements/non-functional-requirements.md" [color="#333333", arrowsize=0.6];
@@ -348,6 +353,7 @@ digraph graphdown {
   "03-user-stories/US-009.md" -> "03-user-stories/US-004.md" [color="#333333", arrowsize=0.6];
   "03-user-stories/US-009.md" -> "03-user-stories/US-005.md" [color="#333333", arrowsize=0.6];
   "03-user-stories/US-009.md" -> "03-user-stories/US-008.md" [color="#333333", arrowsize=0.6];
+  "03-user-stories/US-010.md" -> "05-data-model/transfer-service/README.md" [color="#333333", arrowsize=0.6];
   "03-user-stories/US-010.md" -> "02-features/FEATURE-07-Idempotency.md" [color="#333333", arrowsize=0.6];
   "03-user-stories/US-010.md" -> "01-requirements/functional-requirements.md" [color="#333333", arrowsize=0.6];
   "03-user-stories/US-010.md" -> "01-requirements/functional-requirements.md" [color="#333333", arrowsize=0.6];
@@ -362,6 +368,7 @@ digraph graphdown {
   "03-user-stories/US-011.md" -> "06-api-specification.md" [color="#333333", arrowsize=0.6];
   "03-user-stories/US-011.md" -> "03-user-stories/US-005.md" [color="#333333", arrowsize=0.6];
   "03-user-stories/US-011.md" -> "03-user-stories/US-006.md" [color="#333333", arrowsize=0.6];
+  "03-user-stories/US-012.md" -> "05-data-model/account-service/README.md" [color="#333333", arrowsize=0.6];
   "03-user-stories/US-012.md" -> "02-features/FEATURE-04-Fund-Transfer.md" [color="#333333", arrowsize=0.6];
   "03-user-stories/US-012.md" -> "01-requirements/functional-requirements.md" [color="#333333", arrowsize=0.6];
   "03-user-stories/US-012.md" -> "01-requirements/non-functional-requirements.md" [color="#333333", arrowsize=0.6];
@@ -386,11 +393,15 @@ digraph graphdown {
   "04-architecture.md" -> "04-architecture/svg/02-account-registration-flow.svg" [color="#333333", arrowsize=0.6];
   "04-architecture.md" -> "04-architecture/mmd/03-transfer-saga-flow.mmd" [color="#333333", arrowsize=0.6];
   "04-architecture.md" -> "04-architecture/svg/03-transfer-saga-flow.svg" [color="#333333", arrowsize=0.6];
+  "04-architecture.md" -> "05-data-model.md" [color="#333333", arrowsize=0.6];
   "05-data-model.md" -> "05-data-model/auth-service/README.md" [color="#333333", arrowsize=0.6];
   "05-data-model.md" -> "05-data-model/account-service/README.md" [color="#333333", arrowsize=0.6];
   "05-data-model.md" -> "05-data-model/transfer-service/README.md" [color="#333333", arrowsize=0.6];
   "05-data-model.md" -> "05-data-model/transaction-service/README.md" [color="#333333", arrowsize=0.6];
+  "05-data-model.md" -> "11-deployment/cloud-deployment-aws.md" [color="#333333", arrowsize=0.6];
   "05-data-model.md" -> "12-operations/backup-recovery.md" [color="#333333", arrowsize=0.6];
+  "05-data-model.md" -> "12-operations/backup-recovery.md" [color="#333333", arrowsize=0.6];
+  "05-data-model/account-service/README.md" -> "05-data-model.md" [color="#333333", arrowsize=0.6];
   "05-data-model/account-service/README.md" -> "05-data-model/shared/README.md" [color="#333333", arrowsize=0.6];
   "05-data-model/account-service/README.md" -> "05-data-model.md" [color="#333333", arrowsize=0.6];
   "05-data-model/account-service/README.md" -> "05-data-model/shared/README.md" [color="#333333", arrowsize=0.6];
@@ -430,6 +441,8 @@ digraph graphdown {
   "06-api-specification.md" -> "06-api-specification/transfer-service/transfer-service-openapi.yaml" [color="#333333", arrowsize=0.6];
   "06-api-specification.md" -> "06-api-specification/transaction-service/transaction-service-openapi.yaml" [color="#333333", arrowsize=0.6];
   "06-api-specification.md" -> "06-api-specification" [color="#333333", arrowsize=0.6];
+  "06-api-specification.md" -> "06-api-specification/account-service/account-service-asyncapi.yaml" [color="#333333", arrowsize=0.6];
+  "06-api-specification.md" -> "06-api-specification/account-service/account-service-asyncapi.yaml" [color="#333333", arrowsize=0.6];
   "07-ui-ux-design.md" -> "07-ui-ux-design/system/design-tokens.md" [color="#333333", arrowsize=0.6];
   "07-ui-ux-design.md" -> "07-ui-ux-design/prototypes/README.md" [color="#333333", arrowsize=0.6];
   "07-ui-ux-design.md" -> "07-ui-ux-design/brand/README.md" [color="#333333", arrowsize=0.6];
@@ -634,6 +647,7 @@ digraph graphdown {
   "08-tech-stack/backend/jwt.md" -> "08-tech-stack/backend/README.md" [color="#333333", arrowsize=0.6];
   "08-tech-stack/backend/kafka.md" -> "08-tech-stack.md" [color="#333333", arrowsize=0.6];
   "08-tech-stack/backend/kafka.md" -> "08-tech-stack/backend/README.md" [color="#333333", arrowsize=0.6];
+  "08-tech-stack/backend/kafka.md" -> "01-requirements/non-functional-requirements.md" [color="#333333", arrowsize=0.6];
   "08-tech-stack/backend/observability.md" -> "08-tech-stack/backend/go.md" [color="#333333", arrowsize=0.6];
   "08-tech-stack/backend/observability.md" -> "03-user-stories/US-013.md" [color="#333333", arrowsize=0.6];
   "08-tech-stack/backend/observability.md" -> "08-tech-stack/backend/go.md" [color="#333333", arrowsize=0.6];
@@ -827,6 +841,7 @@ digraph graphdown {
   "08-tech-stack/infrastructure/docker.md" -> "11-deployment.md" [color="#333333", arrowsize=0.6];
   "08-tech-stack/infrastructure/docker.md" -> "08-tech-stack/backend/cassandra.md" [color="#333333", arrowsize=0.6];
   "08-tech-stack/infrastructure/docker.md" -> "08-tech-stack/frontend/core/vite.md" [color="#333333", arrowsize=0.6];
+  "08-tech-stack/infrastructure/docker.md" -> "01-requirements/non-functional-requirements.md" [color="#333333", arrowsize=0.6];
   "08-tech-stack/infrastructure/docker.md" -> "08-tech-stack/backend/cassandra.md" [color="#333333", arrowsize=0.6];
   "08-tech-stack/infrastructure/docker.md" -> "08-tech-stack/infrastructure/kubernetes.md" [color="#333333", arrowsize=0.6];
   "08-tech-stack/infrastructure/docker.md" -> "08-tech-stack/infrastructure/terraform.md" [color="#333333", arrowsize=0.6];
@@ -900,6 +915,7 @@ digraph graphdown {
   "09-testing-strategy/05-test-data-management.md" -> "08-tech-stack/backend/testing.md" [color="#333333", arrowsize=0.6];
   "09-testing-strategy/05-test-data-management.md" -> "05-data-model.md" [color="#333333", arrowsize=0.6];
   "09-testing-strategy/05-test-data-management.md" -> "08-tech-stack/backend/kafka.md" [color="#333333", arrowsize=0.6];
+  "09-testing-strategy/06-test-execution.md" -> "08-tech-stack/infrastructure/github-actions.md" [color="#333333", arrowsize=0.6];
   "09-testing-strategy/06-test-execution.md" -> "09-testing-strategy.md" [color="#333333", arrowsize=0.6];
   "09-testing-strategy/06-test-execution.md" -> "08-tech-stack/backend/testing.md" [color="#333333", arrowsize=0.6];
   "09-testing-strategy/06-test-execution.md" -> "08-tech-stack/frontend/testing/vitest.md" [color="#333333", arrowsize=0.6];
@@ -956,8 +972,8 @@ digraph graphdown {
   "10-implementation-plan/milestones.md" -> "03-user-stories/US-002.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/milestones.md" -> "02-features/FEATURE-03-Balance-Inquiry.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/milestones.md" -> "02-features/FEATURE-04-Fund-Transfer.md" [color="#333333", arrowsize=0.6];
-  "10-implementation-plan/milestones.md" -> "03-user-stories/US-003.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/milestones.md" -> "03-user-stories/US-004.md" [color="#333333", arrowsize=0.6];
+  "10-implementation-plan/milestones.md" -> "03-user-stories/US-005.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/milestones.md" -> "02-features/FEATURE-05-Transaction-History.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/milestones.md" -> "02-features/FEATURE-06-Security-and-Access-Control.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/milestones.md" -> "02-features/FEATURE-07-Idempotency.md" [color="#333333", arrowsize=0.6];
@@ -971,6 +987,7 @@ digraph graphdown {
   "10-implementation-plan/milestones.md" -> "10-implementation-plan.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/milestones.md" -> "10-implementation-plan" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-0-foundation.md" -> "10-implementation-plan.md" [color="#333333", arrowsize=0.6];
+  "10-implementation-plan/phase-0-foundation.md" -> "06-api-specification.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-0-foundation.md" -> "10-implementation-plan/definition-of-done.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-0-foundation.md" -> "08-tech-stack/infrastructure/github-actions.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-0-foundation.md" -> "10-implementation-plan/definition-of-done.md" [color="#333333", arrowsize=0.6];
@@ -1001,13 +1018,13 @@ digraph graphdown {
   "10-implementation-plan/phase-3-balance-inquiry.md" -> "10-implementation-plan.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-3-balance-inquiry.md" -> "10-implementation-plan/phase-2-authentication.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-3-balance-inquiry.md" -> "02-features/FEATURE-03-Balance-Inquiry.md" [color="#333333", arrowsize=0.6];
-  "10-implementation-plan/phase-3-balance-inquiry.md" -> "03-user-stories/US-003.md" [color="#333333", arrowsize=0.6];
+  "10-implementation-plan/phase-3-balance-inquiry.md" -> "03-user-stories/US-004.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-3-balance-inquiry.md" -> "06-api-specification.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-3-balance-inquiry.md" -> "08-tech-stack/backend/structure.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-3-balance-inquiry.md" -> "10-implementation-plan/definition-of-done.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-4-transfer-initiation.md" -> "10-implementation-plan.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-4-transfer-initiation.md" -> "02-features/FEATURE-04-Fund-Transfer.md" [color="#333333", arrowsize=0.6];
-  "10-implementation-plan/phase-4-transfer-initiation.md" -> "03-user-stories/US-004.md" [color="#333333", arrowsize=0.6];
+  "10-implementation-plan/phase-4-transfer-initiation.md" -> "03-user-stories/US-005.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-4-transfer-initiation.md" -> "06-api-specification.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-4-transfer-initiation.md" -> "08-tech-stack/backend/kafka.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-4-transfer-initiation.md" -> "10-implementation-plan/definition-of-done.md" [color="#333333", arrowsize=0.6];
@@ -1015,7 +1032,10 @@ digraph graphdown {
   "10-implementation-plan/phase-5-kafka-consumer.md" -> "02-features/FEATURE-04-Fund-Transfer.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-5-kafka-consumer.md" -> "02-features/FEATURE-07-Idempotency.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-5-kafka-consumer.md" -> "04-architecture.md" [color="#333333", arrowsize=0.6];
+  "10-implementation-plan/phase-5-kafka-consumer.md" -> "06-api-specification.md" [color="#333333", arrowsize=0.6];
+  "10-implementation-plan/phase-5-kafka-consumer.md" -> "06-api-specification/account-service/account-service-asyncapi.yaml" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-5-kafka-consumer.md" -> "08-tech-stack/backend/kafka.md" [color="#333333", arrowsize=0.6];
+  "10-implementation-plan/phase-5-kafka-consumer.md" -> "08-tech-stack/backend/cassandra.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-5-kafka-consumer.md" -> "09-testing-strategy/08-critical-test-scenarios.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-5-kafka-consumer.md" -> "10-implementation-plan/definition-of-done.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-6-transfer-status.md" -> "10-implementation-plan.md" [color="#333333", arrowsize=0.6];
@@ -1028,6 +1048,7 @@ digraph graphdown {
   "10-implementation-plan/phase-7-transaction-history.md" -> "08-tech-stack/frontend/core/tanstack-query.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-7-transaction-history.md" -> "10-implementation-plan/definition-of-done.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-8-security-idempotency.md" -> "10-implementation-plan.md" [color="#333333", arrowsize=0.6];
+  "10-implementation-plan/phase-8-security-idempotency.md" -> "06-api-specification.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-8-security-idempotency.md" -> "09-testing-strategy/08-critical-test-scenarios.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-8-security-idempotency.md" -> "01-requirements/non-functional-requirements.md" [color="#333333", arrowsize=0.6];
   "10-implementation-plan/phase-8-security-idempotency.md" -> "10-implementation-plan/definition-of-done.md" [color="#333333", arrowsize=0.6];
@@ -1048,8 +1069,11 @@ digraph graphdown {
   "11-deployment.md" -> "11-deployment/cloud-deployment-gcp.md" [color="#333333", arrowsize=0.6];
   "11-deployment/cloud-deployment-aws.md" -> "08-tech-stack/infrastructure/kubernetes.md" [color="#333333", arrowsize=0.6];
   "11-deployment/cloud-deployment-aws.md" -> "11-deployment/cloud-deployment-gcp.md" [color="#333333", arrowsize=0.6];
+  "11-deployment/cloud-deployment-aws.md" -> "05-data-model.md" [color="#333333", arrowsize=0.6];
   "11-deployment/cloud-deployment-aws.md" -> "08-tech-stack/infrastructure/kubernetes.md" [color="#333333", arrowsize=0.6];
   "11-deployment/cloud-deployment-gcp.md" -> "08-tech-stack/infrastructure/kubernetes.md" [color="#333333", arrowsize=0.6];
+  "11-deployment/local-development.md" -> "08-tech-stack/infrastructure/docker.md" [color="#333333", arrowsize=0.6];
+  "11-deployment/local-development.md" -> "01-requirements/non-functional-requirements.md" [color="#333333", arrowsize=0.6];
   "12-operations.md" -> "12-operations/backup-recovery.md" [color="#333333", arrowsize=0.6];
   "12-operations.md" -> "12-operations/monitoring-alerting.md" [color="#333333", arrowsize=0.6];
   "12-operations.md" -> "12-operations/security.md" [color="#333333", arrowsize=0.6];

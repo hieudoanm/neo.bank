@@ -81,26 +81,26 @@ This document specifies the functional requirements for NEO Bank, organized by b
 
 ## Fund Transfer
 
-| ID     | Requirement                                                                                                           | Priority |
-| ------ | --------------------------------------------------------------------------------------------------------------------- | -------- |
-| FR-030 | The system shall allow an authenticated user to initiate a transfer to another account.                               | Must     |
-| FR-031 | The transfer request shall require: destination account ID, amount in minor units (positive), idempotency key.        | Must     |
-| FR-032 | The system shall validate that the source account has sufficient funds.                                               | Must     |
-| FR-033 | The system shall validate that the destination account exists.                                                        | Must     |
-| FR-034 | The system shall reject transfers to the same account (source == destination).                                        | Must     |
-| FR-035 | The system shall reject transfers with amount ≤ 0.                                                                    | Must     |
-| FR-036 | The system shall publish a transfer event to Kafka with all transaction details.                                      | Must     |
-| FR-037 | The system shall return a transfer ID and initial status (pending) immediately.                                       | Must     |
-| FR-038 | The system shall process transfers asynchronously via Kafka consumers.                                                | Must     |
-| FR-039 | The consumer shall debit the source account and credit the destination account atomically (lightweight transaction).  | Must     |
-| FR-040 | The consumer shall update the transfer status to completed or failed.                                                 | Must     |
-| FR-041 | The consumer shall be idempotent: duplicate events with the same idempotency key shall not cause double debit/credit. | Must     |
-| FR-042 | The system shall provide a transfer status endpoint for polling.                                                      | Must     |
-| FR-043 | The system shall record a transaction entry for both source and destination accounts.                                 | Must     |
+| ID     | Requirement                                                                                                                                                                                                                     | Priority |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| FR-030 | The system shall allow an authenticated user to initiate a transfer to another account.                                                                                                                                         | Must     |
+| FR-031 | The transfer request shall require: destination account ID, amount in minor units (positive), and an `Idempotency-Key` request header. The source account is derived from the authenticated user, never supplied by the client. | Must     |
+| FR-032 | The system shall validate that the source account has sufficient funds.                                                                                                                                                         | Must     |
+| FR-033 | The system shall validate that the destination account exists.                                                                                                                                                                  | Must     |
+| FR-034 | The system shall reject transfers to the same account (source == destination).                                                                                                                                                  | Must     |
+| FR-035 | The system shall reject transfers with amount ≤ 0.                                                                                                                                                                              | Must     |
+| FR-036 | The system shall publish a transfer event to Kafka with all transaction details.                                                                                                                                                | Must     |
+| FR-037 | The system shall return a transfer ID and initial status (pending) immediately.                                                                                                                                                 | Must     |
+| FR-038 | The system shall process transfers asynchronously via Kafka consumers.                                                                                                                                                          | Must     |
+| FR-039 | The consumer shall apply the source debit and destination credit as separate atomic lightweight transactions (never allowing a negative balance); the saga coordinates them so a failed credit is compensated by reversing the debit. | Must     |
+| FR-040 | The consumer shall update the transfer status to completed or failed.                                                                                                                                                           | Must     |
+| FR-041 | The consumer shall be idempotent: duplicate events with the same idempotency key shall not cause double debit/credit.                                                                                                           | Must     |
+| FR-042 | The system shall provide a transfer status endpoint for polling.                                                                                                                                                                | Must     |
+| FR-043 | The system shall record a transaction entry for both source and destination accounts.                                                                                                                                           | Must     |
 
 **Acceptance criteria:**
 
-- Transfer endpoint: `POST /api/v1/transfers` with body `{ destinationAccountId, amountCents, idempotencyKey }`.
+- Transfer endpoint: `POST /api/v1/transfers` with headers `Authorization: Bearer <accessToken>` and `Idempotency-Key: <key>` (required), and body `{ destinationAccountId, amountCents }`. The source account is derived from the authenticated user; the client cannot supply a source account.
 - On initiation, returns `202 Accepted` with `{ transferId, status: "pending" }`.
 - Validation errors return `400 Bad Request` with error envelope reason codes (`INSUFFICIENT_FUNDS`, `SAME_ACCOUNT`, `INVALID_AMOUNT`, `ACCOUNT_NOT_FOUND` for a missing destination account).
 - Transfer events are published to the `transfers` Kafka topic, keyed by source account ID for ordering.
@@ -108,7 +108,7 @@ This document specifies the functional requirements for NEO Bank, organized by b
 - Status endpoint: `GET /api/v1/transfers/{transferId}` returns `{ transferId, status, amountCents, sourceAccountId, destinationAccountId, createdAt, updatedAt }`.
 - Duplicate idempotency keys return the original result without reprocessing.
 
-**Rationale:** Transfers are the core financial operation. Asynchronous processing via Kafka ensures financial operations never block web request handlers. Idempotency keys prevent double-charging on retry. Saga pattern with compensation ensures atomicity across services without distributed transactions.
+**Rationale:** Transfers are the core financial operation. Asynchronous processing via Kafka ensures financial operations never block web request handlers. Idempotency keys prevent double-charging on retry. The saga pattern with compensation makes transfers consistent across services (no funds lost or created) without distributed transactions.
 
 **See also:** [`US-005`](../03-user-stories/US-005.md), [`US-006`](../03-user-stories/US-006.md), [`US-007`](../03-user-stories/US-007.md), [`F-004`](../02-features/FEATURE-04-Fund-Transfer.md), [`F-007`](../02-features/FEATURE-07-Idempotency.md), [`Transfer Service saga`](../04-architecture.md#32-saga-pattern-for-transfers).
 

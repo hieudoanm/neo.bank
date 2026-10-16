@@ -56,12 +56,13 @@ On error:
 1. **Validate inputs**: Check email format and password presence.
 2. **Rate limiting**: Check failed attempt count for this IP (max 5 per 15 min window).
 3. **Retrieve user record**: Query Auth Service's private Cassandra store by email.
-4. **Verify password**: Compare provided password against stored Argon2id hash.
-5. **On mismatch**: Increment failed attempt counter, return `401 INVALID_CREDENTIALS` (generic).
-6. **On match**: Reset failed attempt counter, generate tokens.
-7. **Generate tokens**: JWT access token (15 min expiry, RS256 signed, claims: `sub`, `accountId`, `email`, `iat`, `exp`, `jti`) and refresh token (7 day expiry, opaque random string).
-8. **Store refresh token**: SHA-256 hash stored in Auth Service's private keyspace.
-9. **Return response**: Access token, refresh token, account ID.
+4. **Resolve the user's account**: Look up the account id for this user in the Account Service (by user id — see [`accounts_by_user`](../05-data-model/account-service/README.md)) so the `accountId` claim can be minted.
+5. **Verify password**: Compare provided password against stored Argon2id hash.
+6. **On mismatch**: Increment failed attempt counter, return `401 INVALID_CREDENTIALS` (generic).
+7. **On match**: Reset failed attempt counter, generate tokens.
+8. **Generate tokens**: JWT access token (15 min expiry, RS256 signed, claims: `sub`, `accountId`, `email`, `iat`, `exp`, `jti`) and refresh token (7 day expiry, opaque random string).
+9. **Store refresh token**: SHA-256 hash stored in Auth Service's private keyspace.
+10. **Return response**: Access token, refresh token, account ID.
 
 ### Token Refresh
 

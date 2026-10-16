@@ -63,7 +63,7 @@ Phase 3 (authentication, account lookup for balance validation).
 ## Cross-references
 
 - Feature: [`FEATURE-04`](../02-features/FEATURE-04-Fund-Transfer.md)
-- User story: [`US-004`](../03-user-stories/US-004.md)
+- User story: [`US-005`](../03-user-stories/US-005.md)
 - API specification: [`docs/06-api-specification.md`](../06-api-specification.md#2-service-boundaries-and-api-files)
 - Kafka backend: [`docs/08-tech-stack/backend/kafka.md`](../08-tech-stack/backend/kafka.md)
 - Definition of Done: [`definition-of-done.md`](./definition-of-done.md)

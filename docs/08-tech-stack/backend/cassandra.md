@@ -4,16 +4,16 @@ _Backend · part of the [NEO Bank tech stack](../../08-tech-stack.md) decision r
 
 ## 1. Schema Organization
 
-All schema lives in versioned migration scripts under each service's own module, `packages/<service>/internal/db/migrations/`. Each service owns and applies only its own migrations; no service reads or writes another service's keyspace.
+All schema lives in versioned migration scripts under each service's own module, `packages/backend/<service>/internal/db/migrations/`. Each service owns and applies only its own migrations; no service reads or writes another service's keyspace.
 
 ```
-packages/<service>/
+packages/backend/<service>/
 └── internal/db/
     ├── cassandra.go            # session, cluster config, health
     ├── migrations.go           # runner + schema_migrations tracking
     └── migrations/
         ├── 001_create_tables.cql
-        ├── 002_add_indexes.cql
+        ├── 002_add_lookup_tables.cql
         └── ...
 ```
 
@@ -21,7 +21,7 @@ Rules:
 
 - One logical change per migration; migrations run in numeric order.
 - Each service's migrations target only its own keyspace (for example `auth_keyspace` for `auth-service`); there is no shared keyspace and no shared migration.
-- Files are `.cql` and idempotent (`CREATE TABLE IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`).
+- Files are `.cql` and idempotent (`CREATE TABLE IF NOT EXISTS`). Do **not** use `CREATE INDEX`/`CREATE CUSTOM INDEX`: Amazon Keyspaces does not support secondary indexes, so lookups use dedicated tables.
 - The runner records `(version, applied_at, checksum)`; a changed checksum on an applied migration fails the run.
 - Destructive operations (`DROP`, column removal) are separate, reviewed migrations never mixed with additive changes.
 
@@ -29,17 +29,20 @@ Rules:
 
 Model from access patterns, not from entities. Decide the query, then design the table.
 
-| Query                                              | Table              | Key                                  |
-| -------------------------------------------------- | ------------------ | ------------------------------------ |
-| Balance by account                                  | `accounts`         | `account_id`                         |
-| Account by user                                     | `accounts`         | secondary index on `user_id`         |
-| User by email (login)                               | `users`            | secondary index on `email`           |
-| Refresh token lookup                                | `refresh_tokens`   | `token_hash`                         |
-| Transfer by ID                                      | `transfers`        | `transfer_id`                        |
-| Transfers by source / destination                   | `transfers`        | secondary indexes                    |
-| Transactions by account, newest first               | `transactions`     | `(account_id, transaction_id DESC)`  |
-| Idempotency key lookup                              | `idempotency_keys` | `idempotency_key`                    |
-| Audit events by time                                | `audit_events`     | `(event_id, timestamp DESC)`         |
+| Query                                              | Table                  | Key                                      |
+| -------------------------------------------------- | ---------------------- | ---------------------------------------- |
+| Balance by account                                  | `accounts`             | `account_id`                             |
+| Accounts by user                                    | `accounts_by_user`     | `((user_id), account_id)`                |
+| User by email (login)                               | `users_by_email`       | `(email)`                                |
+| Refresh token lookup                                | `refresh_tokens`       | `(token_hash)`                           |
+| Refresh tokens by user                              | `refresh_tokens_by_user` | `((user_id), token_hash)`              |
+| Transfer by ID                                      | `transfers`            | `(transfer_id)`                          |
+| Transfers by account                                | `transfers_by_account` | `((account_id), transfer_id)`            |
+| Transactions by account, newest first               | `transactions`         | `((account_id), created_at, transaction_id)` |
+| Idempotency key lookup                              | `idempotency_keys`     | `(idempotency_key)`                      |
+| Audit events by time                                | `audit_events`         | `((service, day), timestamp, event_id)`  |
+
+Every non-primary-key access path is a **lookup table** written by the owning service, never a secondary index — both because indexes scale poorly in Cassandra and because Amazon Keyspaces rejects `CREATE INDEX`.
 
 Rules:
 
@@ -89,59 +92,64 @@ Rules:
 
 ### Consistency levels
 
-| Operation                        | Consistency             |
-| -------------------------------- | ----------------------- |
-| Reads                            | `gocql.Quorum`          |
-| Writes (non-LWT)                 | `gocql.Quorum`          |
-| Lightweight transactions (paxos) | `gocql.Serial`          |
-| Read-after-write on own balance  | `gocql.Quorum` (default) |
+| Operation                        | Production (RF=3) | Local / CI (RF=1)    |
+| -------------------------------- | ------------------ | -------------------- |
+| Reads                            | `gocql.Quorum`     | `gocql.One`          |
+| Writes (non-LWT)                 | `gocql.Quorum`     | `gocql.One`          |
+| Lightweight transactions (paxos) | `gocql.Serial`     | `gocql.Serial`       |
+| Read-after-write on own balance  | `gocql.Quorum`     | `gocql.One`          |
 
-Set consistency explicitly at the query, and keep timeouts bounded so a slow node fails loudly.
+Set consistency explicitly at the query, and keep timeouts bounded so a slow node fails loudly. The level comes from configuration (environment), never from a hard-coded constant in shared code: a single-node cluster running `QUORUM` is meaningless, and asserting RF=3 locally would fail. Keyspaces in AWS honours `QUORUM`/`SERIAL` against its managed RF=3.
 
 ## 4. Lightweight Transactions & Atomicity
 
-Balance changes must be atomic and must never allow a negative balance. Use a `BATCH` with a conditional (paxos) update on the debit.
+Each balance change must be atomic and must never allow a negative balance. The debit is a single conditional (paxos) statement; the credit is a separate statement. Because the two accounts may live in different services/keyspaces, they are **not** one atomic unit — the saga reconciles them with a compensating reversal if the credit fails. Do **not** wrap the debit and credit in a `BATCH`: multi-partition batches are not atomic, and Amazon Keyspaces does not support lightweight transactions inside batches.
 
 ```go
 // internal/repositories/transfers.go
-const applyTransfer = `
-    BEGIN BATCH
-        UPDATE accounts SET balance_cents = balance_cents - ?, updated_at = ?
-            WHERE account_id = ? IF balance_cents >= ?;
-        UPDATE accounts SET balance_cents = balance_cents + ?, updated_at = ?
-            WHERE account_id = ?;
-    APPLY BATCH;
+const debit = `
+    UPDATE accounts SET balance_cents = balance_cents - ?, updated_at = toTimestamp(now())
+        WHERE account_id = ? IF balance_cents >= ?;
+`
+const credit = `
+    UPDATE accounts SET balance_cents = balance_cents + ?, updated_at = toTimestamp(now())
+        WHERE account_id = ?;
 `
 
-func (r *TransferRepository) ApplyTransfer(ctx context.Context, ev TransferEvent) error {
-    iter := r.session.Query(applyTransfer,
-        ev.AmountCents, now, ev.SourceAccountID, ev.AmountCents, // debit, conditional
-        ev.AmountCents, now, ev.DestinationAccountID,            // credit, unconditional
-    ).WithContext(ctx).Consistency(gocql.Serial).Iter()
-
+// Debit source (conditional): applied == false means insufficient funds.
+func (r *AccountRepository) Debit(ctx context.Context, accountID gocql.UUID, amount int64) error {
+    iter := r.session.Query(debit, amount, accountID, amount).
+        WithContext(ctx).Consistency(gocql.Serial).Iter()
     applied, err := iter.ScanCAS()
     if err != nil {
-        return fmt.Errorf("apply transfer: %w", err)
+        return fmt.Errorf("debit: %w", err)
     }
     if !applied {
         return ErrInsufficientFunds
     }
     return iter.Close()
 }
+
+// Credit destination (separate statement, no cross-account transaction).
+func (r *AccountRepository) Credit(ctx context.Context, accountID gocql.UUID, amount int64) error {
+    return r.session.Query(credit, amount, accountID).
+        WithContext(ctx).Consistency(gocql.Quorum).Exec()
+}
 ```
 
 Rules:
 
-- The conditional (`IF`) update is the guard: insufficient funds means `applied == false`, not an error.
-- Always `Close()` the iterator and check `ScanCAS` before proceeding.
+- The conditional (`IF balance_cents >= ?`) update is the guard: insufficient funds means `applied == false`, not an error.
+- The debit and credit are **separate** statements; never assume both applied. The saga reverses a completed debit when the credit fails.
+- Always `Close()` the iterator and check `ScanCAS` before proceeding on a conditional statement.
 - One LWT per logical operation; serialize paxos rounds to avoid contention on the same partition.
-- Never read-then-write outside a transaction for balances — that is a race.
+- Never read-then-write outside a conditional statement for balances — that is a race.
 
 ## 5. Query Patterns & Performance
 
 - Prefer single-partition queries; a query should touch one partition key.
 - Avoid `ALLOW FILTERING`. If a query needs it, add a dedicated table (query-first) instead.
-- Secondary indexes are for low-cardinality lookups only (`user_id`, `email`); do not index high-cardinality or rapidly changing columns.
+- There are **no secondary indexes** (`CREATE INDEX`). Serve low-cardinality lookups (`user_id`, `email`) with a dedicated lookup table partitioned by the lookup column.
 - Paginate with `PagingState`, never `LIMIT` guessing:
 
 ```go
@@ -177,7 +185,7 @@ func (r *TransactionRepository) ListByAccount(ctx context.Context, accountID goc
 - Migrations are applied by `cmd/migrate` before the API or consumer starts; CI applies them before integration tests.
 - Migrations are additive on release; dropping or renaming a column is a two-step release.
 - Never edit an applied migration — add a new one.
-- CI runs migrations against the test keyspace (`neo_bank_test`, `SimpleStrategy`, RF 1) and fails on drift.
+- CI runs migrations against each service's own test keyspace (`<service>_keyspace_test`, `SimpleStrategy`, RF 1) and fails on drift.
 
 ## 7. Idempotency, Retries & Failure
 

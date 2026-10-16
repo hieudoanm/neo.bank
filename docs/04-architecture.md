@@ -66,7 +66,7 @@ Key properties: eventual consistency, compensating transactions on partial failu
 Each microservice has **private data storage**. Cross-service database access is strictly forbidden. State is shared only via APIs or events.
 
 - Auth Service: private Cassandra keyspace `auth_keyspace` (users, users_by_email, refresh_tokens, refresh_tokens_by_user, audit_events).
-- Account Service: private Cassandra keyspace `account_keyspace` (accounts, audit_events).
+- Account Service: private Cassandra keyspace `account_keyspace` (accounts, accounts_by_user, processed_commands, audit_events).
 - Transfer Service: private Cassandra keyspace `transfer_keyspace` (transfers, transfers_by_account, idempotency_keys, audit_events).
 - Transaction Service: private Cassandra keyspace `transaction_keyspace` (transactions, audit_events).
 
@@ -104,7 +104,7 @@ Boundaries are enforced at the network and data layers:
 | **Account Service** | Manages accounts and balances. Validates ownership, serves balance, executes debit/credit as part of saga. Enforces non-negative balances. Owns accounts data and its own `audit_events`. |
 | **Transfer Service (Saga Orchestrator)** | Orchestrates transfer saga, creates transfer aggregates, tracks saga state, applies compensation on failure, manages idempotency. Owns transfers, idempotency keys, and its own `audit_events`. |
 | **Transaction Service (Read Model)** | Consumes transfer lifecycle events to build append-only transaction history. Exposes paginated queries. Owns transaction read model and its own `audit_events`. |
-| **Kafka** | Event backbone for saga coordination. Topic `transfers` with DLQ `transfers.dlq`. Ordering (partitioned by source account ID), durability (RF=3, min.insync.replicas=2), `acks=all`. |
+| **Kafka** | Event backbone for saga coordination. Topic `transfers` with DLQ `transfers.dlq`. Ordering (partitioned by source account ID), `acks=all` in every environment; durability in production (RF=3, min.insync.replicas=2) — local/CI run a single broker at RF=1, min.insync.replicas=1. |
 | **Cassandra (per-service)** | Private, authoritative storage per service. Amounts as integers in minor units (cents). Each service uses its own keyspace; audit data is never stored in a shared keyspace. |
 ### 4.1 Frontend
 
@@ -134,12 +134,14 @@ NEO Bank uses a polyrepo-friendly microservices layout. Each service is independ
 ```text
 neo.bank/
 ├── packages/
-│   ├── frontend/                    # React + TypeScript (deployed independently)
-│   ├── api-gateway/                 # API gateway (Go) — routing, auth, rate limiting, no DB
-│   ├── auth-service/                # Auth microservice (Go)
-│   ├── account-service/             # Account microservice (Go)
-│   ├── transfer-service/            # Transfer orchestrator (Go)
-│   └── transaction-service/         # Transaction read model (Go)
+│   ├── backend/
+│   │   ├── api-gateway/             # API gateway (Go) — routing, auth, rate limiting, no DB
+│   │   ├── auth/                    # Auth microservice (Go)
+│   │   ├── accounts/                # Account microservice (Go)
+│   │   ├── transfer/                # Transfer orchestrator (Go)
+│   │   └── transactions/            # Transaction read model (Go)
+│   └── frontend/
+│       └── app/                     # React + TypeScript (deployed independently)
 ├── infrastructure/                  # Terraform (EKS/GKE) + Kubernetes manifests
 ├── docker-compose.yaml              # Local developer topology (optional)
 ├── docs/                            # Normative documentation
@@ -150,8 +152,10 @@ neo.bank/
 Each Go service follows the same internal boundaries (API/handlers, core/config/security/errors, db, models, repositories, services/commands, consumers/projections):
 
 ```text
-packages/<service>/
-├── cmd/<service>/main.go
+packages/backend/<service>/
+├── cmd/api/main.go
+├── cmd/consumer/main.go
+├── cmd/migrate/main.go
 ├── internal/
 │   ├── api/handlers, middleware, router  (HTTP/gRPC)
 │   ├── core/config, logging, security, errors
@@ -159,8 +163,8 @@ packages/<service>/
 │   ├── models/domain models for this service
 │   ├── repositories/parameterised queries (private DB only)
 │   ├── services/business/command handlers or saga logic
-│   ├── consumers/ (event consumers specific to this service)  # if consuming
-│   └── producers/ (event publishers)                          # if publishing
+│   ├── consumer/ (event consumers specific to this service)  # if consuming
+│   └── producer/ (event publishers)                          # if publishing
 ├── go.mod
 └── go.sum
 ```
@@ -203,7 +207,7 @@ Service-to-service calls (if required for synchronous lookups) use authenticated
 
 Transfer creation is synchronous for initiation; execution is asynchronous via saga events.
 
-1. Frontend `POST /api/v1/transfers` to API Gateway (camelCase body fields such as `destinationAccountId`, `sourceAccountId`, `amountCents`, `currencyCode`).
+1. Frontend `POST /api/v1/transfers` to API Gateway with camelCase body fields `destinationAccountId` and `amountCents`, the required `Idempotency-Key` header, and the `Authorization` bearer token. The source account is derived server-side from the JWT; it is not a body field.
 2. Gateway validates JWT and forwards to **Transfer Service**.
 3. Transfer Service validates inputs, checks ownership, consults **Account Service** for sufficient funds.
 4. Transfer Service creates transfer in `pending` state, emits `transfer.initiated` to Kafka topic `transfers`.
@@ -260,12 +264,12 @@ Source diagram: [`03-transfer-saga-flow.mmd`](./04-architecture/mmd/03-transfer-
 - Poison messages: route malformed/unprocessable events to DLQ (`transfers.dlq`) with original headers and failure reason; advance offset after DLQ write.
 ### 8.3 Kafka failures
 
-- Producer: `acks=all`, `min.insync.replicas=2`, retries with backoff. On publish failure, API returns 503 and initiation is rolled back by the orchestrating service.
+- Producer: `acks=all` everywhere, with retries and backoff; production additionally sets `min.insync.replicas=2` (RF=3), while local/CI single brokers set RF=1 and `min.insync.replicas=1`. On publish failure, API returns 503 and initiation is rolled back by the orchestrating service.
 - Consumer: pause partitions, exponential backoff, checkpoint offsets only after successful processing. DLQ for non-retryable errors.
 ### 8.4 Cassandra (per-service) failures
 
 - Unavailable private store: owning service returns 503 (Gateway propagates). Saga consumers pause and retry with backoff.
-- Consistency: QUORUM for reads/writes; lightweight transactions used where atomicity is required for balance updates within Account Service boundaries.
+- Consistency: `QUORUM` for reads/writes in production (`ONE`/`LOCAL_ONE` on single-node local/CI clusters), `SERIAL` for conditional statements; lightweight transactions used where atomicity is required for balance updates within Account Service boundaries.
 ## 9. Security Boundaries
 
 ### 9.1 Authentication & authorisation
@@ -289,6 +293,6 @@ Source diagram: [`03-transfer-saga-flow.mmd`](./04-architecture/mmd/03-transfer-
 - **Horizontal scaling**: All services stateless (state in private DB/Kafka). Scale via HPA based on CPU/memory/queue lag.
 - **Per-service scaling**: Scale Transfer/Account/Transaction independently to match workload (e.g. consumer lag).
 - **Kafka**: Partition the `transfers` topic by source account ID; add partitions to scale consumers; route non-retryable failures to `transfers.dlq`.
-- **Cassandra**: Scale each private store independently (add nodes). Partition keys align to service access patterns; RF=3.
+- **Cassandra**: Scale each private store independently (add nodes). Partition keys align to service access patterns; RF=3 in production, RF=1 locally and in CI (see [`05-data-model.md`](./05-data-model.md#61-keyspace)).
 - **Gateway**: Stateless, horizontally scalable behind Ingress/load balancer.
 - **Observability**: Distributed tracing (OpenTelemetry), structured logging, metrics, saga state visibility required.

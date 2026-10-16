@@ -12,8 +12,9 @@ Set up the project structure, tooling, local infrastructure, and CI pipeline tha
 
 | Deliverable | Description |
 |-------------|-------------|
-| Monorepo structure | pnpm workspace with `packages/frontend/` and Go service modules under `packages/` (`api-gateway`, `auth-service`, `account-service`, `transfer-service`, `transaction-service`) |
-| Go service skeletons | `go.mod` per service, `cmd/<service>/main.go`, and `internal/` layout per `AGENTS.md` section 4 |
+| Monorepo structure | pnpm workspace with the frontend app at `packages/frontend/app/` and Go service modules under `packages/backend/` (`api-gateway`, `auth`, `accounts`, `transfer`, `transactions`) |
+| Go service skeletons | `go.mod` per service, `cmd/api/main.go` (plus `cmd/consumer/main.go` and `cmd/migrate/main.go` where applicable), and `internal/` layout per `AGENTS.md` section 4 |
+| API Gateway routing skeleton | `GET /healthz` and `GET /readyz` at the root (outside `/api/v1`), plus a reverse-proxy route table that forwards `/api/v1/*` to each service. No JWT enforcement yet — that is added in Phase 2 |
 | React frontend skeleton | Vite + TypeScript + Tailwind + DaisyUI scaffold |
 | Docker Compose topology | Cassandra, Kafka, Zookeeper, and healthchecks (service containers are added in later phases) |
 | CI pipeline | GitHub Actions with lint, typecheck, unit test skeleton |
@@ -23,7 +24,8 @@ Set up the project structure, tooling, local infrastructure, and CI pipeline tha
 ## Tasks
 
 - [ ] Initialise monorepo with pnpm workspace (`pnpm init`, workspace config).
-- [ ] Set up Go service skeletons: `go.mod` per service, `cmd/<service>/main.go`, and `internal/` structure per conventions.
+- [ ] Set up Go service skeletons: `go.mod` per service, `cmd/api/main.go`, and `internal/` structure per conventions.
+- [ ] Implement the API Gateway skeleton: serve `GET /healthz` and `GET /readyz` at the root, and register a reverse-proxy route table for `/api/v1/*` (healthz/readyz are served at the root by the gateway, per [`06-api-specification.md`](../06-api-specification.md)).
 - [ ] Set up React frontend: Vite, TypeScript strict, Tailwind CSS, DaisyUI.
 - [ ] Add backend and frontend test skeletons (one passing test per package, one passing Vitest test).
 - [ ] Configure Docker Compose: Cassandra 4.x, Kafka, Zookeeper with healthchecks.
@@ -38,7 +40,8 @@ Set up the project structure, tooling, local infrastructure, and CI pipeline tha
 - Developer can run `docker-compose up -d` to start Cassandra and Kafka.
 - Healthchecks confirm Cassandra (CQL) and Kafka (bootstrap) are ready.
 - Developer can run frontend dev server on `localhost:3000`.
-- Developer can build and run the Go services (`go build ./...`, `go run ./cmd/<service>/main.go`).
+- Developer can build and run the Go services (`go build ./...`, `go run ./cmd/api/main.go`).
+- API Gateway starts and serves `GET /healthz` and `GET /readyz` at the root (outside `/api/v1`) and forwards at least one `/api/v1/*` route to its upstream service.
 - CI pipeline runs successfully on an empty repo (lint, typecheck, test skeleton pass).
 - Pre-commit hooks run on staged files and block non-conforming commits.
 - AGENTS.md conventions are followed for directory structure and imports.

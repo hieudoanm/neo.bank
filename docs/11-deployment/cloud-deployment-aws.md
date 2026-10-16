@@ -169,6 +169,15 @@ resource "aws_keyspaces_keyspace" "service" {
 }
 ```
 
+**Keyspaces portability rules:**
+
+- **Keyspace creation is Terraform, not CQL.** Do not run `CREATE KEYSPACE`: Keyspaces manages replication (`SingleRegionStrategy`, RF=3 across 3 AZs). Application migrations create **tables only**, inside the provisioned keyspace.
+- **No `CREATE INDEX`.** Keyspaces rejects secondary indexes, so every non-primary-key access path is a dedicated lookup table (`accounts_by_user`, `users_by_email`, `transfers_by_account`) — see [`05-data-model.md`](../05-data-model.md#61-keyspace).
+- **LWTs are supported** for `INSERT`/`UPDATE`/`DELETE` compare-and-set, so the conditional debit (`IF balance_cents >= ?`) and `processed_commands` claim (`IF NOT EXISTS`) are portable. Verify any new conditional against the [Keyspaces functional differences](https://docs.aws.amazon.com/keyspaces/latest/devguide/functional-differences.html) before relying on it.
+- **No aggregate calls** (`COUNT`, `SUM`, `MIN`, `MAX`, `AVG`) and **no materialized views / triggers / UDFs** in queries — these are rejected by Keyspaces. Pagination uses the driver's paging state (decode the opaque state on the client); do not implement cursor pagination with `COUNT`.
+- **Auth is IAM, not CQL.** Migrations and services authenticate to Keyspaces with IAM (SIGV4) credentials and least-privilege policies; there are no Cassandra `CREATE ROLE`/`GRANT` statements.
+- Keyspaces DDL is **asynchronous** — wait for the table to reach `ACTIVE` before running migrations that depend on it.
+
 ## Authentication & IAM (OIDC)
 
 CI/CD uses **OIDC with AWS IAM role-to-assume**, avoiding long-lived credentials. GitHub Actions authenticates to AWS via `aws-actions/configure-aws-credentials` using `role-to-assume` and a scoped trust policy restricted to this repository's workflows. No long-lived AWS access key credentials are stored as repository secrets.
@@ -182,11 +191,12 @@ The S3 Terraform state bucket name must be **globally unique**; use a placeholde
 cd infrastructure/aws
 terraform init
 
-# Plan deployment
-terraform plan
+# Plan deployment (save the reviewed plan; never apply without reviewing it)
+terraform plan -out=tfplan
 
-# Apply deployment (provisions EKS, MSK, Keyspaces, networking, IAM)
-terraform apply
+# Apply the exact plan that was reviewed (interactive confirmation is bypassed
+# because tfplan was reviewed; CI does this via a protected environment)
+terraform apply tfplan
 
 # Deploy workloads to the cluster
 aws eks update-kubeconfig --name neo-bank-production
@@ -232,7 +242,29 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
+  plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v2
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+      - name: Terraform Plan
+        run: |
+          cd infrastructure/aws
+          terraform init
+          terraform fmt -check -recursive
+          terraform validate
+          terraform plan -out=tfplan
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: infrastructure/aws/tfplan
+
+  apply:
+    needs: plan
     runs-on: ubuntu-latest
     environment: production # gates production with a manual approval
     steps:
@@ -242,11 +274,16 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: us-east-1
-      - name: Terraform Apply
+      - uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+          path: infrastructure/aws
+      - name: Terraform Apply reviewed plan
+        # Applies the exact plan produced by `plan` — never -auto-approve.
         run: |
           cd infrastructure/aws
           terraform init
-          terraform apply -auto-approve
+          terraform apply tfplan
       - name: Deploy workloads to EKS
         run: |
           aws eks update-kubeconfig --name neo-bank-production

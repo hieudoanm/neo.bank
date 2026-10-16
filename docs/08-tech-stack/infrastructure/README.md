@@ -47,12 +47,14 @@ The repository layout is defined in [`11-deployment.md`](../../11-deployment.md)
 ```text
 neo.bank/
 ├── packages/
-│   ├── frontend/            # React + TypeScript SPA
-│   ├── api-gateway/         # Go gateway: routing, auth enforcement, rate limiting
-│   ├── auth-service/        # Go service: auth_keyspace
-│   ├── account-service/     # Go service: account_keyspace
-│   ├── transfer-service/    # Go service: saga orchestrator, transfer_keyspace
-│   └── transaction-service/ # Go service: read model, transaction_keyspace
+│   ├── backend/
+│   │   ├── api-gateway/     # Go gateway: routing, auth enforcement, rate limiting
+│   │   ├── auth/            # Go service: auth_keyspace
+│   │   ├── accounts/        # Go service: account_keyspace
+│   │   ├── transfer/        # Go service: saga orchestrator, transfer_keyspace
+│   │   └── transactions/    # Go service: read model, transaction_keyspace
+│   └── frontend/
+│       └── app/             # React + TypeScript SPA
 ├── infrastructure/
 │   ├── aws/              # Terraform: EKS, MSK, Keyspaces, ALB
 │   ├── gcp/              # Terraform: GKE, Cassandra, Kafka

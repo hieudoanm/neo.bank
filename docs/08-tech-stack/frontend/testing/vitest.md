@@ -155,13 +155,18 @@ import { setupServer } from 'msw/node';
 import { http, HttpResponse } from 'msw';
 
 export const server = setupServer(
-  http.get('/api/v1/accounts/balance', () =>
-    HttpResponse.json({ balanceCents: 100_000, currencyCode: 'USD' }),
+  http.get('/api/v1/accounts/:accountId/balance', () =>
+    HttpResponse.json({
+      accountId: '018b4a2e-1111-7000-8000-000000000001',
+      balanceCents: 100_000,
+      currencyCode: 'USD',
+      updatedAt: '2026-10-15T20:00:00Z',
+    }),
   ),
   http.post('/api/v1/transfers', () =>
     HttpResponse.json({ transferId: 'transfer-1', status: 'pending' }, { status: 202 }),
   ),
-  http.get('/api/v1/transactions', () =>
+  http.get('/api/v1/accounts/:accountId/transactions', () =>
     HttpResponse.json({ transactions: [], nextCursor: null, hasMore: false }),
   ),
 );

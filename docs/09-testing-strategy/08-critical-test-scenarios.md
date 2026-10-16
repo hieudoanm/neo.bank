@@ -14,7 +14,7 @@ These scenarios protect the core guarantee: money is never created or lost.
 | FIN-002 | Transfer with insufficient funds is rejected | Transfer status `failed`, no balance change |
 | FIN-003 | Concurrent transfers from same account | Only one succeeds (LWT prevents overdraft) |
 | FIN-004 | Balance never goes negative | `balance_cents >= 0` after every operation |
-| FIN-005 | Transfer atomicity | Both debit and credit succeed, or neither |
+| FIN-005 | Transfer consistency | A completed debit is always matched by a credit or a compensating reversal; no funds lost or created |
 | FIN-006 | Duplicate transfer request (idempotency) | Same transfer ID returned, no double debit/credit |
 | FIN-007 | Transaction recording | Every balance change has a corresponding transaction record |
 | FIN-008 | Consumer failure mid-saga | Compensation reverses partial debit, transfer marked `failed` |

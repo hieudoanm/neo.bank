@@ -9,15 +9,20 @@ Defines the backup and recovery strategy for NEO Bank's data stores: Cassandra a
 ### Local (Docker Compose)
 
 ```bash
-# Take snapshot
-docker-compose exec cassandra nodetool snapshot neo_bank
+# Take a snapshot of every service keyspace (one nodetool call per keyspace)
+docker-compose exec cassandra nodetool snapshot auth_keyspace
+docker-compose exec cassandra nodetool snapshot account_keyspace
+docker-compose exec cassandra nodetool snapshot transfer_keyspace
+docker-compose exec cassandra nodetool snapshot transaction_keyspace
 
 # Copy snapshot files
-docker cp cassandra:/var/lib/cassandra/data/neo_bank*/snapshots ./backup
+docker cp cassandra:/var/lib/cassandra/data/auth_keyspace*/snapshots ./backup
+# ...repeat for account_keyspace, transfer_keyspace, transaction_keyspace
 
 # Restore snapshot
-docker cp ./backup cassandra:/var/lib/cassandra/data/neo_bank*/snapshots
-docker-compose exec cassandra nodetool refresh neo_bank
+docker cp ./backup cassandra:/var/lib/cassandra/data/auth_keyspace*/snapshots
+docker-compose exec cassandra nodetool refresh auth_keyspace
+# ...repeat per keyspace
 ```
 
 ### AWS Amazon Keyspaces
@@ -38,8 +43,8 @@ docker-compose exec cassandra nodetool refresh neo_bank
 ### Local
 
 - Kafka topics are ephemeral; transfer state is in Cassandra.
-- If Kafka fails, consumers can recover from Cassandra transfer status.
-- Replay transfer events from Cassandra if needed.
+- If Kafka fails, consumer offsets reset to `earliest` and the retained `transfers` events are replayed into the transaction projection.
+- Kafka (not Cassandra) is the source of truth for event replay: **do not** try to re-derive Kafka events from Cassandra. Cassandra holds current state (`transfers`, `transactions`); the append-only `transfers` topic holds the events, retained for 7 days.
 
 ### AWS MSK
 

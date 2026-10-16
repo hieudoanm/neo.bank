@@ -10,7 +10,8 @@ Defines how to run tests locally and in CI, including commands, dependencies, an
 
 ```bash
 # Unit tests only (fast, no external dependencies)
-cd packages/backend
+# Each service is its own module under packages/backend/<service>/ — run per service.
+cd packages/backend/<service>
 go test -short ./...
 
 # All backend tests including integration
@@ -32,7 +33,7 @@ go tool cover -html=coverage.out
 
 ```bash
 # Unit tests
-cd packages/frontend
+cd packages/frontend/app
 pnpm test
 
 # Unit tests with coverage
@@ -72,9 +73,17 @@ jobs:
       cassandra:
         image: cassandra:4.1
         ports: ["9042:9042"]
+      zookeeper:
+        image: confluentinc/cp-zookeeper:7.4.0
+        env: { ZOOKEEPER_CLIENT_PORT: 2181 }
       kafka:
-        image: bitnami/kafka:3.x
+        image: confluentinc/cp-kafka:7.4.0
         ports: ["9092:9092"]
+        env:
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+          KAFKA_MIN_INSYNC_REPLICAS: 1
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -85,6 +94,8 @@ jobs:
       - uses: codecov/codecov-action@v3
         with: { file: coverage.out }
 ```
+
+Service definitions are identical in [`github-actions.md`](../08-tech-stack/infrastructure/github-actions.md#3-integration-with-real-services) — Kafka runs in ZooKeeper mode (a `zookeeper` service is required) at RF=1 for the single CI broker.
 
 ### 2.2 Frontend CI Pipeline
 

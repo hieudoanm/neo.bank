@@ -129,7 +129,7 @@ Defines the design of each screen: Login, Register, Dashboard (includes balance)
 **Content:**
 
 - Page heading: "Transfer status"
-- Status badge (pending, processing, completed, failed)
+- Status badge (pending, processing, completed, failed, reversed)
 - Transfer details:
   - Transfer ID
   - Destination account ID

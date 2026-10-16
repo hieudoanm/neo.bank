@@ -4,7 +4,7 @@
 
 - Docker and Docker Compose (v2.0+)
 - Go 1.22+ (for backend development)
-- Node.js 18+ LTS (for frontend development)
+- Node.js 22+ LTS (for frontend development; version pinned in `packages/frontend/app/package.json` `engines` and CI)
 - pnpm (v8+)
 - GNU Make (optional, for convenience commands)
 - Git (v2.30+)
@@ -14,12 +14,14 @@
 ```text
 neo.bank/
 ├── packages/
-│   ├── frontend/            # React + TypeScript frontend (Vite)
-│   ├── api-gateway/         # Go API gateway (routing, auth enforcement, rate limiting)
-│   ├── auth-service/        # Go Auth Service
-│   ├── account-service/     # Go Account Service
-│   ├── transfer-service/    # Go Transfer Service — saga orchestrator
-│   └── transaction-service/ # Go Transaction Service — read model
+│   ├── backend/
+│   │   ├── api-gateway/     # Go API gateway (routing, auth enforcement, rate limiting)
+│   │   ├── auth/            # Go Auth Service
+│   │   ├── accounts/        # Go Account Service
+│   │   ├── transfer/        # Go Transfer Service — saga orchestrator
+│   │   └── transactions/    # Go Transaction Service — read model
+│   └── frontend/
+│       └── app/             # React + TypeScript frontend (Vite)
 ├── infrastructure/          # Terraform for AWS/GCP, Kubernetes manifests
 ├── docker-compose.yaml      # Local development services (PLANNED)
 ├── Makefile                 # Convenience commands (PLANNED)
@@ -33,56 +35,58 @@ The local topology is the microservices stack. All of the following are **PLANNE
 ### Core Services
 - **cassandra**: Apache Cassandra 4.1 (primary database)
   - Port: 9042 (CQL native transport)
-  - Configuration: Single-node cluster for development
+  - Configuration: Single-node cluster for development — `SimpleStrategy`, `replication_factor: 1`; queries run at `ONE`/`LOCAL_ONE` (a single-node `QUORUM` equals `ONE`, so production `QUORUM` semantics are not exercised locally)
   - Persistence: Named volume `cassandra_data`
 
 - **zookeeper**: Apache Zookeeper 3.8 (Kafka coordination)
   - Port: 2181 (client connections)
   - Image: confluentinc/cp-zookeeper:7.4.0
 
-- **kafka**: Apache Kafka 3.5 (event streaming)
+- **kafka**: Apache Kafka 3.5 (event streaming), image `confluentinc/cp-kafka:7.4.0` (identical tag to CI and [`docker.md`](../08-tech-stack/infrastructure/docker.md#3-compose-topology))
   - Port: 9092 (plaintext broker)
   - Dependencies: zookeeper
-  - Configuration: Single broker, `auto.create.topics.enable=false`
+  - Configuration: **ZooKeeper mode** (single broker) — `KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181`, no `KAFKA_NODE_ID`/`KAFKA_PROCESS_ROLES`/`KAFKA_CLUSTER_ID`; `KAFKA_DEFAULT_REPLICATION_FACTOR=1`, `KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1`, `KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1`, `KAFKA_MIN_INSYNC_REPLICAS=1`; `KAFKA_AUTO_CREATE_TOPICS_ENABLE=false`
+  - Topics: `transfers` and `transfers.dlq` are created by an explicit init step after the broker is healthy (auto-create is disabled)
+  - Note: local runs at RF=1 with consistency `ONE`/`LOCAL_ONE`; production uses RF=3 and `QUORUM` (see [`NFR-012`](../01-requirements/non-functional-requirements.md#availability))
 
 - **api-gateway**: Go API gateway (routing, auth enforcement, rate limiting)
   - Port: 8080 (HTTP API, `/api/v1`, health endpoints at root)
-  - Build context: `./packages/api-gateway` (PLANNED)
+  - Build context: `./packages/backend/api-gateway` (PLANNED)
   - Dockerfile: `Dockerfile` (PLANNED)
   - Dependencies: auth-service, account-service, transfer-service, transaction-service, kafka (as applicable)
   - Environment: service URLs, Kafka brokers, JWT keys, log level
 
 - **auth-service**: Go Auth Service (owns `auth_keyspace`)
   - Port: 8081 (PLANNED)
-  - Build context: `./packages/auth-service` (PLANNED)
+  - Build context: `./packages/backend/auth` (PLANNED)
   - Dockerfile: `Dockerfile` (PLANNED)
   - Dependencies: cassandra, kafka
   - Environment: Cassandra connection, Kafka brokers, JWT keys, log level
 
 - **account-service**: Go Account Service (owns `account_keyspace`)
   - Port: 8082 (PLANNED)
-  - Build context: `./packages/account-service` (PLANNED)
+  - Build context: `./packages/backend/accounts` (PLANNED)
   - Dockerfile: `Dockerfile` (PLANNED)
   - Dependencies: cassandra, kafka
   - Environment: Cassandra connection, Kafka brokers, log level
 
 - **transfer-service**: Go Transfer Service — saga orchestrator (owns `transfer_keyspace`)
   - Port: 8083 (PLANNED)
-  - Build context: `./packages/transfer-service` (PLANNED)
+  - Build context: `./packages/backend/transfer` (PLANNED)
   - Dockerfile: `Dockerfile` (PLANNED)
   - Dependencies: cassandra, kafka
   - Environment: Cassandra connection, Kafka brokers, Kafka topics (`transfers`, `transfers.dlq`), log level
 
 - **transaction-service**: Go Transaction Service — read model (owns `transaction_keyspace`)
   - Port: 8084 (PLANNED)
-  - Build context: `./packages/transaction-service` (PLANNED)
+  - Build context: `./packages/backend/transactions` (PLANNED)
   - Dockerfile: `Dockerfile` (PLANNED)
   - Dependencies: cassandra, kafka
   - Environment: Cassandra connection, Kafka brokers, log level
 
 - **frontend**: React frontend development server
   - Port: 3000 (HTTP)
-  - Build context: `./packages/frontend` (PLANNED)
+  - Build context: `./packages/frontend/app` (PLANNED)
   - Dockerfile: `Dockerfile` (PLANNED)
   - Dependencies: api-gateway
   - Environment: `VITE_API_URL` pointing to API gateway
@@ -158,11 +162,11 @@ docker-compose ps
 ### Backend Development (Hot Reload)
 ```bash
 # Run services outside Docker for faster iteration (PLANNED)
-# cd packages/api-gateway && go run cmd/api-gateway/main.go
-# cd packages/auth-service && go run cmd/auth-service/main.go
-# cd packages/account-service && go run cmd/account-service/main.go
-# cd packages/transfer-service && go run cmd/transfer-service/main.go
-# cd packages/transaction-service && go run cmd/transaction-service/main.go
+# cd packages/backend/api-gateway && go run cmd/api/main.go
+# cd packages/backend/auth && go run cmd/api/main.go
+# cd packages/backend/accounts && go run cmd/api/main.go
+# cd packages/backend/transfer && go run cmd/api/main.go
+# cd packages/backend/transactions && go run cmd/api/main.go
 
 # Alternative: Use air for live reloading (PLANNED)
 # air
@@ -171,15 +175,15 @@ docker-compose ps
 ### Frontend Development (Hot Module Replacement)
 ```bash
 # Run frontend development server (PLANNED)
-cd packages/frontend
+cd packages/frontend/app
 pnpm dev
 ```
 
 ### Kafka Consumers
 ```bash
 # Run Kafka consumers outside Docker (PLANNED)
-# cd packages/transfer-service && go run cmd/consumer/main.go
-# cd packages/transaction-service && go run cmd/consumer/main.go
+# cd packages/backend/transfer && go run cmd/consumer/main.go
+# cd packages/backend/transactions && go run cmd/consumer/main.go
 ```
 
 ### Stopping and Cleaning Up

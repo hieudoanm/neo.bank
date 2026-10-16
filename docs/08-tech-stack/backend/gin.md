@@ -39,10 +39,10 @@ func NewRouter(cfg *config.Config, deps *dependencies) *gin.Engine {
     api := r.Group("/api/v1")
     api.Use(deps.authMiddleware.RequireAuth)
     {
-        api.GET("/accounts/me", deps.accountHandler.GetAccount)
+        api.GET("/accounts/:accountId/balance", deps.accountHandler.GetBalance)
+        api.GET("/accounts/:accountId/transactions", deps.transactionHandler.ListTransactions)
         api.POST("/transfers", deps.transferHandler.CreateTransfer)
-        api.GET("/transfers/:transfer_id", deps.transferHandler.GetTransfer)
-        api.GET("/transactions", deps.transactionHandler.ListTransactions)
+        api.GET("/transfers/:transferId", deps.transferHandler.GetTransfer)
     }
     return r
 }
@@ -52,6 +52,7 @@ func NewRouter(cfg *config.Config, deps *dependencies) *gin.Engine {
 - One `gin.Engine` per process; routes registered in `NewRouter`.
 - Health endpoints are outside the auth group.
 - Authenticated routes share `RequireAuth` middleware; no per-route auth duplication.
+- Canonical paths: `GET /api/v1/accounts/{accountId}/balance`, `GET /api/v1/accounts/{accountId}/transactions`, `POST /api/v1/transfers`, `GET /api/v1/transfers/{transferId}`. No `/accounts/me` alias; the caller supplies the `accountId` from the login response / JWT claim, and the service verifies ownership (404 on mismatch).
 - `gin.New()` (not `gin.Default()`) — we control logging and recovery explicitly.
 
 ## 3. Handler Pattern
@@ -179,7 +180,7 @@ func (m *AuthMiddleware) RequireAuth(c *gin.Context) {
 
 ## 7. Idempotency Header
 
-Mutating endpoints (POST/PUT/DELETE) check `Idempotency-Key` header. The key is passed to the service layer which checks `idempotency_keys` in Cassandra. Duplicate key returns cached response.
+The `Idempotency-Key` header is **required** on `POST /api/v1/transfers` and optional on other mutating endpoints. It is read from the header (never the body) and passed to the service layer, which checks `idempotency_keys` in Cassandra. A duplicate key with an identical payload returns the cached response; the same key with a different payload returns `409 IDEMPOTENCY_KEY_EXISTS`.
 
 ## 8. Testing with Gin
 

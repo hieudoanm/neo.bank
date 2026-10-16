@@ -981,6 +981,14 @@
     {
       "source": "01-requirements/non-functional-requirements.md",
       "target": "08-tech-stack/infrastructure/docker.md",
+      "raw_link": "../08-tech-stack/infrastructure/docker.md#3-compose-topology",
+      "line": 0,
+      "fragment": "3-compose-topology",
+      "status": "resolved"
+    },
+    {
+      "source": "01-requirements/non-functional-requirements.md",
+      "target": "08-tech-stack/infrastructure/docker.md",
       "raw_link": "../08-tech-stack/infrastructure/docker.md",
       "line": 0,
       "fragment": null,
@@ -1038,6 +1046,14 @@
       "source": "01-requirements/non-functional-requirements.md",
       "target": "11-deployment/ci-cd-pipeline.md",
       "raw_link": "../11-deployment/ci-cd-pipeline.md",
+      "line": 0,
+      "fragment": null,
+      "status": "resolved"
+    },
+    {
+      "source": "01-requirements/non-functional-requirements.md",
+      "target": "11-deployment/local-development.md",
+      "raw_link": "../11-deployment/local-development.md",
       "line": 0,
       "fragment": null,
       "status": "resolved"
@@ -1228,6 +1244,14 @@
     },
     {
       "source": "02-features/FEATURE-02-Authentication.md",
+      "target": "05-data-model/account-service/README.md",
+      "raw_link": "../05-data-model/account-service/README.md",
+      "line": 0,
+      "fragment": null,
+      "status": "resolved"
+    },
+    {
+      "source": "02-features/FEATURE-02-Authentication.md",
       "target": "06-api-specification.md",
       "raw_link": "../06-api-specification.md",
       "line": 0,
@@ -1268,8 +1292,8 @@
     },
     {
       "source": "02-features/FEATURE-03-Balance-Inquiry.md",
-      "target": "03-user-stories/US-003.md",
-      "raw_link": "../03-user-stories/US-003.md",
+      "target": "03-user-stories/US-004.md",
+      "raw_link": "../03-user-stories/US-004.md",
       "line": 0,
       "fragment": null,
       "status": "resolved"
@@ -1340,8 +1364,8 @@
     },
     {
       "source": "02-features/FEATURE-04-Fund-Transfer.md",
-      "target": "03-user-stories/US-004.md",
-      "raw_link": "../03-user-stories/US-004.md",
+      "target": "03-user-stories/US-005.md",
+      "raw_link": "../03-user-stories/US-005.md",
       "line": 0,
       "fragment": null,
       "status": "resolved"
@@ -1380,8 +1404,8 @@
     },
     {
       "source": "02-features/FEATURE-05-Transaction-History.md",
-      "target": "03-user-stories/US-005.md",
-      "raw_link": "../03-user-stories/US-005.md",
+      "target": "03-user-stories/US-008.md",
+      "raw_link": "../03-user-stories/US-008.md",
       "line": 0,
       "fragment": null,
       "status": "resolved"
@@ -1924,6 +1948,14 @@
     },
     {
       "source": "03-user-stories/US-005.md",
+      "target": "05-data-model/transfer-service/README.md",
+      "raw_link": "../05-data-model/transfer-service/README.md#idempotency_keys",
+      "line": 0,
+      "fragment": "idempotency_keys",
+      "status": "resolved"
+    },
+    {
+      "source": "03-user-stories/US-005.md",
       "target": "06-api-specification.md",
       "raw_link": "../06-api-specification.md",
       "line": 0,
@@ -2188,6 +2220,14 @@
     },
     {
       "source": "03-user-stories/US-010.md",
+      "target": "05-data-model/transfer-service/README.md",
+      "raw_link": "../05-data-model/transfer-service/README.md#idempotency_keys",
+      "line": 0,
+      "fragment": "idempotency_keys",
+      "status": "resolved"
+    },
+    {
+      "source": "03-user-stories/US-010.md",
       "target": "06-api-specification.md",
       "raw_link": "../06-api-specification.md",
       "line": 0,
@@ -2288,6 +2328,14 @@
       "raw_link": "US-007.md",
       "line": 0,
       "fragment": null,
+      "status": "resolved"
+    },
+    {
+      "source": "03-user-stories/US-012.md",
+      "target": "05-data-model/account-service/README.md",
+      "raw_link": "../05-data-model/account-service/README.md#accounts",
+      "line": 0,
+      "fragment": "accounts",
       "status": "resolved"
     },
     {
@@ -2443,6 +2491,14 @@
       "status": "resolved"
     },
     {
+      "source": "04-architecture.md",
+      "target": "05-data-model.md",
+      "raw_link": "./05-data-model.md#61-keyspace",
+      "line": 0,
+      "fragment": "61-keyspace",
+      "status": "resolved"
+    },
+    {
       "source": "05-data-model.md",
       "target": "05-data-model/account-service/README.md",
       "raw_link": "./05-data-model/account-service/README.md",
@@ -2476,6 +2532,22 @@
     },
     {
       "source": "05-data-model.md",
+      "target": "11-deployment/cloud-deployment-aws.md",
+      "raw_link": "./11-deployment/cloud-deployment-aws.md#keyspaces-amazon-keyspaces",
+      "line": 0,
+      "fragment": "keyspaces-amazon-keyspaces",
+      "status": "resolved"
+    },
+    {
+      "source": "05-data-model.md",
+      "target": "12-operations/backup-recovery.md",
+      "raw_link": "./12-operations/backup-recovery.md",
+      "line": 0,
+      "fragment": null,
+      "status": "resolved"
+    },
+    {
+      "source": "05-data-model.md",
       "target": "12-operations/backup-recovery.md",
       "raw_link": "./12-operations/backup-recovery.md",
       "line": 0,
@@ -2496,6 +2568,14 @@
       "raw_link": "../../02-features/FEATURE-04-Fund-Transfer.md",
       "line": 0,
       "fragment": null,
+      "status": "resolved"
+    },
+    {
+      "source": "05-data-model/account-service/README.md",
+      "target": "05-data-model.md",
+      "raw_link": "../../05-data-model.md#3-design-principles",
+      "line": 0,
+      "fragment": "3-design-principles",
       "status": "resolved"
     },
     {
@@ -2750,6 +2830,22 @@
       "source": "06-api-specification.md",
       "target": "06-api-specification",
       "raw_link": "./06-api-specification/",
+      "line": 0,
+      "fragment": null,
+      "status": "resolved"
+    },
+    {
+      "source": "06-api-specification.md",
+      "target": "06-api-specification/account-service/account-service-asyncapi.yaml",
+      "raw_link": "./06-api-specification/account-service/account-service-asyncapi.yaml",
+      "line": 0,
+      "fragment": null,
+      "status": "resolved"
+    },
+    {
+      "source": "06-api-specification.md",
+      "target": "06-api-specification/account-service/account-service-asyncapi.yaml",
+      "raw_link": "./06-api-specification/account-service/account-service-asyncapi.yaml",
       "line": 0,
       "fragment": null,
       "status": "resolved"
@@ -4412,6 +4508,14 @@
     },
     {
       "source": "08-tech-stack/backend/kafka.md",
+      "target": "01-requirements/non-functional-requirements.md",
+      "raw_link": "../../01-requirements/non-functional-requirements.md#availability",
+      "line": 0,
+      "fragment": "availability",
+      "status": "resolved"
+    },
+    {
+      "source": "08-tech-stack/backend/kafka.md",
       "target": "08-tech-stack.md",
       "raw_link": "../../08-tech-stack.md",
       "line": 0,
@@ -5924,6 +6028,14 @@
     },
     {
       "source": "08-tech-stack/infrastructure/docker.md",
+      "target": "01-requirements/non-functional-requirements.md",
+      "raw_link": "../../01-requirements/non-functional-requirements.md#availability",
+      "line": 0,
+      "fragment": "availability",
+      "status": "resolved"
+    },
+    {
+      "source": "08-tech-stack/infrastructure/docker.md",
       "target": "08-tech-stack.md",
       "raw_link": "../../08-tech-stack.md",
       "line": 0,
@@ -6573,6 +6685,14 @@
     {
       "source": "09-testing-strategy/06-test-execution.md",
       "target": "08-tech-stack/infrastructure/github-actions.md",
+      "raw_link": "../08-tech-stack/infrastructure/github-actions.md#3-integration-with-real-services",
+      "line": 0,
+      "fragment": "3-integration-with-real-services",
+      "status": "resolved"
+    },
+    {
+      "source": "09-testing-strategy/06-test-execution.md",
+      "target": "08-tech-stack/infrastructure/github-actions.md",
       "raw_link": "../08-tech-stack/infrastructure/github-actions.md",
       "line": 0,
       "fragment": null,
@@ -7036,16 +7156,16 @@
     },
     {
       "source": "10-implementation-plan/milestones.md",
-      "target": "03-user-stories/US-003.md",
-      "raw_link": "../03-user-stories/US-003.md",
+      "target": "03-user-stories/US-004.md",
+      "raw_link": "../03-user-stories/US-004.md",
       "line": 0,
       "fragment": null,
       "status": "resolved"
     },
     {
       "source": "10-implementation-plan/milestones.md",
-      "target": "03-user-stories/US-004.md",
-      "raw_link": "../03-user-stories/US-004.md",
+      "target": "03-user-stories/US-005.md",
+      "raw_link": "../03-user-stories/US-005.md",
       "line": 0,
       "fragment": null,
       "status": "resolved"
@@ -7110,6 +7230,14 @@
       "source": "10-implementation-plan/milestones.md",
       "target": "12-operations.md",
       "raw_link": "../12-operations.md",
+      "line": 0,
+      "fragment": null,
+      "status": "resolved"
+    },
+    {
+      "source": "10-implementation-plan/phase-0-foundation.md",
+      "target": "06-api-specification.md",
+      "raw_link": "../06-api-specification.md",
       "line": 0,
       "fragment": null,
       "status": "resolved"
@@ -7348,8 +7476,8 @@
     },
     {
       "source": "10-implementation-plan/phase-3-balance-inquiry.md",
-      "target": "03-user-stories/US-003.md",
-      "raw_link": "../03-user-stories/US-003.md",
+      "target": "03-user-stories/US-004.md",
+      "raw_link": "../03-user-stories/US-004.md",
       "line": 0,
       "fragment": null,
       "status": "resolved"
@@ -7404,8 +7532,8 @@
     },
     {
       "source": "10-implementation-plan/phase-4-transfer-initiation.md",
-      "target": "03-user-stories/US-004.md",
-      "raw_link": "../03-user-stories/US-004.md",
+      "target": "03-user-stories/US-005.md",
+      "raw_link": "../03-user-stories/US-005.md",
       "line": 0,
       "fragment": null,
       "status": "resolved"
@@ -7464,6 +7592,30 @@
       "raw_link": "../04-architecture.md#32-saga-pattern-for-transfers",
       "line": 0,
       "fragment": "32-saga-pattern-for-transfers",
+      "status": "resolved"
+    },
+    {
+      "source": "10-implementation-plan/phase-5-kafka-consumer.md",
+      "target": "06-api-specification.md",
+      "raw_link": "../06-api-specification.md#13-asynchronous-command--event-contracts",
+      "line": 0,
+      "fragment": "13-asynchronous-command--event-contracts",
+      "status": "resolved"
+    },
+    {
+      "source": "10-implementation-plan/phase-5-kafka-consumer.md",
+      "target": "06-api-specification/account-service/account-service-asyncapi.yaml",
+      "raw_link": "../06-api-specification/account-service/account-service-asyncapi.yaml",
+      "line": 0,
+      "fragment": null,
+      "status": "resolved"
+    },
+    {
+      "source": "10-implementation-plan/phase-5-kafka-consumer.md",
+      "target": "08-tech-stack/backend/cassandra.md",
+      "raw_link": "../08-tech-stack/backend/cassandra.md",
+      "line": 0,
+      "fragment": null,
       "status": "resolved"
     },
     {
@@ -7576,6 +7728,14 @@
       "raw_link": "../01-requirements/non-functional-requirements.md",
       "line": 0,
       "fragment": null,
+      "status": "resolved"
+    },
+    {
+      "source": "10-implementation-plan/phase-8-security-idempotency.md",
+      "target": "06-api-specification.md",
+      "raw_link": "../06-api-specification.md#8-rate-limiting",
+      "line": 0,
+      "fragment": "8-rate-limiting",
       "status": "resolved"
     },
     {
@@ -7724,6 +7884,14 @@
     },
     {
       "source": "11-deployment/cloud-deployment-aws.md",
+      "target": "05-data-model.md",
+      "raw_link": "../05-data-model.md#61-keyspace",
+      "line": 0,
+      "fragment": "61-keyspace",
+      "status": "resolved"
+    },
+    {
+      "source": "11-deployment/cloud-deployment-aws.md",
       "target": "08-tech-stack/infrastructure/kubernetes.md",
       "raw_link": "../08-tech-stack/infrastructure/kubernetes.md",
       "line": 0,
@@ -7752,6 +7920,22 @@
       "raw_link": "../08-tech-stack/infrastructure/kubernetes.md",
       "line": 0,
       "fragment": null,
+      "status": "resolved"
+    },
+    {
+      "source": "11-deployment/local-development.md",
+      "target": "01-requirements/non-functional-requirements.md",
+      "raw_link": "../01-requirements/non-functional-requirements.md#availability",
+      "line": 0,
+      "fragment": "availability",
+      "status": "resolved"
+    },
+    {
+      "source": "11-deployment/local-development.md",
+      "target": "08-tech-stack/infrastructure/docker.md",
+      "raw_link": "../08-tech-stack/infrastructure/docker.md#3-compose-topology",
+      "line": 0,
+      "fragment": "3-compose-topology",
       "status": "resolved"
     },
     {
@@ -8198,9 +8382,9 @@
   "stats": {
     "files": 126,
     "ignored_files": 20,
-    "links": 945,
+    "links": 968,
     "broken_links": 0,
-    "resolved_links": 945,
+    "resolved_links": 968,
     "self_links": 0,
     "orphan_files": 0,
     "components": 0

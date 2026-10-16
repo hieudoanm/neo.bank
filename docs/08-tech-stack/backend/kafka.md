@@ -14,11 +14,10 @@ Rules:
 
 - One topic per event family; do not multiplex unrelated events.
 - Topic names are lowercase, dot-separated, and declared in configuration (`KAFKA_TOPIC_TRANSFERS`).
-- `auto.create.topics.enable=false`; topics are created by Terraform or migration tooling, never implicitly by a client.
-- Durability settings in every environment:
-  - `replication.factor=3`
-  - `min.insync.replicas=2`
-  - producer `acks=all`
+- `auto.create.topics.enable=false`; topics are created explicitly — by Terraform in the cloud and by a Compose/CI init step (`kafka-topics --create`) locally — never implicitly by a client.
+- Durability settings by environment (`acks=all` is the one invariant):
+  - **Production:** `replication.factor=3`, `min.insync.replicas=2`, producer `acks=all`
+  - **Local / CI (single broker):** `replication.factor=1`, `min.insync.replicas=1`, producer `acks=all` — a one-broker cluster cannot satisfy RF=3, and internal topics with RF=3 never come up. See [`NFR-013`](../../01-requirements/non-functional-requirements.md#availability).
 - Partition count is chosen for parallelism; the transfers topic partitions by **source account ID** so all events for one account are ordered.
 
 ## 2. Event Contract
@@ -146,7 +145,7 @@ func (c *TransferConsumer) handle(ctx context.Context, msg kafka.Message) error 
 Rules:
 
 - Claim the idempotency key **before** applying side effects; skip when already claimed.
-- The balance change itself is a Cassandra lightweight transaction (`docs/08-tech-stack/backend/cassandra.md`), which keeps debit + credit atomic.
+- Each balance change is a Cassandra lightweight transaction (`docs/08-tech-stack/backend/cassandra.md`); the debit and credit are separate statements coordinated by the saga with compensation, not a single atomic unit.
 - Release (or leave unclaimed) on failure so a redelivery can retry; complete only after the state update and transaction rows are written.
 - Duplicate delivery is normal: tests must deliver the same event twice and assert a single balance change.
 

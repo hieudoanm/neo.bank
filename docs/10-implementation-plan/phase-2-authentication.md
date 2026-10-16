@@ -16,6 +16,7 @@ Implement user registration, login, token refresh, and logout. Phase 2 establish
 | Frontend screens | Register, Login |
 | JWT tokens | RS256-signed access (15 min) and refresh (7 days) tokens |
 | Password hashing | Argon2id with secure parameters |
+| API Gateway JWT enforcement | Deny-by-default middleware on the gateway: validate the RS256 access token on every `/api/v1/*` route except the public auth routes (`/register`, `/login`, `/refresh`, `/logout`), then forward the token to the upstream service |
 | Refresh token storage | Hashed refresh tokens in Cassandra |
 | Tests | Unit and integration tests for all auth endpoints and screens |
 
@@ -24,6 +25,7 @@ Implement user registration, login, token refresh, and logout. Phase 2 establish
 - [ ] Implement password hashing with Argon2id (recommended parameters).
 - [ ] Implement JWT token generation (RS256, 15-minute expiry).
 - [ ] Implement JWT token validation middleware for protected endpoints (the single authentication middleware owned by Phase 2 and reused by every later phase).
+- [ ] Implement API Gateway JWT enforcement: deny-by-default middleware that validates the RS256 access token on every `/api/v1/*` route except the public auth routes (`POST /register`, `/login`, `/refresh`, `/logout`), returns `401 UNAUTHENTICATED`/`TOKEN_EXPIRED` in the standard error envelope, and forwards the (validated) `Authorization` header to the upstream service. Downstream services still validate independently (defence in depth).
 - [ ] Implement `POST /register` endpoint (email validation, password strength, duplicate check).
 - [ ] Implement `POST /login` endpoint (credential validation, issue access + refresh tokens).
 - [ ] Implement `POST /refresh` endpoint (validate refresh token, issue new access token).
@@ -47,7 +49,8 @@ Implement user registration, login, token refresh, and logout. Phase 2 establish
 - Refresh tokens can be used to obtain new access tokens.
 - Logout invalidates refresh tokens (subsequent refresh attempts rejected).
 - Passwords hashed with Argon2id (never stored in plain text).
-- Tokens validated on every protected endpoint (401 on missing/invalid).
+- Tokens validated on every protected endpoint (401 on missing/invalid) and at the gateway before the request reaches a service.
+- A protected `/api/v1/*` route called without a valid JWT is rejected by the gateway with `401` and never reaches the upstream service; the public auth routes remain reachable without a token.
 - Authentication completes within 300 ms (p95).
 - Tests pass (unit, integration, frontend).
 
@@ -61,6 +64,7 @@ Phase 1 (data model for users and refresh_tokens tables).
 - Integration tests: register → login → refresh → logout flow with real Cassandra.
 - Frontend tests: Register/Login screens with validation and error states.
 - Security tests: no account enumeration on duplicate email or invalid credentials.
+- Negative authorisation tests: protected gateway route without a token, with an expired token, with a tampered signature, and with a token for another account — each must be rejected (`404` preferred over `403` for another account's resources).
 
 ## Risks & Considerations
 
