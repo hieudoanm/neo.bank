@@ -1,13 +1,13 @@
 module github.com/hieudoanm/neo.bank/packages/backend/auth
 
-go 1.22
+go 1.25.0
 
 require (
 	github.com/gin-gonic/gin v1.10.1
 	github.com/gocql/gocql v1.6.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/uuid v1.4.0
-	golang.org/x/crypto v0.31.0
+	golang.org/x/crypto v0.51.0
 )
 
 require (
@@ -33,9 +33,9 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	golang.org/x/arch v0.8.0 // indirect
-	golang.org/x/net v0.25.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/net v0.55.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
+	golang.org/x/text v0.37.0 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
