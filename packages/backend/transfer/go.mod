@@ -2,7 +2,7 @@ module github.com/hieudoanm/neo.bank/packages/backend/transfer
 
 go 1.27.2
 
-require github.com/gocql/gocql v1.7.0
+require github.com/gocql/gocql/v2 v2.1.2
 
 require (
 	github.com/golang/snappy v0.0.3 // indirect
