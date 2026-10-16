@@ -6,10 +6,12 @@ Back to the [frontend index](../README.md) · [shared frontend rules](../README.
 
 ## 1. Documents
 
-| Document                 | Covers                   |
-| ------------------------ | ------------------------ |
-| [`eslint.md`](./eslint.md)  | Lint rules for TS/React  |
-| [`prettier.md`](./prettier.md) | Format rules for all frontend files |
+| Document                       | Covers                                |
+| ------------------------------ | ------------------------------------- |
+| [`eslint.md`](./eslint.md)     | Lint rules for TS/React               |
+| [`prettier.md`](./prettier.md) | Format rules for all frontend files   |
+| [`pnpm.md`](./pnpm.md)         | Package manager, workspaces, installs |
+| [`husky.md`](./husky.md)       | Git hooks, lint-staged, pre-commit    |
 
 ## 2. Toolchain Rules
 
@@ -28,6 +30,8 @@ Back to the [frontend index](../README.md) · [shared frontend rules](../README.
 
 - ESLint practices: [`./eslint.md`](./eslint.md)
 - Prettier practices: [`./prettier.md`](./prettier.md)
+- pnpm practices: [`./pnpm.md`](./pnpm.md)
+- Husky practices: [`./husky.md`](./husky.md)
 - TypeScript types: [`../core/typescript.md`](../core/typescript.md)
 - Tailwind classes: [`../styles/tailwindcss.md`](../styles/tailwindcss.md)
 

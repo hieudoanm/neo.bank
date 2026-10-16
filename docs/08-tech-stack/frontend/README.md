@@ -38,10 +38,12 @@ The **why** behind these choices (trade-offs and rejected alternatives) lives in
 
 ### 1.4 Tools ([`tools/README.md`](./tools/README.md))
 
-| Document                             | Covers                              |
-| ------------------------------------ | ----------------------------------- |
-| [`eslint.md`](./tools/eslint.md)     | Lint rules for TS/React             |
-| [`prettier.md`](./tools/prettier.md) | Format rules for all frontend files |
+| Document                             | Covers                               |
+| ------------------------------------ | ------------------------------------ |
+| [`eslint.md`](./tools/eslint.md)     | Lint rules for TS/React              |
+| [`prettier.md`](./tools/prettier.md) | Format rules for all frontend files  |
+| [`pnpm.md`](./tools/pnpm.md)         | Package manager, workspaces, install |
+| [`husky.md`](./tools/husky.md)       | Git hooks, lint-staged, pre-commit   |
 
 ## 2. Shared Rules
 

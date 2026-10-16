@@ -76,6 +76,8 @@ Two rules are non-negotiable, and every decision below is subordinate to them:
 | Frontend routing    | React Router                                       | [§4.4](#44-react-router)                |
 | Frontend icons      | react-icons (Phosphor Icons, `pi`)                 | [§4.6](#46-icons-react-icons--phosphor) |
 | Frontend testing    | Vitest + Playwright                                | [§4.5](#45-vitest--playwright)          |
+| Package manager     | pnpm (workspaces)                                  | [§13.1](#13-package-manager--git-hooks) |
+| Git hooks           | Husky                                              | [§13.2](#13-package-manager--git-hooks) |
 | API                 | Go 1.22+, Gin router                               | [§5.1](#51-go--gin)                     |
 | Database driver     | gocql                                              | [§5.3](#53-gocql)                       |
 | Database            | Apache Cassandra 4.x                               | [§6](#6-cassandra)                      |
@@ -227,6 +229,8 @@ Each row is a decision with its rejected alternative and the reason it was rejec
 | Data fetching         | SWR vs TanStack Query               | TanStack Query                                    | Mature caching, mutations, TypeScript support, polling.                                        |
 | Routing               | TanStack Router vs React Router     | React Router                                      | Nested/layout routes, protected routes, lazy loading out of the box.                           |
 | Icons                 | hand-authored SVG vs icon library   | react-icons (Phosphor)                            | One maintained set; tree-shakeable React components mapped to token sizes/colours.             |
+| Package manager       | npm / yarn vs pnpm                  | pnpm (root workspaces)                            | Content-addressable store, strict resolution, fast installs, lockfile by default.              |
+| Git hooks             | Lefthook vs Husky                   | Husky                                             | Hooks versioned in repo, lifecycle-driven install, integrates with lint-staged.                |
 | Frontend testing      | Jest/Cypress vs Vitest/Playwright   | Vitest + Playwright                               | Shares the Vite pipeline; real-browser E2E with auto-waiting and traces.                       |
 | Local dev / images    | host installs vs Docker Compose     | Docker + Docker Compose                           | Reproducible topology (Cassandra/Kafka); same images across environments.                      |
 | CI                    | other CI vs GitHub Actions          | GitHub Actions                                    | Native to the repo; real Cassandra/Kafka via service containers.                               |
@@ -240,14 +244,33 @@ Each row is a decision with its rejected alternative and the reason it was rejec
 
 New significant decisions (for example splitting the consumer into per-event services) must be recorded as an Architecture Decision Record before implementation, per [`04-architecture.md`](./04-architecture.md).
 
-## 13. Configuration & Secrets
+## 13. Package Manager & Git Hooks
+
+### 13.1 pnpm
+
+- **Chosen:** pnpm as the root-level package manager, including workspaces for the frontend app.
+- **Considered:** npm, yarn.
+- **Why:** pnpm uses a content-addressable store with hard links/symlinks instead of copying packages into every `node_modules`; the project has one frontend app and potentially multiple future packages, so disk usage and install speed stay low and the store is shared across versions. pnpm's strict dependency resolution surfaces missing/hoisted dependencies as errors rather than silently allowing them, matching the "no undeclared dependencies" rule in [`08-tech-stack/frontend/README.md`](./08-tech-stack/frontend/README.md). It ships a lockfile (`pnpm-lock.yaml`) without extra configuration and works with the GitHub Actions `setup-node` + `pnpm/action-setup` flow.
+- **Consequences:** All install, run, and test commands use `pnpm`; the lockfile is committed; the root toolchain is referenced from `AGENTS.md`. Husky lifecycle scripts rely on `pnpm install` running `prepare`.
+- **How:** [`08-tech-stack/frontend/tools/README.md`](./08-tech-stack/frontend/tools/README.md), `packages/frontend/app/package.json`.
+
+### 13.2 Husky
+
+- **Chosen:** Husky for Git hooks, configured at the repository root.
+- **Considered:** Lefthook, simple-link, manual hooks in `.git/hooks`.
+- **Why:** Husky installs hooks through the dependency lifecycle (`prepare`), keeps them versioned in the repository rather than in `.git`, and integrates with lint-staged for fast, staged-file-only checks on commit and push. It is the lowest-friction cross-platform option for a TypeScript + Go monorepo where each member installs `pnpm` dependencies.
+- **Consequences:** Hooks run formatting, linting, and type checks locally ahead of CI; a bypass requires `git commit --no-verify` (allowed only in emergencies, consistent with the deny-by-default rule). No hook may weaken or skip a quality gate.
+- **How:** Root `package.json` `prepare` script and `.husky/` hooks.
+
+## 14. Configuration & Secrets
+
 
 - Environment variables locally via `.env`; managed secrets in production.
 - Required: `APP_ENV`, `JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY`, `CASSANDRA_CONTACT_POINTS`, `CASSANDRA_KEYSPACE`, `KAFKA_BROKERS`, `KAFKA_TOPIC_TRANSFERS`, `LOG_LEVEL`, `CORS_ORIGINS`.
 - Validate at startup and fail clearly on missing required configuration.
 - `.env.example` holds placeholders only. Never commit secrets.
 
-## 14. Definition of Done (Tech Stack)
+## 15. Definition of Done (Tech Stack)
 
 1. Frontend and backend build, test, typecheck, and lint independently in CI.
 2. Cassandra migrations are applied and tested; every query is parameterised and account-scoped.
