@@ -1,0 +1,15 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="256"
+  height="256"
+  viewBox="0 0 256 256"
+  role="img"
+  aria-label="NEO Bank"
+>
+  <title>NEO Bank</title>
+  <desc>NEO Bank mark for dark backgrounds: rounded hexagon in light brand blue.</desc>
+  <path
+    fill="#3B82F6"
+    d="M148.78 44 L190.35 68 Q211.14 80 211.14 104 L211.14 152 Q211.14 176 190.35 188 L148.78 212 Q128 224 107.22 212 L65.65 188 Q44.86 176 44.86 152 L44.86 104 Q44.86 80 65.65 68 L107.22 44 Q128 32 148.78 44 Z"
+  />
+</svg>

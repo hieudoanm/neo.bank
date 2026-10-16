@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="en" data-theme="neo-light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Landing · NEO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@5"
+      rel="stylesheet"
+      type="text/css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css"
+      rel="stylesheet"
+      type="text/css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css"
+      rel="stylesheet"
+      type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+      @theme {
+        --font-sans:
+          Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+        --font-mono:
+          ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          'Liberation Mono', monospace;
+
+        --color-base-100: #ffffff;
+        --color-base-200: #f3f4f6;
+        --color-base-300: #e5e7eb;
+        --color-base-content: #111827;
+
+        --color-background: #ffffff;
+        --color-background-secondary: #f9fafb;
+        --color-surface: #ffffff;
+        --color-surface-raised: #f9fafb;
+        --color-border: #e5e7eb;
+        --color-border-light: #f3f4f6;
+        --color-border-strong: #d1d5db;
+
+        --color-text-primary: #111827;
+        --color-text-secondary: #6b7280;
+        --color-text-tertiary: #9ca3af;
+        --color-text-inverse: #ffffff;
+
+        --color-primary: #2563eb;
+        --color-primary-hover: #1d4ed8;
+        --color-primary-active: #1e40af;
+        --color-primary-content: #ffffff;
+        --color-primary-muted: #eff6ff;
+
+        --color-success: #10b981;
+        --color-success-bg: #d1fae5;
+        --color-success-fg: #047857;
+        --color-error: #ef4444;
+        --color-error-bg: #fee2e2;
+        --color-error-fg: #b91c1c;
+        --color-warning: #f59e0b;
+        --color-warning-bg: #fef3c7;
+        --color-warning-fg: #92400e;
+        --color-info: #3b82f6;
+        --color-info-bg: #dbeafe;
+        --color-info-fg: #1d4ed8;
+        --color-focus-ring: #2563eb;
+      }
+    </style>
+    <style>
+      .icon {
+        display: inline-block;
+        line-height: 1;
+        vertical-align: -0.125em;
+      }
+      .icon-xs {
+        font-size: 16px;
+      }
+      .icon-sm {
+        font-size: 20px;
+      }
+      .icon-md {
+        font-size: 24px;
+      }
+      .icon-lg {
+        font-size: 32px;
+      }
+      .icon-xl {
+        font-size: 48px;
+      }
+      [data-theme='neo-dark'] .logo-light { display: none; }
+      [data-theme='neo-light'] .logo-dark { display: none; }
+      [data-theme='neo-light'] {
+        color-scheme: light;
+        --color-base-100: #ffffff;
+        --color-base-200: #f3f4f6;
+        --color-base-300: #e5e7eb;
+        --color-base-content: #111827;
+        --color-primary: #2563eb;
+        --color-primary-content: #ffffff;
+        --color-secondary: #6b7280;
+        --color-secondary-content: #ffffff;
+        --color-accent: #2563eb;
+        --color-accent-content: #ffffff;
+        --color-neutral: #111827;
+        --color-neutral-content: #ffffff;
+        --color-info: #3b82f6;
+        --color-info-content: #ffffff;
+        --color-success: #10b981;
+        --color-success-content: #ffffff;
+        --color-warning: #f59e0b;
+        --color-warning-content: #111827;
+        --color-error: #ef4444;
+        --color-error-content: #ffffff;
+        --color-background: #ffffff;
+        --color-background-secondary: #f9fafb;
+        --color-surface: #ffffff;
+        --color-surface-raised: #f9fafb;
+        --color-border: #e5e7eb;
+        --color-border-light: #f3f4f6;
+        --color-border-strong: #d1d5db;
+        --color-text-primary: #111827;
+        --color-text-secondary: #6b7280;
+        --color-text-tertiary: #9ca3af;
+        --color-text-inverse: #ffffff;
+        --color-primary-hover: #1d4ed8;
+        --color-primary-active: #1e40af;
+        --color-primary-muted: #eff6ff;
+        --color-success-bg: #d1fae5;
+        --color-success-fg: #047857;
+        --color-error-bg: #fee2e2;
+        --color-error-fg: #b91c1c;
+        --color-warning-bg: #fef3c7;
+        --color-warning-fg: #92400e;
+        --color-info-bg: #dbeafe;
+        --color-info-fg: #1d4ed8;
+        --color-focus-ring: #2563eb;
+        --radius-selector: 9999px;
+        --radius-field: 9999px;
+        --radius-box: 0.5rem;
+        --size-selector: 0.25rem;
+        --size-field: 0.25rem;
+      }
+      [data-theme='neo-dark'] {
+        color-scheme: dark;
+        --color-base-100: #111827;
+        --color-base-200: #1f2937;
+        --color-base-300: #374151;
+        --color-base-content: #f9fafb;
+        --color-primary: #3b82f6;
+        --color-primary-content: #0b1220;
+        --color-secondary: #d1d5db;
+        --color-secondary-content: #0b1220;
+        --color-accent: #3b82f6;
+        --color-accent-content: #0b1220;
+        --color-neutral: #1f2937;
+        --color-neutral-content: #f9fafb;
+        --color-info: #60a5fa;
+        --color-info-content: #0b1220;
+        --color-success: #34d399;
+        --color-success-content: #0b1220;
+        --color-warning: #fbbf24;
+        --color-warning-content: #0b1220;
+        --color-error: #f87171;
+        --color-error-content: #0b1220;
+        --color-background: #0b1220;
+        --color-background-secondary: #111827;
+        --color-surface: #111827;
+        --color-surface-raised: #1f2937;
+        --color-border: #374151;
+        --color-border-light: #1f2937;
+        --color-border-strong: #4b5563;
+        --color-text-primary: #f9fafb;
+        --color-text-secondary: #d1d5db;
+        --color-text-tertiary: #9ca3af;
+        --color-text-inverse: #0b1220;
+        --color-primary-hover: #60a5fa;
+        --color-primary-active: #2563eb;
+        --color-primary-muted: #172554;
+        --color-success-bg: #064e3b;
+        --color-success-fg: #6ee7b7;
+        --color-error-bg: #450a0a;
+        --color-error-fg: #fca5a5;
+        --color-warning-bg: #451a03;
+        --color-warning-fg: #fcd34d;
+        --color-info-bg: #172554;
+        --color-info-fg: #93c5fd;
+        --color-focus-ring: #3b82f6;
+        --radius-selector: 9999px;
+        --radius-field: 9999px;
+        --radius-box: 0.5rem;
+        --size-selector: 0.25rem;
+        --size-field: 0.25rem;
+      }
+      body {
+        background-color: var(--color-background);
+        color: var(--color-text-primary);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+      :focus-visible {
+        outline: 2px solid var(--color-focus-ring);
+        outline-offset: 2px;
+      }
+      .theme-switcher {
+        position: fixed;
+        right: 1rem;
+        bottom: 1rem;
+        z-index: 60;
+        display: flex;
+        gap: 0.25rem;
+        padding: 0.25rem;
+        border-radius: 999px;
+        border: 1px solid var(--color-base-300);
+        background: var(--color-base-100);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+      }
+      .theme-switcher button {
+        font: inherit;
+        font-size: 12px;
+        line-height: 1;
+        padding: 0.35rem 0.7rem;
+        border-radius: 999px;
+        border: 0;
+        background: transparent;
+        color: var(--color-base-content);
+        opacity: 0.65;
+        cursor: pointer;
+      }
+      .theme-switcher button[aria-pressed='true'] {
+        background: var(--color-base-200);
+        opacity: 1;
+        .btn {
+          border-radius: 9999px !important;
+        }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          var t = window.localStorage.getItem('neo-theme');
+          if (t !== 'neo-light' && t !== 'neo-dark') {
+            t = window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'neo-dark'
+              : 'neo-light';
+          }
+          document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body class="bg-background text-text-primary min-h-screen">
+    <div class="theme-switcher" role="group" aria-label="Colour theme">
+      <button type="button" data-theme-value="neo-light" aria-pressed="true">
+        Light
+      </button>
+      <button type="button" data-theme-value="neo-dark" aria-pressed="false">
+        Dark
+      </button>
+    </div>
+    <script>
+      (function () {
+        var key = 'neo-theme';
+        function apply(theme) {
+          document.documentElement.setAttribute('data-theme', theme);
+          Array.prototype.forEach.call(
+            document.querySelectorAll('.theme-switcher button'),
+            function (button) {
+              button.setAttribute(
+                'aria-pressed',
+                String(button.getAttribute('data-theme-value') === theme)
+              );
+            }
+          );
+        }
+        apply(
+          document.documentElement.getAttribute('data-theme') || 'neo-light'
+        );
+        Array.prototype.forEach.call(
+          document.querySelectorAll('.theme-switcher button'),
+          function (button) {
+            button.addEventListener('click', function () {
+              var theme = button.getAttribute('data-theme-value');
+              try {
+                window.localStorage.setItem(key, theme);
+              } catch (error) {}
+              apply(theme);
+            });
+          }
+        );
+      })();
+    </script>
+    <header
+      class="bg-background/80 border-border sticky top-0 z-40 border-b backdrop-blur">
+      <div
+        class="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+        <a href="01-landing.html" class="flex items-center gap-2"
+          ><img src="../../brand/svg/logo-mark-light.svg" alt="" aria-hidden="true" class="logo-light h-6 w-6" /><img src="../../brand/svg/logo-mark-dark.svg" alt="" aria-hidden="true" class="logo-dark h-6 w-6" /><span class="text-text-primary text-lg font-semibold tracking-tight">NEO</span></a
+        >
+        <nav class="hidden items-center gap-6 md:flex" aria-label="Primary">
+          <a
+            href="#features"
+            class="text-text-secondary hover:text-text-primary text-sm font-medium"
+            >Features</a
+          ><a
+            href="#security"
+            class="text-text-secondary hover:text-text-primary text-sm font-medium"
+            >Security</a
+          ><a
+            href="#faq"
+            class="text-text-secondary hover:text-text-primary text-sm font-medium"
+            >FAQ</a
+          >
+        </nav>
+        <div class="flex items-center gap-2">
+          <a href="02-sign-in.html" class="btn btn-ghost btn-sm">Sign in</a
+          ><a href="03-register.html" class="btn btn-primary btn-sm"
+            >Get started</a
+          >
+        </div>
+      </div>
+    </header>
+    <main>
+      <section class="mx-auto max-w-6xl px-4 pt-16 pb-12 lg:pt-24 lg:pb-20">
+        <div class="grid items-center gap-12 lg:grid-cols-2">
+          <div>
+            <span
+              class="bg-primary-muted text-primary inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
+              >Instant transfers, no waiting</span
+            >
+            <h1
+              class="text-text-primary mt-4 text-4xl font-bold tracking-tight sm:text-5xl">
+              Banking that moves as fast as you do.
+            </h1>
+            <p
+              class="text-text-secondary mt-4 max-w-md text-base leading-relaxed">
+              Open an account in minutes, check your balance in real time, and
+              send money to anyone instantly — all with bank-grade security.
+            </p>
+            <div class="mt-8 flex flex-wrap items-center gap-3">
+              <a href="03-register.html" class="btn btn-primary btn-lg"
+                >Open an account</a
+              >
+              <a href="02-sign-in.html" class="btn btn-outline btn-lg"
+                >Sign in</a
+              >
+            </div>
+            <p class="text-text-tertiary mt-4 text-xs">
+              No monthly fees &middot; No minimum balance &middot; Cancel
+              anytime
+            </p>
+          </div>
+
+          <div class="relative">
+            <div
+              class="bg-surface border-border rounded-xl border p-6 shadow-sm">
+              <p class="text-text-secondary text-sm font-medium">
+                Current balance
+              </p>
+              <div class="mt-2 flex items-baseline gap-2">
+                <span
+                  class="text-text-primary text-4xl font-bold tracking-tight tabular-nums"
+                  >$12,480.55</span
+                >
+                <span class="text-text-secondary text-sm">USD</span>
+              </div>
+              <div class="mt-6 flex flex-col gap-3">
+                <div
+                  class="bg-surface-raised flex items-center justify-between rounded-full p-3">
+                  <span class="text-text-primary text-sm font-medium"
+                    >Transfer to ACC-8842</span
+                  >
+                  <span class="text-success-fg text-sm font-semibold"
+                    >Instant</span
+                  >
+                </div>
+                <div
+                  class="bg-surface-raised flex items-center justify-between rounded-full p-3">
+                  <span class="text-text-primary text-sm font-medium"
+                    >Deposit from payroll</span
+                  >
+                  <span
+                    class="text-success-fg text-sm font-semibold tabular-nums"
+                    >+$3,200.00</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div
+              class="bg-success-bg text-success-fg absolute -bottom-4 -left-4 hidden items-center gap-2 rounded-full px-4 py-3 text-sm font-medium shadow-lg sm:flex">
+              <i class="ph ph-check-circle icon-sm" aria-hidden="true"></i>
+              Transfer sent
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="features"
+        class="border-border border-t bg-background-secondary">
+        <div class="mx-auto max-w-6xl px-4 py-16">
+          <div class="max-w-2xl">
+            <h2
+              class="text-text-primary text-2xl font-semibold tracking-tight sm:text-3xl">
+              Everything you need to move money
+            </h2>
+            <p class="text-text-secondary mt-3 text-base">
+              A focused set of features that make everyday banking effortless.
+            </p>
+          </div>
+          <div class="mt-10 grid gap-6 sm:grid-cols-3">
+            <div
+              class="bg-surface border-border rounded-xl border p-6 shadow-sm">
+              <span
+                class="bg-primary-muted text-primary flex h-10 w-10 items-center justify-center rounded-full"
+                ><i
+                  class="ph ph-arrows-left-right icon-sm"
+                  aria-hidden="true"></i
+              ></span>
+              <h3 class="text-text-primary mt-4 text-base font-semibold">
+                Instant transfers
+              </h3>
+              <p class="text-text-secondary mt-2 text-sm leading-relaxed">
+                Send money to any NEO account by ID. Transfers settle in
+                seconds, not days.
+              </p>
+            </div>
+            <div
+              class="bg-surface border-border rounded-xl border p-6 shadow-sm">
+              <span
+                class="bg-primary-muted text-primary flex h-10 w-10 items-center justify-center rounded-full"
+                ><i class="ph ph-shield-check icon-sm" aria-hidden="true"></i
+              ></span>
+              <h3 class="text-text-primary mt-4 text-base font-semibold">
+                Bank-grade security
+              </h3>
+              <p class="text-text-secondary mt-2 text-sm leading-relaxed">
+                Passwords hashed with Argon2id, signed sessions, and
+                authorisation checks on every request.
+              </p>
+            </div>
+            <div
+              class="bg-surface border-border rounded-xl border p-6 shadow-sm">
+              <span
+                class="bg-primary-muted text-primary flex h-10 w-10 items-center justify-center rounded-full"
+                ><i class="ph ph-squares-four icon-sm" aria-hidden="true"></i
+              ></span>
+              <h3 class="text-text-primary mt-4 text-base font-semibold">
+                Real-time balances
+              </h3>
+              <p class="text-text-secondary mt-2 text-sm leading-relaxed">
+                See your balance and every transaction update the moment it is
+                confirmed.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="security" class="mx-auto max-w-6xl px-4 py-16">
+        <div class="bg-primary rounded-xl px-8 py-12 text-center">
+          <h2
+            class="text-primary-content text-2xl font-semibold tracking-tight sm:text-3xl">
+            Built to keep your money safe
+          </h2>
+          <p
+            class="text-primary-content/80 mx-auto mt-3 max-w-xl text-sm leading-relaxed">
+            Every balance change is atomic, every transfer is idempotent, and
+            balances can never go negative.
+          </p>
+          <dl
+            class="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-6 sm:grid-cols-3">
+            <div>
+              <dt class="text-primary-content/70 text-sm">Transfers settled</dt>
+              <dd
+                class="text-primary-content mt-1 text-2xl font-bold tabular-nums">
+                2.4M+
+              </dd>
+            </div>
+            <div>
+              <dt class="text-primary-content/70 text-sm">Uptime</dt>
+              <dd
+                class="text-primary-content mt-1 text-2xl font-bold tabular-nums">
+                99.9%
+              </dd>
+            </div>
+            <div>
+              <dt class="text-primary-content/70 text-sm">
+                Average settle time
+              </dt>
+              <dd
+                class="text-primary-content mt-1 text-2xl font-bold tabular-nums">
+                &lt; 2s
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <section id="faq" class="border-border border-t">
+        <div class="mx-auto max-w-3xl px-4 py-16">
+          <h2
+            class="text-text-primary text-2xl font-semibold tracking-tight sm:text-3xl">
+            Frequently asked questions
+          </h2>
+          <dl class="mt-8 flex flex-col gap-5">
+            <div>
+              <dt class="text-text-primary text-base font-semibold">
+                How do I send money?
+              </dt>
+              <dd class="text-text-secondary mt-1 text-sm leading-relaxed">
+                Search for the recipient by account ID, enter an amount,
+                confirm, and you will see the status as it settles.
+              </dd>
+            </div>
+            <div>
+              <dt class="text-text-primary text-base font-semibold">
+                Is there a fee?
+              </dt>
+              <dd class="text-text-secondary mt-1 text-sm leading-relaxed">
+                Transfers between NEO accounts are free. There are no
+                monthly fees and no minimum balance.
+              </dd>
+            </div>
+            <div>
+              <dt class="text-text-primary text-base font-semibold">
+                What happens if a transfer fails?
+              </dt>
+              <dd class="text-text-secondary mt-1 text-sm leading-relaxed">
+                Your balance is unchanged and you are shown a clear error with
+                the reason. You can retry at any time.
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="border-border border-t bg-background-secondary">
+        <div class="mx-auto max-w-6xl px-4 py-16 text-center">
+          <h2
+            class="text-text-primary text-2xl font-semibold tracking-tight sm:text-3xl">
+            Open your account today
+          </h2>
+          <p class="text-text-secondary mx-auto mt-3 max-w-md text-sm">
+            It takes less than a minute, and your first transfer is on us.
+          </p>
+          <a href="03-register.html" class="btn btn-primary btn-lg mt-6"
+            >Get started</a
+          >
+        </div>
+      </section>
+    </main>
+
+    <footer class="border-border border-t">
+      <div
+        class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 sm:flex-row">
+        <a href="01-landing.html" class="flex items-center gap-2"
+          ><img src="../../brand/svg/logo-mark-light.svg" alt="" aria-hidden="true" class="logo-light h-6 w-6" /><img src="../../brand/svg/logo-mark-dark.svg" alt="" aria-hidden="true" class="logo-dark h-6 w-6" /><span class="text-text-primary text-lg font-semibold tracking-tight">NEO</span></a
+        >
+        <nav
+          class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2"
+          aria-label="Footer">
+          <a
+            href="#features"
+            class="text-text-secondary hover:text-text-primary text-sm"
+            >Features</a
+          >
+          <a
+            href="#security"
+            class="text-text-secondary hover:text-text-primary text-sm"
+            >Security</a
+          >
+          <a
+            href="#faq"
+            class="text-text-secondary hover:text-text-primary text-sm"
+            >FAQ</a
+          >
+          <a
+            href="02-sign-in.html"
+            class="text-text-secondary hover:text-text-primary text-sm"
+            >Sign in</a
+          >
+        </nav>
+        <p class="text-text-tertiary text-xs">
+          &copy; 2026 NEO. Prototype only.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
