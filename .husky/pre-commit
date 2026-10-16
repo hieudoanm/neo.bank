@@ -1,0 +1,1 @@
+pnpm -C packages/frontend/app exec tsc --noEmit
