@@ -1,0 +1,106 @@
+openapi: 3.0.3
+info:
+  title: NEO Bank — API Gateway
+  version: 1.0.0
+  description: |
+    API Gateway service. Single entry point for all client requests.
+    Handles routing, authentication validation, rate limiting, CORS,
+    and correlation/request IDs. No domain business logic.
+servers:
+  - url: http://localhost:8080
+    description: Development server
+  - url: https://api.neo.bank
+    description: Production server
+paths:
+  /healthz:
+    get:
+      summary: Liveness health check
+      operationId: livenessCheck
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/X-Request-ID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Service Unavailable
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/X-Request-ID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  /readyz:
+    get:
+      summary: Readiness health check
+      operationId: readinessCheck
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/X-Request-ID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+        '503':
+          description: Service Unavailable
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/X-Request-ID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+      required: [status, timestamp]
+    ReadinessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+        checks:
+          type: object
+          properties:
+            cassandra:
+              type: string
+              enum: [healthy, unhealthy]
+            kafka:
+              type: string
+              enum: [healthy, unhealthy]
+            diskSpace:
+              type: string
+              enum: [healthy, unhealthy]
+          required: [cassandra, kafka, diskSpace]
+        timestamp:
+          type: string
+          format: date-time
+      required: [status, checks, timestamp]
+  headers:
+    X-Request-ID:
+      description: Unique identifier for the request
+      schema:
+        type: string
+        format: uuid
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

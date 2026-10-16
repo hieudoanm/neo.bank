@@ -1,0 +1,143 @@
+{
+  "info": {
+    "name": "NEO Bank \u2014 Transaction Service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Transaction Service. Append-only read model for transaction history.\nConsumes transfer lifecycle events to build a denormalised view.\nProvides paginated transaction queries. Owns transaction read model.\n",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api/v1"
+    }
+  ],
+  "item": [
+    {
+      "name": "GET /accounts/{accountId}/transactions",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/accounts/{accountId}/transactions",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "accounts",
+            ":accountId",
+            "transactions"
+          ],
+          "variable": [
+            {
+              "key": "accountId",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "query": [
+            {
+              "key": "cursor",
+              "value": "string",
+              "description": "Pagination cursor"
+            },
+            {
+              "key": "limit",
+              "value": "20",
+              "description": "Page size (default: 20, max: 100)"
+            }
+          ]
+        },
+        "description": "Get transaction history for an account",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "200",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": "{}"
+        },
+        {
+          "name": "401",
+          "status": "Client Error",
+          "code": 401,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "404",
+          "status": "Client Error",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "429",
+          "status": "Client Error",
+          "code": 429,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "500",
+          "status": "Server Error",
+          "code": 500,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "503",
+          "status": "Server Error",
+          "code": 503,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        }
+      ]
+    }
+  ]
+}
