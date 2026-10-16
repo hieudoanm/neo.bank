@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant GW as API Gateway
+    participant AUTH as Auth Service
+    participant ACCT as Account Service
+    participant K as Kafka
+
+    U->>F: Submit registration (email, password)
+    F->>GW: POST /auth/register
+    GW->>AUTH: POST /auth/register
+    AUTH->>AUTH: Validate email/password strength
+    AUTH->>AUTH: Check user exists (private DB)
+    AUTH->>AUTH: Hash password (Argon2id)
+    AUTH->>AUTH: Create user (private DB)
+    AUTH->>ACCT: (optional sync) Create account request or emit event
+    AUTH-->>K: emit auth.user.created (optional)
+    ACCT-->>K: emit account.created
+    AUTH->>AUTH: Issue JWT access/refresh (refresh hashed)
+    GW-->>F: Return account_id, tokens
+    F-->>U: Success + auto-login

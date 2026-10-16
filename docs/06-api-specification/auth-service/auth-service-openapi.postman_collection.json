@@ -1,0 +1,440 @@
+{
+  "info": {
+    "name": "NEO Bank \u2014 Auth Service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Auth Service. Owns identity: user registration/login, password hashing\n(Argon2id), JWT access/refresh issuance, token revocation, credential\nvalidation. Owns users and refresh tokens.\n",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api/v1"
+    }
+  ],
+  "item": [
+    {
+      "name": "POST /register",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/register",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "register"
+          ]
+        },
+        "description": "Register a new account",
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [
+        {
+          "name": "201",
+          "status": "OK",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": "{}"
+        },
+        {
+          "name": "400",
+          "status": "Client Error",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "409",
+          "status": "Client Error",
+          "code": 409,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "429",
+          "status": "Client Error",
+          "code": 429,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "500",
+          "status": "Server Error",
+          "code": 500,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "503",
+          "status": "Server Error",
+          "code": 503,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        }
+      ]
+    },
+    {
+      "name": "POST /login",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "login"
+          ]
+        },
+        "description": "Log in with email and password",
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [
+        {
+          "name": "200",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": "{}"
+        },
+        {
+          "name": "400",
+          "status": "Client Error",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "401",
+          "status": "Client Error",
+          "code": 401,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "429",
+          "status": "Client Error",
+          "code": 429,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "500",
+          "status": "Server Error",
+          "code": 500,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "503",
+          "status": "Server Error",
+          "code": 503,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        }
+      ]
+    },
+    {
+      "name": "POST /refresh",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/refresh",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "refresh"
+          ]
+        },
+        "description": "Refresh access token using refresh token",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refreshToken\": \"string\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [
+        {
+          "name": "200",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": "{}"
+        },
+        {
+          "name": "400",
+          "status": "Client Error",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "401",
+          "status": "Client Error",
+          "code": 401,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "429",
+          "status": "Client Error",
+          "code": 429,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "500",
+          "status": "Server Error",
+          "code": 500,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "503",
+          "status": "Server Error",
+          "code": 503,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        }
+      ]
+    },
+    {
+      "name": "POST /logout",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/logout",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "logout"
+          ]
+        },
+        "description": "Log out and invalidate refresh token",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refreshToken\": \"string\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [
+        {
+          "name": "204",
+          "status": "OK",
+          "code": 204,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "400",
+          "status": "Client Error",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "401",
+          "status": "Client Error",
+          "code": 401,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "429",
+          "status": "Client Error",
+          "code": 429,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "500",
+          "status": "Server Error",
+          "code": 500,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "503",
+          "status": "Server Error",
+          "code": 503,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": ""
+        }
+      ]
+    }
+  ]
+}

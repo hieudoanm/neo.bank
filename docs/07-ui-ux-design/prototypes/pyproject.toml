@@ -1,0 +1,11 @@
+[project]
+name = "neo-bank-design"
+version = "0.1.0"
+description = "Neo Bank design screenshot generation"
+requires-python = ">=3.12"
+dependencies = [
+    "playwright==1.64.0",
+]
+
+[dependency-groups]
+dev = []

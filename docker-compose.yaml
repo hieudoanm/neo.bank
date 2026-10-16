@@ -1,0 +1,330 @@
+name: neo-bank
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.9.10
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    healthcheck:
+      test: ["CMD-SHELL", "cub zk-ready localhost:2181 30"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  kafka:
+    image: confluentinc/cp-kafka:7.9.10
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # Two listeners: INTERNAL for other containers, EXTERNAL for host tools
+      # (go run cmd/consumer, kafka-topics). Both advertise reachable addresses.
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://localhost:29092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  kafka-init:
+    image: confluentinc/cp-kafka:7.9.10
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic transfers --partitions 3 --replication-factor 1
+        kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic transfers.dlq --partitions 3 --replication-factor 1
+        kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic transfers-test --partitions 1 --replication-factor 1
+        kafka-topics --bootstrap-server kafka:9092 --list
+    restart: "no"
+
+  cassandra:
+    image: cassandra:4.1
+    ports:
+      - "9042:9042"
+    environment:
+      CASSANDRA_CLUSTER_NAME: neo_bank
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+    healthcheck:
+      test: ["CMD-SHELL", "cqlsh -e 'describe keyspaces' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  # One-shot migration runners. Each applies its service's versioned CQL
+  # (including CREATE KEYSPACE) and exits; the API/consumer services wait for
+  # them to complete so they never start against a missing keyspace.
+  auth-migrate:
+    build:
+      context: ./packages/backend/auth
+    entrypoint: ["/migrate"]
+    environment:
+      CASSANDRA_HOST: cassandra
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    restart: "no"
+
+  account-migrate:
+    build:
+      context: ./packages/backend/accounts
+    entrypoint: ["/migrate"]
+    environment:
+      CASSANDRA_HOST: cassandra
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    restart: "no"
+
+  transfer-migrate:
+    build:
+      context: ./packages/backend/transfer
+    entrypoint: ["/migrate"]
+    environment:
+      CASSANDRA_HOST: cassandra
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    restart: "no"
+
+  transaction-migrate:
+    build:
+      context: ./packages/backend/transactions
+    entrypoint: ["/migrate"]
+    environment:
+      CASSANDRA_HOST: cassandra
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    restart: "no"
+
+  api-gateway:
+    build:
+      context: ./packages/backend/api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: "8080"
+      APP_ENV: ${APP_ENV:-development}
+      JWT_PUBLIC_KEY_PEM: ${JWT_PUBLIC_KEY_PEM:-}
+      JWT_KEY_ID: ${JWT_KEY_ID:-dev-key-1}
+      AUTH_SERVICE_URL: http://auth-service:8081
+      ACCOUNT_SERVICE_URL: http://account-service:8082
+      TRANSFER_SERVICE_URL: http://transfer-service:8083
+      TRANSACTION_SERVICE_URL: http://transaction-service:8084
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      RATE_LIMIT_AUTH_PER_MIN: ${RATE_LIMIT_AUTH_PER_MIN:-100}
+      RATE_LIMIT_USER_PER_MIN: ${RATE_LIMIT_USER_PER_MIN:-1000}
+      LOGIN_LOCKOUT_FAILURES: ${LOGIN_LOCKOUT_FAILURES:-5}
+      LOGIN_LOCKOUT_WINDOW_MINUTES: ${LOGIN_LOCKOUT_WINDOW_MINUTES:-15}
+    depends_on:
+      - auth-service
+      - account-service
+      - transfer-service
+      - transaction-service
+    restart: unless-stopped
+
+  auth-service:
+    build:
+      context: ./packages/backend/auth
+    ports:
+      - "8081:8081"
+    environment:
+      PORT: "8081"
+      APP_ENV: ${APP_ENV:-development}
+      CASSANDRA_HOST: cassandra
+      CASSANDRA_KEYSPACE: auth_keyspace
+      KAFKA_BROKERS: kafka:9092
+      KAFKA_TOPIC_TRANSFERS: transfers
+      JWT_PRIVATE_KEY_PEM: ${JWT_PRIVATE_KEY_PEM:-}
+      JWT_PUBLIC_KEY_PEM: ${JWT_PUBLIC_KEY_PEM:-}
+      JWT_KEY_ID: ${JWT_KEY_ID:-dev-key-1}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      auth-migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  account-service:
+    build:
+      context: ./packages/backend/accounts
+    ports:
+      - "8082:8082"
+    environment:
+      PORT: "8082"
+      APP_ENV: ${APP_ENV:-development}
+      CASSANDRA_HOST: cassandra
+      CASSANDRA_KEYSPACE: account_keyspace
+      KAFKA_BROKERS: kafka:9092
+      KAFKA_TOPIC_TRANSFERS: transfers
+      KAFKA_TOPIC_TRANSFERS_DLQ: transfers.dlq
+      KAFKA_CONSUMER_GROUP: account-service-saga
+      JWT_PUBLIC_KEY_PEM: ${JWT_PUBLIC_KEY_PEM:-}
+      JWT_KEY_ID: ${JWT_KEY_ID:-dev-key-1}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      account-migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  transfer-service:
+    build:
+      context: ./packages/backend/transfer
+    ports:
+      - "8083:8083"
+    environment:
+      PORT: "8083"
+      APP_ENV: ${APP_ENV:-development}
+      CASSANDRA_HOST: cassandra
+      CASSANDRA_KEYSPACE: transfer_keyspace
+      KAFKA_BROKERS: kafka:9092
+      KAFKA_TOPIC_TRANSFERS: transfers
+      KAFKA_TOPIC_TRANSFERS_DLQ: transfers.dlq
+      KAFKA_CONSUMER_GROUP: transfer-service-saga
+      JWT_PUBLIC_KEY_PEM: ${JWT_PUBLIC_KEY_PEM:-}
+      JWT_KEY_ID: ${JWT_KEY_ID:-dev-key-1}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      transfer-migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  transaction-service:
+    build:
+      context: ./packages/backend/transactions
+    ports:
+      - "8084:8084"
+    environment:
+      PORT: "8084"
+      APP_ENV: ${APP_ENV:-development}
+      CASSANDRA_HOST: cassandra
+      CASSANDRA_KEYSPACE: transaction_keyspace
+      KAFKA_BROKERS: kafka:9092
+      KAFKA_TOPIC_TRANSFERS: transfers
+      KAFKA_TOPIC_TRANSFERS_DLQ: transfers.dlq
+      KAFKA_CONSUMER_GROUP: transaction-service-projection
+      JWT_PUBLIC_KEY_PEM: ${JWT_PUBLIC_KEY_PEM:-}
+      JWT_KEY_ID: ${JWT_KEY_ID:-dev-key-1}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      transaction-migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  account-consumer:
+    build:
+      context: ./packages/backend/accounts
+    entrypoint: ["/consumer"]
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      CASSANDRA_HOST: cassandra
+      CASSANDRA_KEYSPACE: account_keyspace
+      KAFKA_BROKERS: kafka:9092
+      KAFKA_TOPIC_TRANSFERS: transfers
+      KAFKA_TOPIC_TRANSFERS_DLQ: transfers.dlq
+      KAFKA_CONSUMER_GROUP: account-service-saga
+      INITIAL_BALANCE_CENTS: ${INITIAL_BALANCE_CENTS:-100000}
+      CURRENCY_CODE: ${CURRENCY_CODE:-USD}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      account-migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  transfer-consumer:
+    build:
+      context: ./packages/backend/transfer
+    entrypoint: ["/consumer"]
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      CASSANDRA_HOST: cassandra
+      CASSANDRA_KEYSPACE: transfer_keyspace
+      KAFKA_BROKERS: kafka:9092
+      KAFKA_TOPIC_TRANSFERS: transfers
+      KAFKA_TOPIC_TRANSFERS_DLQ: transfers.dlq
+      KAFKA_CONSUMER_GROUP: transfer-service-saga
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      transfer-migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  transaction-consumer:
+    build:
+      context: ./packages/backend/transactions
+    entrypoint: ["/consumer"]
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      CASSANDRA_HOST: cassandra
+      CASSANDRA_KEYSPACE: transaction_keyspace
+      KAFKA_BROKERS: kafka:9092
+      KAFKA_TOPIC_TRANSFERS: transfers
+      KAFKA_TOPIC_TRANSFERS_DLQ: transfers.dlq
+      KAFKA_CONSUMER_GROUP: transaction-service-projection
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      transaction-migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./packages/frontend/app
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      - api-gateway
+    restart: unless-stopped
+
+volumes:
+  cassandra_data:
