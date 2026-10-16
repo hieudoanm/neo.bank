@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gocql/gocql"
+	"github.com/apache/cassandra-gocql-driver/v2"
 )
 
 func main() {

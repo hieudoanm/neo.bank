@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gocql/gocql"
+	"github.com/apache/cassandra-gocql-driver/v2"
 	"github.com/google/uuid"
 	"github.com/hieudoanm/neo.bank/packages/backend/auth/internal/core/errors"
 	"github.com/hieudoanm/neo.bank/packages/backend/auth/internal/models"

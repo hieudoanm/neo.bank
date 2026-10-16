@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gocql/gocql"
+	"github.com/apache/cassandra-gocql-driver/v2"
 	"github.com/hieudoanm/neo.bank/packages/backend/auth/internal/core/auth"
 	"github.com/hieudoanm/neo.bank/packages/backend/auth/internal/repositories"
 )

@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gocql/gocql"
+	gocql "github.com/apache/cassandra-gocql-driver/v2"
 	"github.com/hieudoanm/neo.bank/packages/backend/accounts/internal/api"
 	"github.com/hieudoanm/neo.bank/packages/backend/accounts/internal/api/handlers"
 	"github.com/hieudoanm/neo.bank/packages/backend/accounts/internal/api/middleware"

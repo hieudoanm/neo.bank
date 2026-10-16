@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/gocql/gocql"
+	gocql "github.com/apache/cassandra-gocql-driver/v2"
 )
 
 func NewSession(hosts []string, keyspace string) (*gocql.Session, error) {

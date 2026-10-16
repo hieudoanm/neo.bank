@@ -9,19 +9,19 @@ importers:
   .:
     dependencies:
       '@tanstack/react-query':
-        specifier: ^5.104.3
+        specifier: 5.104.3
         version: 5.104.3(react@19.3.1)
       autoprefixer:
-        specifier: ^10.6.1
+        specifier: 10.6.1
         version: 10.6.1(postcss@8.5.30)
       clsx:
-        specifier: ^2.1.1
+        specifier: 2.1.1
         version: 2.1.1
       daisyui:
-        specifier: ^5.7.50
+        specifier: 5.7.50
         version: 5.7.50
       postcss:
-        specifier: ^8.5.30
+        specifier: 8.5.30
         version: 8.5.30
       react:
         specifier: 19.3.1
@@ -30,26 +30,26 @@ importers:
         specifier: 19.3.1
         version: 19.3.1(react@19.3.1)
       react-icons:
-        specifier: ^5.7.0
+        specifier: 5.7.0
         version: 5.7.0(react@19.3.1)
       react-router-dom:
-        specifier: ^7.18.4
+        specifier: 7.18.4
         version: 7.18.4(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       tailwind-merge:
-        specifier: ^3.7.0
+        specifier: 3.7.0
         version: 3.7.0
       tailwindcss:
-        specifier: ^4.3.3
+        specifier: 4.3.3
         version: 4.3.3
     devDependencies:
       '@tailwindcss/vite':
-        specifier: ^4.3.3
+        specifier: 4.3.3
         version: 4.3.3(vite@8.3.4(jiti@2.7.0))
       '@testing-library/jest-dom':
-        specifier: ^7.0.1
+        specifier: 7.0.1
         version: 7.0.1(@testing-library/dom@10.4.2)(vitest@5.0.5(jsdom@30.1.3)(vite@8.3.4(jiti@2.7.0)))
       '@testing-library/react':
-        specifier: ^16.3.3
+        specifier: 16.3.3
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@types/react':
         specifier: 19.3.0
@@ -61,7 +61,7 @@ importers:
         specifier: 6.1.2
         version: 6.1.2(vite@8.3.4(jiti@2.7.0))
       jsdom:
-        specifier: ^30.1.3
+        specifier: 30.1.3
         version: 30.1.3
       typescript:
         specifier: 6.0.3
