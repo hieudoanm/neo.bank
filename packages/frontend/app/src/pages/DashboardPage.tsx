@@ -43,10 +43,10 @@ export const DashboardPage = () => {
         <Card className="w-full max-w-md">
           <h2 className="text-sm font-medium text-text-secondary">Current balance</h2>
           <p className="mt-2 text-3xl font-bold text-text-primary">
-            {formatCurrency(data.balanceCents, data.currency)}
+            {formatCurrency(data.balanceCents, data.currencyCode)}
           </p>
           <p className="mt-1 text-xs text-text-tertiary">
-            {data.balanceCents} minor units ({data.currency})
+            {data.balanceCents} minor units ({data.currencyCode})
           </p>
         </Card>
       )}

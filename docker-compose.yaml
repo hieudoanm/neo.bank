@@ -72,6 +72,53 @@ services:
       retries: 12
     restart: unless-stopped
 
+  # One-shot migration runners. Each applies its service's versioned CQL
+  # (including CREATE KEYSPACE) and exits; the API/consumer services wait for
+  # them to complete so they never start against a missing keyspace.
+  auth-migrate:
+    build:
+      context: ./packages/backend/auth
+    entrypoint: ["/migrate"]
+    environment:
+      CASSANDRA_HOST: cassandra
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    restart: "no"
+
+  account-migrate:
+    build:
+      context: ./packages/backend/accounts
+    entrypoint: ["/migrate"]
+    environment:
+      CASSANDRA_HOST: cassandra
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    restart: "no"
+
+  transfer-migrate:
+    build:
+      context: ./packages/backend/transfer
+    entrypoint: ["/migrate"]
+    environment:
+      CASSANDRA_HOST: cassandra
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    restart: "no"
+
+  transaction-migrate:
+    build:
+      context: ./packages/backend/transactions
+    entrypoint: ["/migrate"]
+    environment:
+      CASSANDRA_HOST: cassandra
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    restart: "no"
+
   api-gateway:
     build:
       context: ./packages/backend/api-gateway
@@ -110,6 +157,7 @@ services:
       CASSANDRA_HOST: cassandra
       CASSANDRA_KEYSPACE: auth_keyspace
       KAFKA_BROKERS: kafka:9092
+      KAFKA_TOPIC_TRANSFERS: transfers
       JWT_PRIVATE_KEY_PEM: ${JWT_PRIVATE_KEY_PEM:-}
       JWT_PUBLIC_KEY_PEM: ${JWT_PUBLIC_KEY_PEM:-}
       JWT_KEY_ID: ${JWT_KEY_ID:-dev-key-1}
@@ -119,6 +167,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      auth-migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   account-service:
@@ -143,6 +193,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      account-migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   transfer-service:
@@ -167,6 +219,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      transfer-migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   transaction-service:
@@ -191,6 +245,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      transaction-migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   account-consumer:
@@ -205,12 +261,16 @@ services:
       KAFKA_TOPIC_TRANSFERS: transfers
       KAFKA_TOPIC_TRANSFERS_DLQ: transfers.dlq
       KAFKA_CONSUMER_GROUP: account-service-saga
+      INITIAL_BALANCE_CENTS: ${INITIAL_BALANCE_CENTS:-100000}
+      CURRENCY_CODE: ${CURRENCY_CODE:-USD}
       LOG_LEVEL: ${LOG_LEVEL:-info}
     depends_on:
       cassandra:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      account-migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   transfer-consumer:
@@ -231,6 +291,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      transfer-migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   transaction-consumer:
@@ -251,13 +313,15 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      transaction-migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   frontend:
     build:
       context: ./packages/frontend/app
     ports:
-      - "3000:80"
+      - "${FRONTEND_PORT:-3000}:80"
     depends_on:
       - api-gateway
     restart: unless-stopped

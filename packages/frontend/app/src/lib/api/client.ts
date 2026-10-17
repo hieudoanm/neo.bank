@@ -97,7 +97,8 @@ export const authApi = {
 type BalanceResponse = {
   accountId: string
   balanceCents: number
-  currency: string
+  currencyCode: string
+  updatedAt: string
 }
 
 export const accountsApi = {

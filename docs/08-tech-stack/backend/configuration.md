@@ -84,6 +84,8 @@ func Load() (*Config, error) {
 | `KAFKA_TOPIC_TRANSFERS` | Kafka topic for transfer events | `transfers` |
 | `KAFKA_TOPIC_TRANSFERS_DLQ` | Kafka topic for failed transfer/command events | `transfers.dlq` |
 | `KAFKA_CONSUMER_GROUP` | Kafka consumer group ID | `account-service-saga` |
+| `INITIAL_BALANCE_CENTS` | Account Service: opening balance (minor units) granted when a user registers | `0` (default), `100000` (demo) |
+| `CURRENCY_CODE` | Account Service: ISO 4217 currency code assigned to new accounts | `USD` |
 | `ARGON2_MEMORY` | Argon2id memory (KiB) | `65536` |
 | `ARGON2_ITERATIONS` | Argon2id iterations | `3` |
 | `ARGON2_PARALLELISM` | Argon2id parallelism | `4` |

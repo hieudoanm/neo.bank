@@ -178,18 +178,28 @@ docker compose ps
 ### Database Initialization
 
 Each service ships a `/migrate` binary that applies its own versioned CQL
-migrations to its keyspace. Run it once after Cassandra is healthy:
+migrations to its keyspace (including `CREATE KEYSPACE`). Docker Compose runs
+them automatically as one-shot `*-migrate` services, and every API and consumer
+waits for its migration to finish before starting — so a single command
+bootstraps a fresh Cassandra:
 
 ```bash
-# Apply migrations for each service that owns a keyspace
-docker compose exec auth-service /migrate
-docker compose exec account-service /migrate
-docker compose exec transfer-service /migrate
-docker compose exec transaction-service /migrate
+docker compose up -d
+```
+
+To run a migration by hand (it is idempotent), invoke the binary through the
+service image; it reads `CASSANDRA_HOST` from the environment:
+
+```bash
+docker compose run --rm --entrypoint /migrate auth-service
+docker compose run --rm --entrypoint /migrate account-service
+docker compose run --rm --entrypoint /migrate transfer-service
+docker compose run --rm --entrypoint /migrate transaction-service
 ```
 
 The API must not accept traffic before migrations have run (see
-[`cassandra.md`](../08-tech-stack/backend/cassandra.md)).
+[`cassandra.md`](../08-tech-stack/backend/cassandra.md)); the Compose
+dependency conditions enforce this.
 
 ### Backend Development (Hot Reload)
 

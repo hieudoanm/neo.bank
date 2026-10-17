@@ -39,13 +39,23 @@ describe('useBalance', () => {
 
   it('fetches the balance for the authenticated account', async () => {
     setAuth(true)
-    mockedGetBalance.mockResolvedValue({ accountId: 'a1', balanceCents: 500, currency: 'USD' })
+    mockedGetBalance.mockResolvedValue({
+      accountId: 'a1',
+      balanceCents: 500,
+      currencyCode: 'USD',
+      updatedAt: '2026-01-01T00:00:00Z',
+    })
 
     const { result } = renderHook(() => useBalance(), { wrapper })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(mockedGetBalance).toHaveBeenCalledWith('a1', 'at')
-    expect(result.current.data).toEqual({ accountId: 'a1', balanceCents: 500, currency: 'USD' })
+    expect(result.current.data).toEqual({
+      accountId: 'a1',
+      balanceCents: 500,
+      currencyCode: 'USD',
+      updatedAt: '2026-01-01T00:00:00Z',
+    })
   })
 
   it('does not fetch while logged out', async () => {

@@ -11,6 +11,8 @@ type Config struct {
 	CassandraContactPoints []string
 	CassandraKeyspace      string
 	CassandraTimeout       time.Duration
+	KafkaBrokers           []string
+	KafkaTopicTransfers    string
 	JWTKeyID               string
 	JWTPrivateKeyPEM       string
 	JWTPublicKeyPEM        string
@@ -23,6 +25,8 @@ func Load() Config {
 		CassandraContactPoints: getEnvList("CASSANDRA_HOST", "localhost"),
 		CassandraKeyspace:      getEnv("CASSANDRA_KEYSPACE", "auth_keyspace"),
 		CassandraTimeout:       5 * time.Second,
+		KafkaBrokers:           getEnvList("KAFKA_BROKERS", "localhost:9092"),
+		KafkaTopicTransfers:    getEnv("KAFKA_TOPIC_TRANSFERS", "transfers"),
 		JWTKeyID:               getEnv("JWT_KEY_ID", "dev-key-1"),
 		JWTPrivateKeyPEM:       getEnv("JWT_PRIVATE_KEY_PEM", ""),
 		JWTPublicKeyPEM:        getEnv("JWT_PUBLIC_KEY_PEM", ""),

@@ -26,10 +26,27 @@ type fakeStore struct {
 	creditErr     error
 	recordErr     error
 
+	createApplied    bool
+	createErr        error
+	createCalls      int
+	createdBalance   int64
+	createdCurrency  string
+	createdAccountID uuid.UUID
+	createdUserID    uuid.UUID
+
 	debitCalls  int
 	creditCalls int
 	recorded    []string
 	audits      int
+}
+
+func (f *fakeStore) CreateAccount(_ context.Context, accountID, userID uuid.UUID, balanceCents int64, currencyCode string, _ time.Time) (bool, error) {
+	f.createCalls++
+	f.createdAccountID = accountID
+	f.createdUserID = userID
+	f.createdBalance = balanceCents
+	f.createdCurrency = currencyCode
+	return f.createApplied, f.createErr
 }
 
 func (f *fakeStore) ClaimCommand(_ context.Context, _ string, _, _ uuid.UUID, _ string, _ time.Time) (bool, error) {
@@ -263,6 +280,112 @@ func TestAccountDuplicateWithoutStoredResultApplies(t *testing.T) {
 	}
 	if len(pub.events) != 1 {
 		t.Fatalf("expected one emitted event")
+	}
+}
+
+func userCreatedMsg(t *testing.T) (kafka.Message, string, string) {
+	t.Helper()
+	userID := uuid.NewString()
+	accountID := uuid.NewString()
+	data, err := json.Marshal(models.UserCreatedEvent{
+		EventType:    models.EventTypeUserCreated,
+		EventVersion: models.EventVersionV1,
+		UserID:       userID,
+		AccountID:    accountID,
+	})
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	return kafka.Message{Value: data}, userID, accountID
+}
+
+func newProvisioningConsumer(store CommandStore, balance int64, currency string) (*AccountConsumer, *fakePublisher) {
+	pub := &fakePublisher{}
+	c := &AccountConsumer{
+		repo:                store,
+		producer:            pub,
+		logger:              slog.New(slog.NewTextHandler(io.Discard, nil)),
+		initialBalanceCents: balance,
+		currencyCode:        currency,
+	}
+	return c, pub
+}
+
+func TestProvisionAccountCreatesWithConfiguredBalance(t *testing.T) {
+	store := &fakeStore{createApplied: true}
+	c, _ := newProvisioningConsumer(store, 100000, "USD")
+	msg, userID, accountID := userCreatedMsg(t)
+
+	if err := c.handle(context.Background(), msg); err != nil {
+		t.Fatalf("handle: %v", err)
+	}
+	if store.createCalls != 1 {
+		t.Fatalf("expected 1 create call, got %d", store.createCalls)
+	}
+	if store.createdBalance != 100000 || store.createdCurrency != "USD" {
+		t.Fatalf("unexpected balance/currency: %d/%s", store.createdBalance, store.createdCurrency)
+	}
+	if store.createdUserID.String() != userID || store.createdAccountID.String() != accountID {
+		t.Fatalf("unexpected ids: %s/%s", store.createdUserID, store.createdAccountID)
+	}
+	if store.audits != 1 {
+		t.Fatalf("expected 1 audit event, got %d", store.audits)
+	}
+}
+
+func TestProvisionAccountIsIdempotent(t *testing.T) {
+	store := &fakeStore{createApplied: false}
+	c, _ := newProvisioningConsumer(store, 0, "USD")
+	msg, _, _ := userCreatedMsg(t)
+
+	if err := c.handle(context.Background(), msg); err != nil {
+		t.Fatalf("handle: %v", err)
+	}
+	if store.createCalls != 1 {
+		t.Fatalf("expected the store to be consulted once")
+	}
+	if store.audits != 0 {
+		t.Fatalf("a duplicate provisioning event must not write an audit event")
+	}
+}
+
+func TestProvisionAccountRejectsInvalidIDs(t *testing.T) {
+	cases := map[string]string{
+		"invalid user id":    `{"eventType":"auth.user.created","eventVersion":1,"userId":"nope","accountId":"` + uuid.NewString() + `"}`,
+		"invalid account id": `{"eventType":"auth.user.created","eventVersion":1,"userId":"` + uuid.NewString() + `","accountId":"nope"}`,
+	}
+	for name, payload := range cases {
+		t.Run(name, func(t *testing.T) {
+			store := &fakeStore{createApplied: true}
+			c, _ := newProvisioningConsumer(store, 0, "USD")
+			if err := c.handle(context.Background(), kafka.Message{Value: []byte(payload)}); err != nil {
+				t.Fatalf("handle: %v", err)
+			}
+			if store.createCalls != 0 {
+				t.Fatal("invalid ids must not create an account")
+			}
+		})
+	}
+}
+
+func TestProvisionAccountRejectsUnsupportedVersion(t *testing.T) {
+	store := &fakeStore{createApplied: true}
+	c, _ := newProvisioningConsumer(store, 0, "USD")
+	msg := kafka.Message{Value: []byte(`{"eventType":"auth.user.created","eventVersion":99}`)}
+	if err := c.handle(context.Background(), msg); err != nil {
+		t.Fatalf("handle: %v", err)
+	}
+	if store.createCalls != 0 {
+		t.Fatal("unsupported version must not create an account")
+	}
+}
+
+func TestProvisionAccountPropagatesStoreError(t *testing.T) {
+	store := &fakeStore{createErr: errors.New("write failed")}
+	c, _ := newProvisioningConsumer(store, 0, "USD")
+	msg, _, _ := userCreatedMsg(t)
+	if err := c.handle(context.Background(), msg); err == nil {
+		t.Fatal("expected the store error to propagate so the message is retried")
 	}
 }
 

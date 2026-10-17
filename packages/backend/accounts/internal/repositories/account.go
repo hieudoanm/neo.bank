@@ -20,6 +20,8 @@ func NewAccountRepository(session *gocql.Session) *AccountRepository {
 }
 
 const (
+	insertAccount        = `INSERT INTO accounts (account_id, user_id, balance_cents, currency_code, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?) IF NOT EXISTS`
+	insertAccountByUser  = `INSERT INTO accounts_by_user (user_id, account_id, created_at) VALUES (?, ?, ?)`
 	selectAccountByID    = `SELECT account_id, user_id, balance_cents, currency_code, created_at, updated_at FROM accounts WHERE account_id = ?`
 	selectAccountsByUser = `SELECT account_id FROM accounts_by_user WHERE user_id = ?`
 	debitAccount         = `UPDATE accounts SET balance_cents = balance_cents - ?, updated_at = ? WHERE account_id = ? IF balance_cents >= ?`
@@ -60,6 +62,27 @@ func (r *AccountRepository) FindByUserID(ctx context.Context, userID uuid.UUID) 
 		return nil, fmt.Errorf("find accounts by user: %w", err)
 	}
 	return accountIDs, nil
+}
+
+// CreateAccount provisions an account owned by userID with the given initial
+// balance and currency. The write is idempotent (INSERT ... IF NOT EXISTS) so
+// at-least-once delivery of the provisioning event cannot create duplicate
+// accounts or reset an existing balance. It returns true when this call created
+// the account and false when the account already existed.
+func (r *AccountRepository) CreateAccount(ctx context.Context, accountID, userID uuid.UUID, balanceCents int64, currencyCode string, now time.Time) (bool, error) {
+	applied, err := r.session.Query(insertAccount, accountID, userID, balanceCents, currencyCode, now, now).
+		WithContext(ctx).Consistency(gocql.Quorum).SerialConsistency(gocql.LocalSerial).ScanCAS()
+	if err != nil {
+		return false, fmt.Errorf("create account: %w", err)
+	}
+	if !applied {
+		return false, nil
+	}
+	if err := r.session.Query(insertAccountByUser, userID, accountID, now).
+		WithContext(ctx).Consistency(gocql.Quorum).Exec(); err != nil {
+		return false, fmt.Errorf("link account to user: %w", err)
+	}
+	return true, nil
 }
 
 // Debit atomically subtracts amount from the account balance using a

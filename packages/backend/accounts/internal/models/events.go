@@ -9,8 +9,23 @@ const (
 	EventTypeAccountCredited     = "account.credited"
 	EventTypeAccountCreditFailed = "account.credit.failed"
 
+	// EventTypeUserCreated is emitted by the Auth Service on registration and
+	// consumed by the Account Service to provision the user's account.
+	EventTypeUserCreated = "auth.user.created"
+
 	EventVersionV1 = 1
 )
+
+// UserCreatedEvent announces a newly registered user. The Account Service
+// consumes it to create the account row with the configured initial balance.
+type UserCreatedEvent struct {
+	EventID      string `json:"eventId"`
+	EventType    string `json:"eventType"` // auth.user.created
+	EventVersion int    `json:"eventVersion"`
+	UserID       string `json:"userId"`
+	AccountID    string `json:"accountId"`
+	OccurredAt   string `json:"occurredAt"`
+}
 
 // AccountCommand is a saga command requesting a balance movement. It is produced
 // by the Transfer Service and consumed by the Account Service.

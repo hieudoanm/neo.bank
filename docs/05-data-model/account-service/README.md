@@ -25,7 +25,7 @@ Manages accounts and balances. Authoritative for account validation and balance 
 - `account_id` is unique.
 
 **State transitions:**
-- Initial state: `balance_cents = 0` (on account creation).
+- Initial state: `balance_cents` is set to the configured opening balance on account creation (`INITIAL_BALANCE_CENTS`, `0` by default). The Account Service provisions the account when it consumes the Auth Service's `auth.user.created` event, using an idempotent `INSERT … IF NOT EXISTS` so at-least-once delivery cannot duplicate the account or reset the balance.
 - Debit: `balance_cents -= amount` (must remain ≥ 0; enforced by LWT `IF balance_cents >= ?`).
 - Credit: `balance_cents += amount`.
 

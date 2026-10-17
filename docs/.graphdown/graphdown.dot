@@ -297,6 +297,7 @@ digraph graphdown {
   "03-user-stories.md" -> "03-user-stories/US-012.md" [color="#333333", arrowsize=0.6];
   "03-user-stories.md" -> "03-user-stories/US-013.md" [color="#333333", arrowsize=0.6];
   "03-user-stories.md" -> "03-user-stories/US-014.md" [color="#333333", arrowsize=0.6];
+  "03-user-stories/US-001.md" -> "00-overview.md" [color="#333333", arrowsize=0.6];
   "03-user-stories/US-001.md" -> "02-features/FEATURE-01-Account-Registration.md" [color="#333333", arrowsize=0.6];
   "03-user-stories/US-001.md" -> "01-requirements/functional-requirements.md" [color="#333333", arrowsize=0.6];
   "03-user-stories/US-001.md" -> "01-requirements/non-functional-requirements.md" [color="#333333", arrowsize=0.6];
@@ -654,6 +655,7 @@ digraph graphdown {
   "08-tech-stack/backend/kafka.md" -> "01-requirements/non-functional-requirements.md" [color="#333333", arrowsize=0.6];
   "08-tech-stack/backend/kafka.md" -> "05-data-model/account-service/README.md" [color="#333333", arrowsize=0.6];
   "08-tech-stack/backend/kafka.md" -> "05-data-model/transaction-service/README.md" [color="#333333", arrowsize=0.6];
+  "08-tech-stack/backend/kafka.md" -> "08-tech-stack/backend/configuration.md" [color="#333333", arrowsize=0.6];
   "08-tech-stack/backend/observability.md" -> "08-tech-stack/backend/go.md" [color="#333333", arrowsize=0.6];
   "08-tech-stack/backend/observability.md" -> "03-user-stories/US-013.md" [color="#333333", arrowsize=0.6];
   "08-tech-stack/backend/observability.md" -> "08-tech-stack/backend/go.md" [color="#333333", arrowsize=0.6];

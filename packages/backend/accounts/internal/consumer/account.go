@@ -17,6 +17,7 @@ import (
 // CommandStore is the persistence the account consumer needs.
 // *repositories.AccountRepository satisfies it in production; tests provide a fake.
 type CommandStore interface {
+	CreateAccount(ctx context.Context, accountID, userID uuid.UUID, balanceCents int64, currencyCode string, createdAt time.Time) (bool, error)
 	ClaimCommand(ctx context.Context, key string, transferID, accountID uuid.UUID, eventType string, createdAt time.Time) (bool, error)
 	FindCommandResult(ctx context.Context, key string) (*models.ProcessedCommand, error)
 	Debit(ctx context.Context, accountID uuid.UUID, amountCents int64) (int64, error)
@@ -39,9 +40,12 @@ type AccountConsumer struct {
 	repo     CommandStore
 	producer EventPublisher
 	logger   *slog.Logger
+
+	initialBalanceCents int64
+	currencyCode        string
 }
 
-func NewAccountConsumer(brokers []string, topic, group, dlqTopic string, repo CommandStore, prod EventPublisher, logger *slog.Logger) *AccountConsumer {
+func NewAccountConsumer(brokers []string, topic, group, dlqTopic string, initialBalanceCents int64, currencyCode string, repo CommandStore, prod EventPublisher, logger *slog.Logger) *AccountConsumer {
 	return &AccountConsumer{
 		reader: kafka.NewReader(kafka.ReaderConfig{
 			Brokers:  brokers,
@@ -57,9 +61,11 @@ func NewAccountConsumer(brokers []string, topic, group, dlqTopic string, repo Co
 			RequiredAcks:           kafka.RequireAll,
 			AllowAutoTopicCreation: false,
 		},
-		repo:     repo,
-		producer: prod,
-		logger:   logger,
+		repo:                repo,
+		producer:            prod,
+		logger:              logger,
+		initialBalanceCents: initialBalanceCents,
+		currencyCode:        currencyCode,
 	}
 }
 
@@ -84,6 +90,23 @@ func (c *AccountConsumer) Run(ctx context.Context) error {
 }
 
 func (c *AccountConsumer) handle(ctx context.Context, msg kafka.Message) error {
+	var env struct {
+		EventType    string `json:"eventType"`
+		EventVersion int    `json:"eventVersion"`
+	}
+	if err := json.Unmarshal(msg.Value, &env); err != nil {
+		c.logger.Error("unmarshal event envelope", "err", err)
+		c.sendToDLQ(ctx, msg, "malformed payload")
+		return nil
+	}
+	if env.EventType == models.EventTypeUserCreated {
+		if env.EventVersion != models.EventVersionV1 {
+			c.sendToDLQ(ctx, msg, fmt.Sprintf("unsupported event version %d", env.EventVersion))
+			return nil
+		}
+		return c.provisionAccount(ctx, msg)
+	}
+
 	var cmd models.AccountCommand
 	if err := json.Unmarshal(msg.Value, &cmd); err != nil {
 		c.logger.Error("unmarshal account command", "err", err)
@@ -124,6 +147,57 @@ func (c *AccountConsumer) handle(ctx context.Context, msg kafka.Message) error {
 		}
 	}
 	return c.applyAndEmit(ctx, cmd, accountID)
+}
+
+// provisionAccount creates the account row for a newly registered user. The
+// write is idempotent, so redelivery of the same event is a no-op once the
+// account exists.
+func (c *AccountConsumer) provisionAccount(ctx context.Context, msg kafka.Message) error {
+	var ev models.UserCreatedEvent
+	if err := json.Unmarshal(msg.Value, &ev); err != nil {
+		c.logger.Error("unmarshal user created event", "err", err)
+		c.sendToDLQ(ctx, msg, "malformed user event")
+		return nil
+	}
+	userID, err := uuid.Parse(ev.UserID)
+	if err != nil {
+		c.sendToDLQ(ctx, msg, "invalid user id")
+		return nil
+	}
+	accountID, err := uuid.Parse(ev.AccountID)
+	if err != nil {
+		c.sendToDLQ(ctx, msg, "invalid account id")
+		return nil
+	}
+
+	now := time.Now().UTC()
+	created, err := c.repo.CreateAccount(ctx, accountID, userID, c.initialBalanceCents, c.currencyCode, now)
+	if err != nil {
+		return err
+	}
+	if !created {
+		return nil
+	}
+	c.logger.Info("account provisioned", "accountId", ev.AccountID, "userId", ev.UserID)
+	c.writeProvisionAudit(ctx, ev, accountID, now)
+	return nil
+}
+
+func (c *AccountConsumer) writeProvisionAudit(ctx context.Context, ev models.UserCreatedEvent, accountID uuid.UUID, at time.Time) {
+	ae := models.AuditEvent{
+		Day:           at,
+		Timestamp:     at,
+		EventID:       newUUID(),
+		Action:        "account_created",
+		ResourceID:    accountID,
+		CorrelationID: ev.EventID,
+		Metadata: map[string]string{
+			"userId": ev.UserID,
+		},
+	}
+	if err := c.repo.WriteAudit(ctx, ae); err != nil {
+		c.logger.Error("write provisioning audit", "err", err, "accountId", accountID)
+	}
 }
 
 func (c *AccountConsumer) applyAndEmit(ctx context.Context, cmd models.AccountCommand, accountID uuid.UUID) error {

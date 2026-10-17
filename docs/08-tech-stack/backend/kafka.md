@@ -90,6 +90,29 @@ Rules:
 - On credit failure the Transfer Service compensates by issuing `account.credit.requested` for the **source** account with the `:compensation` key, then marks the transfer `failed`.
 - The Transaction Service consumes `account.debited`/`account.credited` to create read-model rows and `transfer.completed`/`transfer.failed` to finalise their status (see the [Transaction Service data model](../../05-data-model/transaction-service/README.md#projection-logic)).
 
+### 2.2 Account provisioning event
+
+When a user registers, the Auth Service publishes `auth.user.created` on the same `transfers` topic (discriminated by `eventType`, keyed by the new account ID). The Account Service consumes it to provision the account, so registration and account creation are decoupled and each service writes only its own keyspace.
+
+```go
+// internal/models/events.go (Auth and Account services)
+type UserCreatedEvent struct {
+    EventID      string `json:"eventId"`      // UUID v7
+    EventType    string `json:"eventType"`    // "auth.user.created"
+    EventVersion int    `json:"eventVersion"` // 1
+    UserID       string `json:"userId"`
+    AccountID    string `json:"accountId"`
+    OccurredAt   string `json:"occurredAt"`   // ISO 8601 UTC
+}
+```
+
+Rules:
+
+- The Account Service provisions with an idempotent `INSERT … IF NOT EXISTS`, so at-least-once delivery never duplicates the account or resets a balance.
+- The opening balance and currency come from `INITIAL_BALANCE_CENTS` and `CURRENCY_CODE` (see [configuration](./configuration.md)).
+- The Auth Service publishes **after** the user is created and rolls the user back if the publish fails, returning `503`; the user and account therefore stay consistent.
+- Other consumers (Transfer saga, Transaction projection) ignore event types they do not own and require `eventVersion == 1`.
+
 ## 3. Producing
 
 ```go

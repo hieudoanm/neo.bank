@@ -9,6 +9,7 @@ import (
 	"github.com/hieudoanm/neo.bank/packages/backend/auth/internal/api/handlers"
 	"github.com/hieudoanm/neo.bank/packages/backend/auth/internal/core/auth"
 	"github.com/hieudoanm/neo.bank/packages/backend/auth/internal/core/config"
+	"github.com/hieudoanm/neo.bank/packages/backend/auth/internal/producer"
 	"github.com/hieudoanm/neo.bank/packages/backend/auth/internal/repositories"
 	"github.com/hieudoanm/neo.bank/packages/backend/auth/internal/services"
 )
@@ -31,9 +32,12 @@ func main() {
 	}
 	defer session.Close()
 
+	userEvents := producer.NewProducer(cfg.KafkaBrokers, cfg.KafkaTopicTransfers)
+	defer userEvents.Close()
+
 	userRepo := repositories.NewUserRepository(session)
 	refreshTokenRepo := repositories.NewRefreshTokenRepository(session)
-	authService := services.NewAuthService(userRepo, refreshTokenRepo, keyManager)
+	authService := services.NewAuthService(userRepo, refreshTokenRepo, keyManager, userEvents)
 	authHandler := handlers.NewAuthHandler(authService)
 
 	router := api.NewRouter(authHandler)

@@ -9,5 +9,6 @@ RUN CGO_ENABLED=0 go build -o /out/migrate ./cmd/migrate
 FROM gcr.io/distroless/static-debian12 AS runtime
 COPY --from=build /out/app /app
 COPY --from=build /out/migrate /migrate
+COPY --from=build /src/internal/db/migrations /internal/db/migrations
 USER nonroot:nonroot
 ENTRYPOINT ["/app"]

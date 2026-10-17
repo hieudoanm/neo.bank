@@ -78,16 +78,23 @@ describe('api client', () => {
   })
 
   it('adds the bearer token to balance requests', async () => {
-    fetchMock.mockResolvedValueOnce(okJson({ accountId: 'a1', balanceCents: 500, currency: 'USD' }))
+    fetchMock.mockResolvedValueOnce(
+      okJson({ accountId: 'a1', balanceCents: 500, currencyCode: 'USD', updatedAt: '2026-01-01T00:00:00Z' }),
+    )
     const result = await accountsApi.getBalance('a1', 'tok')
-    expect(result).toEqual({ accountId: 'a1', balanceCents: 500, currency: 'USD' })
+    expect(result).toEqual({
+      accountId: 'a1',
+      balanceCents: 500,
+      currencyCode: 'USD',
+      updatedAt: '2026-01-01T00:00:00Z',
+    })
     const [url, init] = fetchMock.mock.calls[0]
     expect(url).toBe('http://localhost:8080/api/v1/accounts/a1/balance')
     expect(init.headers.Authorization).toBe('Bearer tok')
   })
 
   it('omits the auth header when no access token is supplied', async () => {
-    fetchMock.mockResolvedValueOnce(okJson({ accountId: 'a1', balanceCents: 0, currency: 'USD' }))
+    fetchMock.mockResolvedValueOnce(okJson({ accountId: 'a1', balanceCents: 0, currencyCode: 'USD' }))
     await accountsApi.getBalance('a1', '')
     expect(fetchMock.mock.calls[0][1].headers.Authorization).toBeUndefined()
   })

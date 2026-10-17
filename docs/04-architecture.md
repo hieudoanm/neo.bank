@@ -232,7 +232,7 @@ All command/event processing is idempotent. Each message carries correlation/cau
 
 Source diagram: [`02-account-registration-flow.mmd`](./04-architecture/mmd/02-account-registration-flow.mmd) · [`svg`](./04-architecture/svg/02-account-registration-flow.svg)
 
-Note: account creation may be triggered via event (`auth.user.created` → Account Service) or synchronous call. In either case, each service writes only to its private store.
+Note: account creation is triggered by event. On registration the Auth Service creates the user and publishes `auth.user.created` (on the shared `transfers` event backbone; consumers ignore event types they do not handle). The Account Service consumes it and provisions the account with the configured `INITIAL_BALANCE_CENTS` and `CURRENCY_CODE` using an idempotent `INSERT … IF NOT EXISTS`, so at-least-once delivery cannot create duplicates or reset a balance. If the event cannot be published, registration rolls the user back and returns `503`, keeping the user and account consistent. Each service writes only to its private store.
 
 ### 7.2 Transfer saga flow
 

@@ -16,7 +16,9 @@ type fakeUserStore struct {
 	user        *models.User
 	createErr   error
 	findErr     error
+	deleteErr   error
 	createCalls int
+	deleteCalls int
 }
 
 func (f *fakeUserStore) Create(_ context.Context, email string, accountID uuid.UUID, passwordHash string) (*models.User, error) {
@@ -26,6 +28,11 @@ func (f *fakeUserStore) Create(_ context.Context, email string, accountID uuid.U
 	}
 	f.user = &models.User{ID: uuid.New(), Email: email, AccountID: accountID, PasswordHash: passwordHash}
 	return f.user, nil
+}
+
+func (f *fakeUserStore) Delete(_ context.Context, _ uuid.UUID, _ string) error {
+	f.deleteCalls++
+	return f.deleteErr
 }
 
 func (f *fakeUserStore) FindByEmail(_ context.Context, _ string) (*models.User, error) {
@@ -80,6 +87,19 @@ func (f fakeSigner) SignAccessToken(_, _, _ string) (string, error) {
 	return f.token, nil
 }
 
+type fakePublisher struct {
+	events []models.UserCreatedEvent
+	err    error
+}
+
+func (f *fakePublisher) PublishUserEvent(_ context.Context, ev models.UserCreatedEvent) error {
+	if f.err != nil {
+		return f.err
+	}
+	f.events = append(f.events, ev)
+	return nil
+}
+
 func newTestUser(t *testing.T, password string) *models.User {
 	t.Helper()
 	hash, err := security.HashPassword(password)
@@ -105,7 +125,7 @@ func TestAccessTokenExpiresIn(t *testing.T) {
 func TestRegisterSuccess(t *testing.T) {
 	users := &fakeUserStore{}
 	tokens := &fakeRefreshTokenStore{}
-	svc := NewAuthService(users, tokens, fakeSigner{token: "access-token"})
+	svc := NewAuthService(users, tokens, fakeSigner{token: "access-token"}, &fakePublisher{})
 
 	res, err := svc.Register(context.Background(), "user@example.com", validPassword)
 	if err != nil {
@@ -123,7 +143,7 @@ func TestRegisterSuccess(t *testing.T) {
 }
 
 func TestRegisterValidationErrors(t *testing.T) {
-	svc := NewAuthService(&fakeUserStore{}, &fakeRefreshTokenStore{}, fakeSigner{token: "t"})
+	svc := NewAuthService(&fakeUserStore{}, &fakeRefreshTokenStore{}, fakeSigner{token: "t"}, &fakePublisher{})
 
 	if _, err := svc.Register(context.Background(), "", validPassword); err == nil {
 		t.Fatal("expected error for empty email")
@@ -136,7 +156,7 @@ func TestRegisterValidationErrors(t *testing.T) {
 func TestRegisterStoreErrors(t *testing.T) {
 	t.Run("app error passthrough", func(t *testing.T) {
 		users := &fakeUserStore{createErr: applierrors.ErrEmailAlreadyRegistered}
-		svc := NewAuthService(users, &fakeRefreshTokenStore{}, fakeSigner{token: "t"})
+		svc := NewAuthService(users, &fakeRefreshTokenStore{}, fakeSigner{token: "t"}, &fakePublisher{})
 		_, err := svc.Register(context.Background(), "user@example.com", validPassword)
 		if !errors.Is(err, applierrors.ErrEmailAlreadyRegistered) {
 			t.Fatalf("expected ErrEmailAlreadyRegistered, got %v", err)
@@ -145,7 +165,58 @@ func TestRegisterStoreErrors(t *testing.T) {
 
 	t.Run("unknown error becomes internal", func(t *testing.T) {
 		users := &fakeUserStore{createErr: errors.New("boom")}
-		svc := NewAuthService(users, &fakeRefreshTokenStore{}, fakeSigner{token: "t"})
+		svc := NewAuthService(users, &fakeRefreshTokenStore{}, fakeSigner{token: "t"}, &fakePublisher{})
+		_, err := svc.Register(context.Background(), "user@example.com", validPassword)
+		if !errors.Is(err, applierrors.ErrInternal) {
+			t.Fatalf("expected ErrInternal, got %v", err)
+		}
+	})
+}
+
+func TestRegisterPublishesUserCreatedEvent(t *testing.T) {
+	users := &fakeUserStore{}
+	pub := &fakePublisher{}
+	svc := NewAuthService(users, &fakeRefreshTokenStore{}, fakeSigner{token: "t"}, pub)
+
+	res, err := svc.Register(context.Background(), "user@example.com", validPassword)
+	if err != nil {
+		t.Fatalf("Register: %v", err)
+	}
+	if len(pub.events) != 1 {
+		t.Fatalf("expected one published event, got %d", len(pub.events))
+	}
+	ev := pub.events[0]
+	if ev.EventType != models.EventTypeUserCreated || ev.EventVersion != models.EventVersionV1 {
+		t.Fatalf("unexpected event type/version: %+v", ev)
+	}
+	if ev.UserID != res.UserID || ev.AccountID != res.AccountID {
+		t.Fatalf("event ids %s/%s do not match result %s/%s", ev.UserID, ev.AccountID, res.UserID, res.AccountID)
+	}
+	if users.deleteCalls != 0 {
+		t.Fatalf("user must not be deleted on successful publish")
+	}
+}
+
+func TestRegisterRollsBackWhenPublishFails(t *testing.T) {
+	t.Run("delete succeeds", func(t *testing.T) {
+		users := &fakeUserStore{}
+		pub := &fakePublisher{err: errors.New("kafka down")}
+		svc := NewAuthService(users, &fakeRefreshTokenStore{}, fakeSigner{token: "t"}, pub)
+
+		_, err := svc.Register(context.Background(), "user@example.com", validPassword)
+		if !errors.Is(err, applierrors.ErrServiceUnavailable) {
+			t.Fatalf("expected ErrServiceUnavailable, got %v", err)
+		}
+		if users.deleteCalls != 1 {
+			t.Fatalf("expected the user to be rolled back, got %d delete calls", users.deleteCalls)
+		}
+	})
+
+	t.Run("delete fails", func(t *testing.T) {
+		users := &fakeUserStore{deleteErr: errors.New("delete failed")}
+		pub := &fakePublisher{err: errors.New("kafka down")}
+		svc := NewAuthService(users, &fakeRefreshTokenStore{}, fakeSigner{token: "t"}, pub)
+
 		_, err := svc.Register(context.Background(), "user@example.com", validPassword)
 		if !errors.Is(err, applierrors.ErrInternal) {
 			t.Fatalf("expected ErrInternal, got %v", err)
@@ -154,7 +225,7 @@ func TestRegisterStoreErrors(t *testing.T) {
 }
 
 func TestRegisterSignerFailure(t *testing.T) {
-	svc := NewAuthService(&fakeUserStore{}, &fakeRefreshTokenStore{}, fakeSigner{err: errors.New("sign")})
+	svc := NewAuthService(&fakeUserStore{}, &fakeRefreshTokenStore{}, fakeSigner{err: errors.New("sign")}, &fakePublisher{})
 	if _, err := svc.Register(context.Background(), "user@example.com", validPassword); err == nil {
 		t.Fatal("expected issue tokens error")
 	}
@@ -163,7 +234,7 @@ func TestRegisterSignerFailure(t *testing.T) {
 func TestLoginSuccess(t *testing.T) {
 	users := &fakeUserStore{user: newTestUser(t, validPassword)}
 	tokens := &fakeRefreshTokenStore{}
-	svc := NewAuthService(users, tokens, fakeSigner{token: "access-token"})
+	svc := NewAuthService(users, tokens, fakeSigner{token: "access-token"}, &fakePublisher{})
 
 	res, err := svc.Login(context.Background(), "user@example.com", validPassword)
 	if err != nil {
@@ -176,13 +247,13 @@ func TestLoginSuccess(t *testing.T) {
 
 func TestLoginInvalidCredentials(t *testing.T) {
 	users := &fakeUserStore{findErr: errors.New("not found")}
-	svc := NewAuthService(users, &fakeRefreshTokenStore{}, fakeSigner{token: "t"})
+	svc := NewAuthService(users, &fakeRefreshTokenStore{}, fakeSigner{token: "t"}, &fakePublisher{})
 	if _, err := svc.Login(context.Background(), "user@example.com", validPassword); !errors.Is(err, applierrors.ErrInvalidCredentials) {
 		t.Fatalf("expected ErrInvalidCredentials for unknown user, got %v", err)
 	}
 
 	users = &fakeUserStore{user: newTestUser(t, validPassword)}
-	svc = NewAuthService(users, &fakeRefreshTokenStore{}, fakeSigner{token: "t"})
+	svc = NewAuthService(users, &fakeRefreshTokenStore{}, fakeSigner{token: "t"}, &fakePublisher{})
 	if _, err := svc.Login(context.Background(), "user@example.com", "Wrong!Passw0rd"); !errors.Is(err, applierrors.ErrInvalidCredentials) {
 		t.Fatalf("expected ErrInvalidCredentials for wrong password, got %v", err)
 	}
@@ -190,7 +261,7 @@ func TestLoginInvalidCredentials(t *testing.T) {
 
 func TestLoginSignerFailure(t *testing.T) {
 	users := &fakeUserStore{user: newTestUser(t, validPassword)}
-	svc := NewAuthService(users, &fakeRefreshTokenStore{}, fakeSigner{err: errors.New("sign")})
+	svc := NewAuthService(users, &fakeRefreshTokenStore{}, fakeSigner{err: errors.New("sign")}, &fakePublisher{})
 	if _, err := svc.Login(context.Background(), "user@example.com", validPassword); err == nil {
 		t.Fatal("expected issue tokens error")
 	}
@@ -204,7 +275,7 @@ func TestRefreshSuccess(t *testing.T) {
 		ExpiresAt: time.Now().UTC().Add(time.Hour),
 	}
 	tokens := &fakeRefreshTokenStore{getToken: rt}
-	svc := NewAuthService(&fakeUserStore{}, tokens, fakeSigner{token: "new-access"})
+	svc := NewAuthService(&fakeUserStore{}, tokens, fakeSigner{token: "new-access"}, &fakePublisher{})
 
 	res, err := svc.Refresh(context.Background(), "raw-refresh")
 	if err != nil {
@@ -227,7 +298,7 @@ func TestRefreshRejectsInvalidTokens(t *testing.T) {
 	}
 	for name, tokens := range cases {
 		t.Run(name, func(t *testing.T) {
-			svc := NewAuthService(&fakeUserStore{}, tokens, fakeSigner{token: "t"})
+			svc := NewAuthService(&fakeUserStore{}, tokens, fakeSigner{token: "t"}, &fakePublisher{})
 			if _, err := svc.Refresh(context.Background(), "raw"); !errors.Is(err, applierrors.ErrInvalidRefreshToken) {
 				t.Fatalf("expected ErrInvalidRefreshToken, got %v", err)
 			}
@@ -239,13 +310,13 @@ func TestRefreshRevokeAndIssueErrors(t *testing.T) {
 	rt := &models.RefreshToken{ExpiresAt: time.Now().UTC().Add(time.Hour)}
 
 	tokens := &fakeRefreshTokenStore{getToken: rt, revokeErr: errors.New("revoke")}
-	svc := NewAuthService(&fakeUserStore{}, tokens, fakeSigner{token: "t"})
+	svc := NewAuthService(&fakeUserStore{}, tokens, fakeSigner{token: "t"}, &fakePublisher{})
 	if _, err := svc.Refresh(context.Background(), "raw"); !errors.Is(err, applierrors.ErrInvalidRefreshToken) {
 		t.Fatalf("expected ErrInvalidRefreshToken on revoke failure, got %v", err)
 	}
 
 	tokens = &fakeRefreshTokenStore{getToken: rt}
-	svc = NewAuthService(&fakeUserStore{}, tokens, fakeSigner{err: errors.New("sign")})
+	svc = NewAuthService(&fakeUserStore{}, tokens, fakeSigner{err: errors.New("sign")}, &fakePublisher{})
 	if _, err := svc.Refresh(context.Background(), "raw"); !errors.Is(err, applierrors.ErrInternal) {
 		t.Fatalf("expected ErrInternal on issue failure, got %v", err)
 	}
@@ -253,7 +324,7 @@ func TestRefreshRevokeAndIssueErrors(t *testing.T) {
 
 func TestLogout(t *testing.T) {
 	tokens := &fakeRefreshTokenStore{}
-	svc := NewAuthService(&fakeUserStore{}, tokens, fakeSigner{token: "t"})
+	svc := NewAuthService(&fakeUserStore{}, tokens, fakeSigner{token: "t"}, &fakePublisher{})
 	if err := svc.Logout(context.Background(), "raw"); err != nil {
 		t.Fatalf("Logout: %v", err)
 	}
@@ -262,7 +333,7 @@ func TestLogout(t *testing.T) {
 	}
 
 	tokens = &fakeRefreshTokenStore{revokeErr: errors.New("revoke")}
-	svc = NewAuthService(&fakeUserStore{}, tokens, fakeSigner{token: "t"})
+	svc = NewAuthService(&fakeUserStore{}, tokens, fakeSigner{token: "t"}, &fakePublisher{})
 	if err := svc.Logout(context.Background(), "raw"); !errors.Is(err, applierrors.ErrInvalidRefreshToken) {
 		t.Fatalf("expected ErrInvalidRefreshToken, got %v", err)
 	}

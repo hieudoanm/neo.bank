@@ -26,8 +26,15 @@ func AccessTokenExpiresIn() int {
 // UserStore is the persistence dependency for user records.
 type UserStore interface {
 	Create(ctx context.Context, email string, accountID uuid.UUID, passwordHash string) (*models.User, error)
+	Delete(ctx context.Context, userID uuid.UUID, email string) error
 	FindByEmail(ctx context.Context, email string) (*models.User, error)
 	FindByID(ctx context.Context, userID uuid.UUID) (*models.User, error)
+}
+
+// UserEventPublisher publishes auth lifecycle events so downstream services can
+// react (for example, the Account Service provisions the account).
+type UserEventPublisher interface {
+	PublishUserEvent(ctx context.Context, ev models.UserCreatedEvent) error
 }
 
 // RefreshTokenStore is the persistence dependency for refresh tokens.
@@ -46,13 +53,15 @@ type AuthService struct {
 	userRepo         UserStore
 	refreshTokenRepo RefreshTokenStore
 	keyManager       TokenSigner
+	publisher        UserEventPublisher
 }
 
-func NewAuthService(userRepo UserStore, refreshTokenRepo RefreshTokenStore, keyManager TokenSigner) *AuthService {
+func NewAuthService(userRepo UserStore, refreshTokenRepo RefreshTokenStore, keyManager TokenSigner, publisher UserEventPublisher) *AuthService {
 	return &AuthService{
 		userRepo:         userRepo,
 		refreshTokenRepo: refreshTokenRepo,
 		keyManager:       keyManager,
+		publisher:        publisher,
 	}
 }
 
@@ -84,6 +93,23 @@ func (s *AuthService) Register(ctx context.Context, email, password string) (*Re
 			return nil, err
 		}
 		return nil, applierrors.ErrInternal
+	}
+
+	ev := models.UserCreatedEvent{
+		EventID:      uuid.New().String(),
+		EventType:    models.EventTypeUserCreated,
+		EventVersion: models.EventVersionV1,
+		UserID:       user.ID.String(),
+		AccountID:    user.AccountID.String(),
+		OccurredAt:   time.Now().UTC().Format(time.RFC3339),
+	}
+	if err := s.publisher.PublishUserEvent(ctx, ev); err != nil {
+		// The account cannot be provisioned without the event, so roll the user
+		// back to keep registration and account creation consistent.
+		if delErr := s.userRepo.Delete(ctx, user.ID, user.Email); delErr != nil {
+			return nil, applierrors.ErrInternal
+		}
+		return nil, applierrors.ErrServiceUnavailable
 	}
 
 	accessToken, refreshToken, err := s.issueTokens(ctx, user.ID, user.AccountID, user.Email)

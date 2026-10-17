@@ -15,12 +15,15 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS users_by_email (
   email TEXT,
   user_id UUID,
+  created_at TIMESTAMP,
   PRIMARY KEY (email)
 );
 
 CREATE TABLE IF NOT EXISTS refresh_tokens (
   token_hash TEXT,
   user_id UUID,
+  account_id UUID,
+  email TEXT,
   expires_at TIMESTAMP,
   revoked_at TIMESTAMP,
   created_at TIMESTAMP,
@@ -41,11 +44,11 @@ CREATE TABLE IF NOT EXISTS audit_events (
   day DATE,
   timestamp TIMESTAMP,
   event_id UUID,
-  event_type TEXT,
-  actor_id UUID,
+  actor_user_id UUID,
+  action TEXT,
+  resource_type TEXT,
   resource_id UUID,
-  ip_address TEXT,
-  user_agent TEXT,
-  details TEXT,
+  correlation_id TEXT,
+  metadata MAP<TEXT, TEXT>,
   PRIMARY KEY ((service, day), timestamp, event_id)
-);
+) WITH CLUSTERING ORDER BY (timestamp DESC, event_id DESC);

@@ -48,7 +48,14 @@ describe('DashboardPage', () => {
   })
 
   it('renders the formatted balance on success', () => {
-    setBalance({ data: { accountId: 'a1', balanceCents: 123456, currency: 'USD' } })
+    setBalance({
+      data: {
+        accountId: 'a1',
+        balanceCents: 123456,
+        currencyCode: 'USD',
+        updatedAt: '2026-01-01T00:00:00Z',
+      },
+    })
     render(<DashboardPage />)
     expect(screen.getByText('$1,234.56')).toBeInTheDocument()
     expect(screen.getByText('123456 minor units (USD)')).toBeInTheDocument()

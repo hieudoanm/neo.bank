@@ -35,21 +35,18 @@ func (r *RefreshTokenRepository) Insert(ctx context.Context, tokenHash string, u
 
 func (r *RefreshTokenRepository) GetByHash(ctx context.Context, tokenHash string) (*models.RefreshToken, error) {
 	var rt models.RefreshToken
-	var revokedAt time.Time
-	var hasRevoked bool
+	var revokedAt *time.Time
 	err := r.session.Query(refreshTokenByHash, tokenHash).
 		WithContext(ctx).
 		Consistency(gocql.One).
-		Scan(&rt.TokenHash, &rt.UserID, &rt.AccountID, &rt.Email, &rt.ExpiresAt, &revokedAt, &hasRevoked, &rt.CreatedAt)
+		Scan(&rt.TokenHash, &rt.UserID, &rt.AccountID, &rt.Email, &rt.ExpiresAt, &revokedAt, &rt.CreatedAt)
 	if err != nil {
 		if err == gocql.ErrNotFound {
 			return nil, errors.ErrInvalidRefreshToken
 		}
 		return nil, fmt.Errorf("get refresh token: %w", err)
 	}
-	if hasRevoked {
-		rt.RevokedAt = &revokedAt
-	}
+	rt.RevokedAt = revokedAt
 	return &rt, nil
 }
 

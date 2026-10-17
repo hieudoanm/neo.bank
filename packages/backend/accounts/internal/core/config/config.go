@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -17,6 +18,8 @@ type Config struct {
 	KafkaTopicTransfers    string
 	KafkaTopicTransfersDLQ string
 	KafkaConsumerGroup     string
+	InitialBalanceCents    int64
+	CurrencyCode           string
 }
 
 // Load returns configuration for the HTTP API, which requires the JWT public key.
@@ -46,7 +49,21 @@ func load() *Config {
 		KafkaTopicTransfers:    env("KAFKA_TOPIC_TRANSFERS", "transfers"),
 		KafkaTopicTransfersDLQ: env("KAFKA_TOPIC_TRANSFERS_DLQ", "transfers.dlq"),
 		KafkaConsumerGroup:     env("KAFKA_CONSUMER_GROUP", "account-service-saga"),
+		InitialBalanceCents:    envInt64("INITIAL_BALANCE_CENTS", 0),
+		CurrencyCode:           env("CURRENCY_CODE", "USD"),
 	}
+}
+
+func envInt64(key string, def int64) int64 {
+	v := os.Getenv(key)
+	if v == "" {
+		return def
+	}
+	n, err := strconv.ParseInt(strings.TrimSpace(v), 10, 64)
+	if err != nil {
+		return def
+	}
+	return n
 }
 
 func env(key, def string) string {

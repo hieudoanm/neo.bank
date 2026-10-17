@@ -1718,6 +1718,14 @@
     },
     {
       "source": "03-user-stories/US-001.md",
+      "target": "00-overview.md",
+      "raw_link": "../00-overview.md",
+      "line": 0,
+      "fragment": null,
+      "status": "resolved"
+    },
+    {
+      "source": "03-user-stories/US-001.md",
       "target": "01-requirements/functional-requirements.md",
       "raw_link": "../01-requirements/functional-requirements.md#account-registration",
       "line": 0,
@@ -4568,6 +4576,14 @@
       "source": "08-tech-stack/backend/kafka.md",
       "target": "08-tech-stack/backend/README.md",
       "raw_link": "./README.md",
+      "line": 0,
+      "fragment": null,
+      "status": "resolved"
+    },
+    {
+      "source": "08-tech-stack/backend/kafka.md",
+      "target": "08-tech-stack/backend/configuration.md",
+      "raw_link": "./configuration.md",
       "line": 0,
       "fragment": null,
       "status": "resolved"
@@ -8559,10 +8575,10 @@
   ],
   "stats": {
     "files": 128,
-    "ignored_files": 20,
-    "links": 989,
+    "ignored_files": 0,
+    "links": 991,
     "broken_links": 0,
-    "resolved_links": 989,
+    "resolved_links": 991,
     "self_links": 0,
     "orphan_files": 0,
     "components": 0

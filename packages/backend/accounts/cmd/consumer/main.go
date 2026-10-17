@@ -29,7 +29,7 @@ func main() {
 	defer accountProducer.Close()
 
 	repo := repositories.NewAccountRepository(session)
-	c := consumer.NewAccountConsumer(cfg.KafkaBrokers, cfg.KafkaTopicTransfers, cfg.KafkaConsumerGroup, cfg.KafkaTopicTransfersDLQ, repo, accountProducer, logger)
+	c := consumer.NewAccountConsumer(cfg.KafkaBrokers, cfg.KafkaTopicTransfers, cfg.KafkaConsumerGroup, cfg.KafkaTopicTransfersDLQ, cfg.InitialBalanceCents, cfg.CurrencyCode, repo, accountProducer, logger)
 	defer c.Close()
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
