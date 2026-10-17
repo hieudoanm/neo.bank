@@ -1,3 +1,5 @@
+import { logger } from '@/lib/log'
+
 export type ApiError = {
   code: string
   message: string
@@ -26,10 +28,18 @@ async function request<T>(
   input: RequestInfo | URL,
   init?: RequestInit,
 ): Promise<T> {
-  const res = await fetch(`${API_BASE}${typeof input === 'string' ? input : input.toString()}`, {
-    ...init,
-    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
-  })
+  const url = `${API_BASE}${typeof input === 'string' ? input : input.toString()}`
+
+  let res: Response
+  try {
+    res = await fetch(url, {
+      ...init,
+      headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
+    })
+  } catch (error) {
+    logger.error('api request failed', { url, error })
+    throw error
+  }
 
   const body = (await res.text()) ?? ''
   if (!res.ok) {
@@ -37,6 +47,7 @@ async function request<T>(
     try {
       parsed = JSON.parse(body).error as ApiError
     } catch {
+      logger.warn('unexpected api error response', { url, status: res.status })
       parsed = { code: 'INTERNAL_ERROR', message: 'Unexpected error', requestId: '' }
     }
     throw new HttpError(res.status, parsed, parsed.message)

@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { authApi, accountsApi, transactionsApi, transfersApi, HttpError } from './client'
+import { logger } from '@/lib/log'
+
+vi.mock('@/lib/log', () => ({
+  logger: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}))
 
 const okJson = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -31,6 +36,7 @@ describe('api client', () => {
   let fetchMock: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
+    vi.clearAllMocks()
     fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)
   })
@@ -138,6 +144,21 @@ describe('api client', () => {
     await expect(authApi.logout({ refreshToken: 'rt' })).rejects.toMatchObject({
       status: 502,
       error: { code: 'INTERNAL_ERROR', message: 'Unexpected error', requestId: '' },
+    })
+    expect(logger.warn).toHaveBeenCalledWith('unexpected api error response', {
+      url: 'http://localhost:8080/api/v1/logout',
+      status: 502,
+    })
+  })
+
+  it('logs and rethrows network failures', async () => {
+    const failure = new TypeError('Failed to fetch')
+    fetchMock.mockRejectedValueOnce(failure)
+
+    await expect(accountsApi.getBalance('a1', 'tok')).rejects.toBe(failure)
+    expect(logger.error).toHaveBeenCalledWith('api request failed', {
+      url: 'http://localhost:8080/api/v1/accounts/a1/balance',
+      error: failure,
     })
   })
 })
