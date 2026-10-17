@@ -16,7 +16,7 @@ Defines the seven test layers used across NEO Bank, their scope, coverage target
 **Coverage targets:**
 
 - Backend: 80% code coverage minimum.
-- Frontend: 70% code coverage minimum.
+- Frontend: 80% code coverage minimum.
 
 **Examples:**
 

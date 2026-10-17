@@ -6,11 +6,11 @@ Defines coverage targets, flakiness policy, duration thresholds, and metrics col
 
 ## 1. Coverage Targets
 
-| Layer | Backend Minimum | Backend Target | Frontend Minimum | Frontend Target |
-|-------|----------------|----------------|------------------|-----------------|
-| Unit tests | 80% | 90% (critical paths) | 70% | 80% (critical paths) |
-| Integration | N/A | 100% of critical paths | N/A | N/A |
-| E2E | N/A | Core journeys only | N/A | Core journeys only |
+| Layer       | Backend Minimum | Backend Target         | Frontend Minimum | Frontend Target      |
+| ----------- | --------------- | ---------------------- | ---------------- | -------------------- |
+| Unit tests  | 80%             | 90% (critical paths)   | 80%              | 90% (critical paths) |
+| Integration | N/A             | 100% of critical paths | N/A              | N/A                  |
+| E2E         | N/A             | Core journeys only     | N/A              | Core journeys only   |
 
 Critical paths include: authentication, balance inquiry, transfer initiation, idempotency, authorisation.
 
@@ -32,13 +32,13 @@ func main() { /* dependency injection only */ }
 
 ## 2. Flakiness Policy
 
-| Policy | Detail |
-|--------|--------|
-| Zero tolerance | Flaky tests are not allowed in CI |
-| Fix or disable | Flaky tests must be fixed within 1 sprint or disabled |
-| Documented reason | Disabled tests need a comment explaining why and a fix ticket |
-| No silent skips | `testing.Short()` skips are deliberate; no silent `t.Skip()` without reason |
-| Quarantine | Repeatedly flaky tests are moved to a quarantine directory |
+| Policy            | Detail                                                                      |
+| ----------------- | --------------------------------------------------------------------------- |
+| Zero tolerance    | Flaky tests are not allowed in CI                                           |
+| Fix or disable    | Flaky tests must be fixed within 1 sprint or disabled                       |
+| Documented reason | Disabled tests need a comment explaining why and a fix ticket               |
+| No silent skips   | `testing.Short()` skips are deliberate; no silent `t.Skip()` without reason |
+| Quarantine        | Repeatedly flaky tests are moved to a quarantine directory                  |
 
 ### Detecting Flakiness
 
@@ -56,23 +56,23 @@ func main() { /* dependency injection only */ }
 
 ## 3. Duration Thresholds
 
-| Test Type | Target | Maximum | Action if Exceeded |
-|-----------|--------|---------|-------------------|
-| Unit tests (backend) | < 30 seconds | 2 minutes | Profile and optimise |
-| Unit tests (frontend) | < 30 seconds | 2 minutes | Profile and optimise |
-| Integration tests | < 2 minutes | 5 minutes | Reduce test data or parallelise |
-| E2E tests | < 5 minutes | 10 minutes | Split into smaller specs |
-| Total CI pipeline | < 10 minutes | 20 minutes | Parallelise or remove slow tests |
+| Test Type             | Target       | Maximum    | Action if Exceeded               |
+| --------------------- | ------------ | ---------- | -------------------------------- |
+| Unit tests (backend)  | < 30 seconds | 2 minutes  | Profile and optimise             |
+| Unit tests (frontend) | < 30 seconds | 2 minutes  | Profile and optimise             |
+| Integration tests     | < 2 minutes  | 5 minutes  | Reduce test data or parallelise  |
+| E2E tests             | < 5 minutes  | 10 minutes | Split into smaller specs         |
+| Total CI pipeline     | < 10 minutes | 20 minutes | Parallelise or remove slow tests |
 
 ## 4. Metrics Collected
 
-| Metric | Source | Purpose |
-|--------|--------|---------|
-| Test pass rate | CI | Trend over time; detect regressions |
-| Test duration | CI | Detect slowdowns |
-| Coverage percentage | CI | Ensure coverage doesn't decrease |
-| Flaky test count | CI | Track and reduce |
-| E2E failure rate | CI | Detect environment issues |
+| Metric              | Source | Purpose                             |
+| ------------------- | ------ | ----------------------------------- |
+| Test pass rate      | CI     | Trend over time; detect regressions |
+| Test duration       | CI     | Detect slowdowns                    |
+| Coverage percentage | CI     | Ensure coverage doesn't decrease    |
+| Flaky test count    | CI     | Track and reduce                    |
+| E2E failure rate    | CI     | Detect environment issues           |
 
 ## 5. Reporting
 

@@ -10,18 +10,18 @@ Defines when a phase is considered complete. A phase is not "done" until every c
 
 A phase is complete when:
 
-| # | Criterion | Detail |
-|---|-----------|--------|
-| 1 | All tasks completed | Every task in the phase's task list is checked off. |
-| 2 | All tests pass | Unit, integration, and frontend tests for the phase pass in CI. |
-| 3 | Code reviewed and approved | At least one reviewer approves all phase changes. |
-| 4 | Documentation updated | All affected docs are updated to reflect the phase's changes. |
-| 5 | CI pipeline passes | Lint, typecheck, tests, and security scans all pass. |
-| 6 | Phase deliverables verified | Each deliverable listed in the phase document is demonstrated. |
-| 7 | Dependencies satisfied | All prior phases are complete and their deliverables are used. |
-| 8 | No regression | Existing tests continue to pass after phase changes. |
-| 9 | Coverage thresholds met | Backend line coverage ≥ 80%; frontend line coverage ≥ 70% for code changed in the phase. |
-| 10 | Decisions recorded | Significant decisions are recorded as ADRs in `docs/decisions/` (per AGENTS.md delivery rules). |
+| #   | Criterion                   | Detail                                                                                          |
+| --- | --------------------------- | ----------------------------------------------------------------------------------------------- |
+| 1   | All tasks completed         | Every task in the phase's task list is checked off.                                             |
+| 2   | All tests pass              | Unit, integration, and frontend tests for the phase pass in CI.                                 |
+| 3   | Code reviewed and approved  | At least one reviewer approves all phase changes.                                               |
+| 4   | Documentation updated       | All affected docs are updated to reflect the phase's changes.                                   |
+| 5   | CI pipeline passes          | Lint, typecheck, tests, and security scans all pass.                                            |
+| 6   | Phase deliverables verified | Each deliverable listed in the phase document is demonstrated.                                  |
+| 7   | Dependencies satisfied      | All prior phases are complete and their deliverables are used.                                  |
+| 8   | No regression               | Existing tests continue to pass after phase changes.                                            |
+| 9   | Coverage thresholds met     | Backend line coverage ≥ 80%; frontend line coverage ≥ 80% for code changed in the phase.        |
+| 10  | Decisions recorded          | Significant decisions are recorded as ADRs in `docs/decisions/` (per AGENTS.md delivery rules). |
 
 ## Phase-Level Definition of Done Examples
 
@@ -71,7 +71,7 @@ A release is ready when:
 - E2E test suite passes in the target environment.
 - Performance tests meet targets under load.
 - Security scan reports zero high-severity findings.
-- Coverage thresholds are met (backend ≥ 80%, frontend ≥ 70%).
+- Coverage thresholds are met (backend ≥ 80%, frontend ≥ 80%).
 - Rollback plan is documented and tested.
 - Documentation is updated for all user-facing changes.
 - Significant decisions are recorded as ADRs in `docs/decisions/`.

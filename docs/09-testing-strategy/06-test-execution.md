@@ -37,10 +37,10 @@ cd packages/frontend/app
 pnpm test
 
 # Unit tests with coverage
-pnpm test --coverage
+pnpm test
 
 # Watch mode (re-run on file changes)
-pnpm test --watch
+pnpm test:watch
 
 # E2E tests
 pnpm test:e2e
@@ -108,7 +108,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test --coverage
+      - run: pnpm test
       - run: pnpm test:e2e
       - uses: codecov/codecov-action@v3
 ```
@@ -157,23 +157,23 @@ pnpm test:e2e --grep '@critical'
 
 ## 6. Artifacts
 
-| Artifact | Purpose | Retention |
-|----------|---------|-----------|
-| Coverage report | Code coverage metrics | 30 days |
-| Test results XML | CI test reporting | 30 days |
-| Playwright HTML report | E2E test details | 30 days |
-| Test traces | Failed test diagnosis | 7 days |
-| Screenshots | Failed E2E test visuals | 7 days |
+| Artifact               | Purpose                 | Retention |
+| ---------------------- | ----------------------- | --------- |
+| Coverage report        | Code coverage metrics   | 30 days   |
+| Test results XML       | CI test reporting       | 30 days   |
+| Playwright HTML report | E2E test details        | 30 days   |
+| Test traces            | Failed test diagnosis   | 7 days    |
+| Screenshots            | Failed E2E test visuals | 7 days    |
 
 ## 7. Troubleshooting
 
-| Problem | Solution |
-|---------|----------|
-| Cassandra not ready | Wait for healthcheck (`cqlsh` responds) |
-| Kafka consumer lag | Increase consumer instances or reduce message rate |
-| Flaky test | Fix determinism or disable with documented reason |
-| Coverage below threshold | Add tests for uncovered lines |
-| E2E timeout | Increase timeout or check service dependencies |
+| Problem                  | Solution                                           |
+| ------------------------ | -------------------------------------------------- |
+| Cassandra not ready      | Wait for healthcheck (`cqlsh` responds)            |
+| Kafka consumer lag       | Increase consumer instances or reduce message rate |
+| Flaky test               | Fix determinism or disable with documented reason  |
+| Coverage below threshold | Add tests for uncovered lines                      |
+| E2E timeout              | Increase timeout or check service dependencies     |
 
 ## Cross-references
 

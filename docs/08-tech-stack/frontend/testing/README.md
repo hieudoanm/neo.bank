@@ -21,11 +21,11 @@ Back to the [frontend index](../README.md) · [shared frontend rules](../README.
 
 ## 3. Layer Responsibilities
 
-| Layer         | Tool            | Scope                                          | Speed target |
-|---------------|-----------------|------------------------------------------------|--------------|
-| Component     | Vitest + RTL    | Individual components, hooks, UI states        | < 2 minutes  |
-| Hook          | Vitest + RTL    | Custom hooks (query, mutation, auth logic)     | < 2 minutes  |
-| End-to-end    | Playwright      | Critical user journeys through the real UI     | < 10 minutes |
+| Layer      | Tool         | Scope                                      | Speed target |
+| ---------- | ------------ | ------------------------------------------ | ------------ |
+| Component  | Vitest + RTL | Individual components, hooks, UI states    | < 2 minutes  |
+| Hook       | Vitest + RTL | Custom hooks (query, mutation, auth logic) | < 2 minutes  |
+| End-to-end | Playwright   | Critical user journeys through the real UI | < 10 minutes |
 
 ## 4. Mocking Strategy
 
@@ -45,7 +45,7 @@ Back to the [frontend index](../README.md) · [shared frontend rules](../README.
 1. Component tests cover loading, empty, validation-error, permission-error, network-error, and unexpected-error states.
 2. E2E tests run against the real API in CI and gate the deploy.
 3. No test depends on execution order or sleeps; Playwright waits are auto-waiting, not fixed delays.
-4. Coverage thresholds enforced in CI: lines 70%, functions 70%, branches 60%, statements 70%.
+4. Coverage thresholds enforced in CI: lines 80%, functions 80%, branches 80%, statements 80%.
 5. Zero tolerance for flaky tests — fix or disable, never retry into green.
 
 ## 7. Cross-references

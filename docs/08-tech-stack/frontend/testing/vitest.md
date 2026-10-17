@@ -23,15 +23,15 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'lcov', 'html'],
+      reporter: ['text', 'json-summary', 'html'],
       thresholds: {
-        lines: 70,
-        functions: 70,
-        branches: 60,
-        statements: 70,
+        lines: 80,
+        functions: 80,
+        branches: 80,
+        statements: 80,
       },
       include: ['src/**/*.{ts,tsx}'],
-      exclude: ['src/test/**', '**/*.test.tsx', '**/*.test.ts', 'src/main.tsx'],
+      exclude: ['**/*.test.tsx', '**/*.test.ts', '**/*.d.ts', 'src/main.tsx', 'src/setupTests.ts'],
     },
   },
 });
@@ -50,7 +50,7 @@ vi.mock('@/lib/api/client', () => ({
 Rules:
 
 - One `setupFiles` entry for shared matchers (`@testing-library/jest-dom`) and cleanup.
-- Coverage thresholds match `09-testing-strategy.md` (frontend 70% minimum for lines/functions).
+- Coverage thresholds match `09-testing-strategy.md` (frontend 80% minimum for lines/functions/branches/statements).
 - Tests live next to code (`*.test.tsx`) or in `__tests__/`.
 - `globals: true` so `describe`/`it`/`expect` are available without imports.
 - `jsdom` environment provides DOM APIs for component rendering.
@@ -196,7 +196,7 @@ Rules:
 - Enforce the frontend threshold in CI; do not weaken it to pass.
 - No flaky tests: a timing-dependent test is fixed or removed, not retried.
 - Unit tests run in under 2 minutes (see `09-testing-strategy.md`).
-- Coverage is enforced for lines (70%), functions (70%), branches (60%), statements (70%).
+- Coverage is enforced for lines (80%), functions (80%), branches (80%), statements (80%).
 
 ## 7. Code Style & Rules
 

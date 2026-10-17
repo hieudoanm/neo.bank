@@ -10,19 +10,19 @@ Husky + lint-staged runs on every commit:
 
 ### Backend (Go)
 
-| Check | Command | Purpose |
-|-------|---------|---------|
+| Check         | Command                   | Purpose                                   |
+| ------------- | ------------------------- | ----------------------------------------- |
 | golangci-lint | `golangci-lint run ./...` | Aggregate linting (style, bugs, security) |
-| go vet | `go vet ./...` | Static analysis |
-| gofmt | `gofmt -l .` | Formatting check |
+| go vet        | `go vet ./...`            | Static analysis                           |
+| gofmt         | `gofmt -l .`              | Formatting check                          |
 
 ### Frontend (TypeScript)
 
-| Check | Command | Purpose |
-|-------|---------|---------|
-| ESLint | `pnpm lint` | Code style and potential bugs |
-| Prettier | `pnpm format:check` | Formatting |
-| TypeScript | `pnpm typecheck` | Type safety (`tsc --noEmit`) |
+| Check      | Command             | Purpose                       |
+| ---------- | ------------------- | ----------------------------- |
+| ESLint     | `pnpm lint`         | Code style and potential bugs |
+| Prettier   | `pnpm format:check` | Formatting                    |
+| TypeScript | `pnpm typecheck`    | Type safety (`tsc --noEmit`)  |
 
 Rules:
 
@@ -36,52 +36,52 @@ GitHub Actions runs on every push and pull request.
 
 ### 2.1 Backend
 
-| Step | Command | Gate |
-|------|---------|------|
-| Checkout | `actions/checkout` | Get source |
-| Setup Go | `actions/setup-go` | Install Go 1.22+ |
-| Lint | `golangci-lint run ./...` | Must pass |
-| Vet | `go vet ./...` | Must pass |
-| Test (unit) | `go test -short ./...` | Must pass |
+| Step               | Command                           | Gate                             |
+| ------------------ | --------------------------------- | -------------------------------- |
+| Checkout           | `actions/checkout`                | Get source                       |
+| Setup Go           | `actions/setup-go`                | Install Go 1.22+                 |
+| Lint               | `golangci-lint run ./...`         | Must pass                        |
+| Vet                | `go vet ./...`                    | Must pass                        |
+| Test (unit)        | `go test -short ./...`            | Must pass                        |
 | Test (integration) | `go test ./tests/integration/...` | Must pass (real Cassandra/Kafka) |
-| Coverage | `go test -cover ./...` | Must be ≥ 80% (backend) |
-| Security | `trivy fs .` | No high-severity findings |
-| Build | `go build ./...` | Must pass |
+| Coverage           | `go test -cover ./...`            | Must be ≥ 80% (backend)          |
+| Security           | `trivy fs .`                      | No high-severity findings        |
+| Build              | `go build ./...`                  | Must pass                        |
 
 ### 2.2 Frontend
 
-| Step | Command | Gate |
-|------|---------|------|
-| Checkout | `actions/checkout` | Get source |
-| Setup Node | `actions/setup-node` | Install Node + pnpm |
-| Install | `pnpm install --frozen-lockfile` | Must pass |
-| Lint | `pnpm lint` | Must pass |
-| Format | `pnpm format:check` | Must pass |
-| Typecheck | `pnpm typecheck` | Must pass |
-| Test (unit) | `pnpm test` | Must pass (≥ 70% coverage) |
-| Test (E2E) | `pnpm test:e2e` | Must pass (Playwright) |
-| Build | `pnpm build` | Must pass |
+| Step        | Command                          | Gate                       |
+| ----------- | -------------------------------- | -------------------------- |
+| Checkout    | `actions/checkout`               | Get source                 |
+| Setup Node  | `actions/setup-node`             | Install Node + pnpm        |
+| Install     | `pnpm install --frozen-lockfile` | Must pass                  |
+| Lint        | `pnpm lint`                      | Must pass                  |
+| Format      | `pnpm format:check`              | Must pass                  |
+| Typecheck   | `pnpm typecheck`                 | Must pass                  |
+| Test (unit) | `pnpm test`                      | Must pass (≥ 80% coverage) |
+| Test (E2E)  | `pnpm test:e2e`                  | Must pass (Playwright)     |
+| Build       | `pnpm build`                     | Must pass                  |
 
 ### 2.3 Integration
 
-| Step | Command | Purpose |
-|------|---------|---------|
-| Docker Compose | `docker-compose up -d cassandra kafka` | Start dependencies |
-| Wait for health | `wait-for-it` scripts | Dependencies ready |
-| Migrations | `go run ./cmd/migrate` | Apply CQL migrations |
-| Integration tests | `go test ./tests/integration/...` | Test with real deps |
-| Cleanup | `docker-compose down -v` | Remove containers and volumes |
+| Step              | Command                                | Purpose                       |
+| ----------------- | -------------------------------------- | ----------------------------- |
+| Docker Compose    | `docker-compose up -d cassandra kafka` | Start dependencies            |
+| Wait for health   | `wait-for-it` scripts                  | Dependencies ready            |
+| Migrations        | `go run ./cmd/migrate`                 | Apply CQL migrations          |
+| Integration tests | `go test ./tests/integration/...`      | Test with real deps           |
+| Cleanup           | `docker-compose down -v`               | Remove containers and volumes |
 
 ## 3. Pull Request Requirements
 
-| Requirement | Description |
-|-------------|-------------|
-| All tests pass | Every CI check must be green |
-| Coverage does not decrease | New code is covered; no uncovered lines added |
-| No security vulnerabilities | Trivy reports zero high-severity findings |
-| Manual review | At least one reviewer approves non-trivial changes |
-| Documentation updated | Behavior changes are reflected in `docs/` |
-| Changelog entry | User-facing changes get a changelog entry |
+| Requirement                 | Description                                        |
+| --------------------------- | -------------------------------------------------- |
+| All tests pass              | Every CI check must be green                       |
+| Coverage does not decrease  | New code is covered; no uncovered lines added      |
+| No security vulnerabilities | Trivy reports zero high-severity findings          |
+| Manual review               | At least one reviewer approves non-trivial changes |
+| Documentation updated       | Behavior changes are reflected in `docs/`          |
+| Changelog entry             | User-facing changes get a changelog entry          |
 
 ## 4. Merge Requirements
 

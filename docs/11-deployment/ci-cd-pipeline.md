@@ -82,12 +82,13 @@ Implemented today (all jobs must pass for the workflow to succeed):
 2. **Static Analysis**: `go vet ./...` clean for every Go module.
 3. **Build**: `go build ./...` succeeds for every Go module; frontend `pnpm build` succeeds.
 4. **Type Checking**: No TypeScript compilation errors (`tsc --noEmit`).
-5. **Tests**: Backend `go test ./...` and frontend `pnpm test` pass.
-6. **Security Scanning**: No fixable **Critical/High** severity vulnerabilities in the filesystem/dependency scan or the container image scans.
+5. **Tests**: Backend `go test ./...` and frontend `pnpm test` (Vitest with `--coverage`) pass.
+6. **Frontend Coverage**: `pnpm test` fails if frontend line/function/branch/statement coverage drops below **80%** (V8 provider thresholds in `vitest.config.ts`).
+7. **Security Scanning**: No fixable **Critical/High** severity vulnerabilities in the filesystem/dependency scan or the container image scans.
 
 Planned gates (not yet implemented):
 
-1. **Test Coverage**: Minimum **80% backend** line coverage, **70% frontend** line coverage.
+1. **Backend Coverage**: Minimum **80% backend** line coverage enforced as a CI gate.
 2. **Linting**: Zero warnings/errors from `golangci-lint` and `pnpm lint` + `pnpm format:check`.
 3. **Integration/E2E Passing**: Integration and E2E test suites.
 4. **Terraform**: `terraform fmt -check`, `terraform validate`, and `terraform plan -out=tfplan` must pass for changed infra; apply uses the reviewed `tfplan` file (never `-auto-approve`).

@@ -6,21 +6,21 @@ Product strategy · Functional requirements · Architecture · Data model · Del
 
 ## Normative documents
 
-| #   | Document                                                 | Governs                                                        |
-| --- | -------------------------------------------------------- | -------------------------------------------------------------- |
-| 00  | [`00-overview.md`](00-overview.md)                       | Product vision and scope                                       |
-| 01  | [`01-requirements.md`](01-requirements.md)               | Functional/non-functional requirements (`FR-`, `NFR-`)         |
-| 02  | [`02-features.md`](02-features.md)                       | User-visible behaviour                                         |
-| 03  | [`03-user-stories.md`](03-user-stories.md)               | User goals and acceptance scenarios                            |
-| 04  | [`04-architecture.md`](04-architecture.md)               | Module boundaries, request lifecycle, tenancy                  |
-| 05  | [`05-data-model.md`](05-data-model.md)                   | Schema, constraints, state transitions                         |
-| 06  | [`06-api-specification.md`](06-api-specification.md)     | REST contract, status codes, error envelope                    |
-| 07  | [`07-ui-ux-design.md`](07-ui-ux-design.md)               | UI tokens, layout, states, accessibility                       |
-| 08  | [`08-tech-stack.md`](08-tech-stack.md)                   | Allowed technologies and dependency policy                     |
-| 09  | [`09-testing-strategy.md`](09-testing-strategy.md)       | Test layers, fixtures, acceptance criteria                     |
-| 10  | [`10-implementation-plan.md`](10-implementation-plan.md) | Phased delivery plan                                           |
-| 11  | [`11-deployment.md`](11-deployment.md)                   | CI, Docker Compose, and cloud deployment                       |
-| 12  | [`12-operations.md`](12-operations.md)                   | Operations: backup, monitoring, security, rollback, recovery   |
+| #   | Document                                                 | Governs                                                      |
+| --- | -------------------------------------------------------- | ------------------------------------------------------------ |
+| 00  | [`00-overview.md`](00-overview.md)                       | Product vision and scope                                     |
+| 01  | [`01-requirements.md`](01-requirements.md)               | Functional/non-functional requirements (`FR-`, `NFR-`)       |
+| 02  | [`02-features.md`](02-features.md)                       | User-visible behaviour                                       |
+| 03  | [`03-user-stories.md`](03-user-stories.md)               | User goals and acceptance scenarios                          |
+| 04  | [`04-architecture.md`](04-architecture.md)               | Module boundaries, request lifecycle, tenancy                |
+| 05  | [`05-data-model.md`](05-data-model.md)                   | Schema, constraints, state transitions                       |
+| 06  | [`06-api-specification.md`](06-api-specification.md)     | REST contract, status codes, error envelope                  |
+| 07  | [`07-ui-ux-design.md`](07-ui-ux-design.md)               | UI tokens, layout, states, accessibility                     |
+| 08  | [`08-tech-stack.md`](08-tech-stack.md)                   | Allowed technologies and dependency policy                   |
+| 09  | [`09-testing-strategy.md`](09-testing-strategy.md)       | Test layers, fixtures, acceptance criteria                   |
+| 10  | [`10-implementation-plan.md`](10-implementation-plan.md) | Phased delivery plan                                         |
+| 11  | [`11-deployment.md`](11-deployment.md)                   | CI, Docker Compose, and cloud deployment                     |
+| 12  | [`12-operations.md`](12-operations.md)                   | Operations: backup, monitoring, security, rollback, recovery |
 
 ---
 
@@ -118,17 +118,17 @@ Success metric: status update accuracy, history query performance.
 
 ## 6. Application structure
 
-| Page             | Purpose                                            |
-| ---------------- | -------------------------------------------------- |
-| Login            | Email and password authentication                  |
-| Register         | Account creation with input validation             |
-| Home             | Landing page                                       |
-| Dashboard        | Balance, recent transactions, quick actions        |
-| Balance          | Balance display, quick actions (part of Dashboard) |
-| Transfer         | Transfer form, validation, status monitoring       |
-| Transfer Status  | Transfer status polling, outcome and errors        |
-| Transactions     | Transaction history, pagination, filtering         |
-| Settings         | Profile, security (future enhancement)             |
+| Page            | Purpose                                            |
+| --------------- | -------------------------------------------------- |
+| Login           | Email and password authentication                  |
+| Register        | Account creation with input validation             |
+| Home            | Landing page                                       |
+| Dashboard       | Balance, recent transactions, quick actions        |
+| Balance         | Balance display, quick actions (part of Dashboard) |
+| Transfer        | Transfer form, validation, status monitoring       |
+| Transfer Status | Transfer status polling, outcome and errors        |
+| Transactions    | Transaction history, pagination, filtering         |
+| Settings        | Profile, security (future enhancement)             |
 
 ## 7. Technical architecture
 
@@ -138,18 +138,18 @@ The platform is an event-driven microservices system (see [`04-architecture.md`]
 
 ### 7.2 Technology stack
 
-| Layer            | Technology                                         | Responsibility                                    |
-| ---------------- | -------------------------------------------------- | ------------------------------------------------- |
-| Frontend         | React 18, TypeScript, Vite, TanStack Query, Router | Interactive banking interface                     |
-| Styling          | Tailwind CSS + DaisyUI                            | Responsive styling, design tokens                 |
-| API              | Go 1.22+, Gin router, gocql, kafka-go              | REST API, auth/authorisation, validation          |
-| Database         | Apache Cassandra 4.x                               | Distributed financial state                       |
-| Message Queue    | Apache Kafka 3.x                                   | Transfer event processing                         |
-| Containerisation | Docker, Docker Compose                             | Local topology reproducibility                    |
-| Orchestration    | Kubernetes (EKS on AWS, GKE on GCP)                | Scheduling, probes, scaling, rollouts             |
+| Layer            | Technology                                         | Responsibility                                                          |
+| ---------------- | -------------------------------------------------- | ----------------------------------------------------------------------- |
+| Frontend         | React 18, TypeScript, Vite, TanStack Query, Router | Interactive banking interface                                           |
+| Styling          | Tailwind CSS + DaisyUI                             | Responsive styling, design tokens                                       |
+| API              | Go 1.22+, Gin router, gocql, kafka-go              | REST API, auth/authorisation, validation                                |
+| Database         | Apache Cassandra 4.x                               | Distributed financial state                                             |
+| Message Queue    | Apache Kafka 3.x                                   | Transfer event processing                                               |
+| Containerisation | Docker, Docker Compose                             | Local topology reproducibility                                          |
+| Orchestration    | Kubernetes (EKS on AWS, GKE on GCP)                | Scheduling, probes, scaling, rollouts                                   |
 | Infrastructure   | Terraform                                          | AWS (EKS, MSK, Keyspaces) and GCP (GKE, Cassandra on GKE, Kafka on GKE) |
-| CI/CD            | GitHub Actions                                     | Quality gate, build, deployment                   |
-| Testing          | Go testing, testify, Vitest, Playwright            | Unit, integration, E2E tests                      |
+| CI/CD            | GitHub Actions                                     | Quality gate, build, deployment                                         |
+| Testing          | Go testing, testify, Vitest, Playwright            | Unit, integration, E2E tests                                            |
 
 ## 8. Current implementation status
 
@@ -166,7 +166,7 @@ This snapshot reflects the repository state on 2026-10-17. It is intentionally s
 - **Frontend** (`packages/frontend/app/`): React + TypeScript + TanStack Query with Login, Register, Dashboard (balance), Transfer form, Transfer Status (polling), and Transactions (cursor-paginated) screens. Protected calls send `Authorization: Bearer`.
 - **Local topology**: `docker-compose.yaml` runs gateway + 4 services + 3 consumers + Cassandra + Kafka + ZooKeeper + frontend.
 - **API Gateway rate limiting** (`packages/backend/api-gateway/`): per-IP sliding-window limit on the public auth routes, per-user (JWT subject) limit on authenticated routes, and a per-IP login lockout after repeated failures; rejects with `429 RATE_LIMITED` and a `Retry-After` header (limits in [`06-api-specification.md` §8](06-api-specification.md#8-rate-limiting)).
-- **Tests**: Go unit tests with fakes covering API Gateway rate limiting, security (cross-account access returns `404`, injection payloads rejected before reaching Cassandra), and idempotency (duplicate transfer keys and duplicate Kafka events), plus Vitest frontend tests for the authentication, transfer, transfer-status, and transactions screens.
+- **Tests**: Go unit tests with fakes covering API Gateway rate limiting, security (cross-account access returns `404`, injection payloads rejected before reaching Cassandra), and idempotency (duplicate transfer keys and duplicate Kafka events), plus Vitest frontend tests for the authentication, transfer, transfer-status, and transactions screens, UI primitives, hooks, routing, and the API client, with an enforced **80% coverage** threshold (`pnpm test` runs `vitest --coverage`).
 - **CI** (`.github/workflows/ci.yml`): per-service Go formatting (`gofmt`), `go vet`, build and tests; frontend typecheck, tests, and build; and Trivy security scanning (filesystem dependencies plus each container image) with SARIF upload to GitHub code scanning, failing on fixable Critical/High findings.
 
 ### Not yet implemented
@@ -214,7 +214,7 @@ See [`09-testing-strategy.md`](09-testing-strategy.md) for complete testing stra
 
 ### Test layers
 
-Unit (80% backend / 70% frontend coverage), Integration (real Cassandra/Kafka), Contract, E2E (Playwright), Security (authz/idempotency/input), Performance, Reliability
+Unit (80% backend / 80% frontend coverage), Integration (real Cassandra/Kafka), Contract, E2E (Playwright), Security (authz/idempotency/input), Performance, Reliability
 
 ## 12. Deployment
 

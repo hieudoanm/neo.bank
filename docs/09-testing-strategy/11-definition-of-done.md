@@ -10,18 +10,18 @@ The single canonical Definition of Done lives in [`docs/10-implementation-plan/d
 
 A feature is complete when:
 
-| # | Criterion | Detail |
-|---|-----------|--------|
-| 1 | Unit tests written and passing | Every new function/service has unit tests covering success and failure paths. |
-| 2 | Integration tests written and passing | Features touching Cassandra/Kafka have integration tests with real dependencies. |
-| 3 | E2E tests written and passing | Critical user journeys have Playwright E2E tests. |
-| 4 | Security tests written and passing | Authorisation (negative), authentication, and input validation tests pass. |
-| 5 | Performance tests meet targets | Latency and throughput targets from `NFR-001..006` are met. |
-| 6 | Code coverage meets minimum thresholds | Backend ≥ 80%, Frontend ≥ 70% (no decrease from baseline). |
-| 7 | No flaky tests in CI | All tests pass consistently; no flaky tests in the suite. |
-| 8 | Test documentation updated | Critical scenarios documented; traceability to FR/NFR IDs. |
-| 9 | Migrations tested | CQL migrations apply cleanly and are reversible where possible. |
-| 10 | Observability verified | Structured logs include correlation IDs; metrics are emitted. |
+| #   | Criterion                              | Detail                                                                           |
+| --- | -------------------------------------- | -------------------------------------------------------------------------------- |
+| 1   | Unit tests written and passing         | Every new function/service has unit tests covering success and failure paths.    |
+| 2   | Integration tests written and passing  | Features touching Cassandra/Kafka have integration tests with real dependencies. |
+| 3   | E2E tests written and passing          | Critical user journeys have Playwright E2E tests.                                |
+| 4   | Security tests written and passing     | Authorisation (negative), authentication, and input validation tests pass.       |
+| 5   | Performance tests meet targets         | Latency and throughput targets from `NFR-001..006` are met.                      |
+| 6   | Code coverage meets minimum thresholds | Backend ≥ 80%, Frontend ≥ 80% (no decrease from baseline).                       |
+| 7   | No flaky tests in CI                   | All tests pass consistently; no flaky tests in the suite.                        |
+| 8   | Test documentation updated             | Critical scenarios documented; traceability to FR/NFR IDs.                       |
+| 9   | Migrations tested                      | CQL migrations apply cleanly and are reversible where possible.                  |
+| 10  | Observability verified                 | Structured logs include correlation IDs; metrics are emitted.                    |
 
 ## Feature-Level DoD Examples
 
