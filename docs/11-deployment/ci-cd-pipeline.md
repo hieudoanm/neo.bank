@@ -84,15 +84,15 @@ Implemented today (all jobs must pass for the workflow to succeed):
 4. **Type Checking**: No TypeScript compilation errors (`tsc --noEmit`).
 5. **Tests**: Backend `go test ./...` and frontend `pnpm test` (Vitest with `--coverage`) pass.
 6. **Frontend Coverage**: `pnpm test` fails if frontend line/function/branch/statement coverage drops below **80%** (V8 provider thresholds in `vitest.config.ts`).
-7. **Security Scanning**: No fixable **Critical/High** severity vulnerabilities in the filesystem/dependency scan or the container image scans.
+7. **Backend Coverage**: `scripts/coverage/backend.sh` runs `go test -coverprofile` per service module and fails any module whose statement coverage (excluding `cmd/`, `internal/db/`, and `internal/repositories/`) is below **80%**. Wired into `make test` (`--all`) and the CI `backend` job.
+8. **Security Scanning**: No fixable **Critical/High** severity vulnerabilities in the filesystem/dependency scan or the container image scans.
 
 Planned gates (not yet implemented):
 
-1. **Backend Coverage**: Minimum **80% backend** line coverage enforced as a CI gate.
-2. **Linting**: Zero warnings/errors from `golangci-lint` and `pnpm lint` + `pnpm format:check`.
-3. **Integration/E2E Passing**: Integration and E2E test suites.
-4. **Terraform**: `terraform fmt -check`, `terraform validate`, and `terraform plan -out=tfplan` must pass for changed infra; apply uses the reviewed `tfplan` file (never `-auto-approve`).
-5. **Production Deploy Approval**: Production deployments require **manual approval** before applying changes.
+1. **Linting**: Zero warnings/errors from `golangci-lint` and `pnpm lint` + `pnpm format:check`.
+2. **Integration/E2E Passing**: Integration and E2E test suites.
+3. **Terraform**: `terraform fmt -check`, `terraform validate`, and `terraform plan -out=tfplan` must pass for changed infra; apply uses the reviewed `tfplan` file (never `-auto-approve`).
+4. **Production Deploy Approval**: Production deployments require **manual approval** before applying changes.
 
 ### AWS Deployment Workflow (`.github/workflows/deploy-aws.yml`) (planned)
 

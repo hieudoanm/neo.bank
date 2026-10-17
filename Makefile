@@ -8,7 +8,7 @@ build:
 	@cd packages/frontend/app && pnpm build
 
 test:
-	@for d in packages/backend/*; do (cd $$d && go test ./...); done
+	@bash scripts/coverage/backend.sh --all
 	@cd packages/frontend/app && pnpm test
 
 lint:

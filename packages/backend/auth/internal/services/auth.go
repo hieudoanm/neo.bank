@@ -10,7 +10,7 @@ import (
 	"github.com/hieudoanm/neo.bank/packages/backend/auth/internal/core/auth"
 	applierrors "github.com/hieudoanm/neo.bank/packages/backend/auth/internal/core/errors"
 	"github.com/hieudoanm/neo.bank/packages/backend/auth/internal/core/security"
-	"github.com/hieudoanm/neo.bank/packages/backend/auth/internal/repositories"
+	"github.com/hieudoanm/neo.bank/packages/backend/auth/internal/models"
 )
 
 const (
@@ -23,13 +23,32 @@ func AccessTokenExpiresIn() int {
 	return accessTokenExpiresIn
 }
 
-type AuthService struct {
-	userRepo         *repositories.UserRepository
-	refreshTokenRepo *repositories.RefreshTokenRepository
-	keyManager       *auth.KeyManager
+// UserStore is the persistence dependency for user records.
+type UserStore interface {
+	Create(ctx context.Context, email string, accountID uuid.UUID, passwordHash string) (*models.User, error)
+	FindByEmail(ctx context.Context, email string) (*models.User, error)
+	FindByID(ctx context.Context, userID uuid.UUID) (*models.User, error)
 }
 
-func NewAuthService(userRepo *repositories.UserRepository, refreshTokenRepo *repositories.RefreshTokenRepository, keyManager *auth.KeyManager) *AuthService {
+// RefreshTokenStore is the persistence dependency for refresh tokens.
+type RefreshTokenStore interface {
+	Insert(ctx context.Context, tokenHash string, userID uuid.UUID, accountID uuid.UUID, email string, expiresAt time.Time) error
+	GetByHash(ctx context.Context, tokenHash string) (*models.RefreshToken, error)
+	Revoke(ctx context.Context, tokenHash string) error
+}
+
+// TokenSigner issues access tokens.
+type TokenSigner interface {
+	SignAccessToken(userID, accountID, email string) (string, error)
+}
+
+type AuthService struct {
+	userRepo         UserStore
+	refreshTokenRepo RefreshTokenStore
+	keyManager       TokenSigner
+}
+
+func NewAuthService(userRepo UserStore, refreshTokenRepo RefreshTokenStore, keyManager TokenSigner) *AuthService {
 	return &AuthService{
 		userRepo:         userRepo,
 		refreshTokenRepo: refreshTokenRepo,

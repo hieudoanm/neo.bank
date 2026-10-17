@@ -1,20 +1,26 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	applierrors "github.com/hieudoanm/neo.bank/packages/backend/accounts/internal/core/errors"
-	"github.com/hieudoanm/neo.bank/packages/backend/accounts/internal/services"
+	"github.com/hieudoanm/neo.bank/packages/backend/accounts/internal/models"
 )
 
-type AccountHandler struct {
-	service *services.AccountService
+// BalanceService fetches an account balance for its owner.
+type BalanceService interface {
+	FetchBalance(ctx context.Context, accountID uuid.UUID, callerAccountID string) (*models.BalanceResponse, error)
 }
 
-func NewAccountHandler(service *services.AccountService) *AccountHandler {
+type AccountHandler struct {
+	service BalanceService
+}
+
+func NewAccountHandler(service BalanceService) *AccountHandler {
 	return &AccountHandler{service: service}
 }
 

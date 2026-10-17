@@ -3,6 +3,7 @@ package consumer
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 	"testing"
@@ -16,12 +17,14 @@ import (
 
 type fakeStore struct {
 	claimed       bool
+	claimErr      error
 	existing      *models.ProcessedCommand
 	findErr       error
 	debitBalance  int64
 	debitErr      error
 	creditBalance int64
 	creditErr     error
+	recordErr     error
 
 	debitCalls  int
 	creditCalls int
@@ -30,7 +33,7 @@ type fakeStore struct {
 }
 
 func (f *fakeStore) ClaimCommand(_ context.Context, _ string, _, _ uuid.UUID, _ string, _ time.Time) (bool, error) {
-	return f.claimed, nil
+	return f.claimed, f.claimErr
 }
 
 func (f *fakeStore) FindCommandResult(_ context.Context, _ string) (*models.ProcessedCommand, error) {
@@ -49,7 +52,7 @@ func (f *fakeStore) Credit(_ context.Context, _ uuid.UUID, _ int64) (int64, erro
 
 func (f *fakeStore) RecordCommandResult(_ context.Context, _, resultEventType string, _ *int64, _ *string, _ time.Time) error {
 	f.recorded = append(f.recorded, resultEventType)
-	return nil
+	return f.recordErr
 }
 
 func (f *fakeStore) WriteAudit(_ context.Context, _ models.AuditEvent) error {
@@ -59,9 +62,13 @@ func (f *fakeStore) WriteAudit(_ context.Context, _ models.AuditEvent) error {
 
 type fakePublisher struct {
 	events []models.AccountEvent
+	err    error
 }
 
 func (f *fakePublisher) PublishAccountEvent(_ context.Context, ev models.AccountEvent) error {
+	if f.err != nil {
+		return f.err
+	}
 	f.events = append(f.events, ev)
 	return nil
 }
@@ -183,5 +190,87 @@ func TestAccountMalformedPayloadIsDropped(t *testing.T) {
 	}
 	if store.debitCalls+store.creditCalls != 0 {
 		t.Fatalf("malformed payload must not move funds")
+	}
+}
+
+func TestAccountRejectsUnsupportedVersion(t *testing.T) {
+	store := &fakeStore{claimed: true}
+	c, pub := newConsumer(store)
+	msg := kafka.Message{Value: []byte(`{"eventType":"account.debit.requested","eventVersion":99}`)}
+	if err := c.handle(context.Background(), msg); err != nil {
+		t.Fatalf("handle: %v", err)
+	}
+	if store.debitCalls != 0 || len(pub.events) != 0 {
+		t.Fatal("unsupported version must be dropped without moving funds")
+	}
+}
+
+func TestAccountRejectsInvalidIDs(t *testing.T) {
+	cases := map[string]string{
+		"invalid transfer id": `{"eventType":"account.debit.requested","eventVersion":1,"transferId":"nope","accountId":"` + uuid.NewString() + `"}`,
+		"invalid account id":  `{"eventType":"account.debit.requested","eventVersion":1,"transferId":"` + uuid.NewString() + `","accountId":"nope"}`,
+	}
+	for name, payload := range cases {
+		t.Run(name, func(t *testing.T) {
+			store := &fakeStore{claimed: true}
+			c, pub := newConsumer(store)
+			if err := c.handle(context.Background(), kafka.Message{Value: []byte(payload)}); err != nil {
+				t.Fatalf("handle: %v", err)
+			}
+			if store.debitCalls+store.creditCalls != 0 || len(pub.events) != 0 {
+				t.Fatal("invalid ids must not move funds or emit events")
+			}
+		})
+	}
+}
+
+func TestAccountHandleErrors(t *testing.T) {
+	t.Run("claim error", func(t *testing.T) {
+		c, _ := newConsumer(&fakeStore{claimErr: errors.New("claim")})
+		if err := c.handle(context.Background(), command(t, models.EventTypeAccountDebitRequested)); err == nil {
+			t.Fatal("expected claim error to propagate")
+		}
+	})
+	t.Run("duplicate lookup error", func(t *testing.T) {
+		c, _ := newConsumer(&fakeStore{claimed: false, findErr: errors.New("find")})
+		if err := c.handle(context.Background(), command(t, models.EventTypeAccountDebitRequested)); err == nil {
+			t.Fatal("expected find error to propagate")
+		}
+	})
+	t.Run("record error", func(t *testing.T) {
+		c, _ := newConsumer(&fakeStore{claimed: true, recordErr: errors.New("record")})
+		if err := c.handle(context.Background(), command(t, models.EventTypeAccountDebitRequested)); err == nil {
+			t.Fatal("expected record error to propagate")
+		}
+	})
+	t.Run("publish error", func(t *testing.T) {
+		store := &fakeStore{claimed: true}
+		c := &AccountConsumer{repo: store, producer: &fakePublisher{err: errors.New("publish")}, logger: slog.New(slog.NewTextHandler(io.Discard, nil))}
+		if err := c.handle(context.Background(), command(t, models.EventTypeAccountCreditRequested)); err == nil {
+			t.Fatal("expected publish error to propagate")
+		}
+	})
+}
+
+func TestAccountDuplicateWithoutStoredResultApplies(t *testing.T) {
+	store := &fakeStore{claimed: false, debitBalance: 100}
+	c, pub := newConsumer(store)
+	if err := c.handle(context.Background(), command(t, models.EventTypeAccountDebitRequested)); err != nil {
+		t.Fatalf("handle: %v", err)
+	}
+	if store.debitCalls != 1 {
+		t.Fatalf("expected the movement to apply when no stored result exists, got %d", store.debitCalls)
+	}
+	if len(pub.events) != 1 {
+		t.Fatalf("expected one emitted event")
+	}
+}
+
+func TestReasonOf(t *testing.T) {
+	if got := reasonOf(apperrors.ErrInsufficientFunds); got != apperrors.ErrInsufficientFunds.Message {
+		t.Fatalf("reasonOf = %q", got)
+	}
+	if got := reasonOf(errors.New("boom")); got != "internal error" {
+		t.Fatalf("reasonOf = %q", got)
 	}
 }

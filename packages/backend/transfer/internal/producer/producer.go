@@ -9,8 +9,14 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
+// messageWriter is the subset of *kafka.Writer the Producer needs.
+type messageWriter interface {
+	WriteMessages(ctx context.Context, msgs ...kafka.Message) error
+	Close() error
+}
+
 type Producer struct {
-	writer *kafka.Writer
+	writer messageWriter
 }
 
 func NewProducer(brokers []string, topic string) *Producer {

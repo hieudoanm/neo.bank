@@ -7,14 +7,18 @@ import (
 	"github.com/google/uuid"
 	"github.com/hieudoanm/neo.bank/packages/backend/accounts/internal/core/errors"
 	"github.com/hieudoanm/neo.bank/packages/backend/accounts/internal/models"
-	"github.com/hieudoanm/neo.bank/packages/backend/accounts/internal/repositories"
 )
 
-type AccountService struct {
-	repo *repositories.AccountRepository
+// AccountStore is the persistence dependency for account records.
+type AccountStore interface {
+	FindByID(ctx context.Context, accountID uuid.UUID) (*models.Account, error)
 }
 
-func NewAccountService(repo *repositories.AccountRepository) *AccountService {
+type AccountService struct {
+	repo AccountStore
+}
+
+func NewAccountService(repo AccountStore) *AccountService {
 	return &AccountService{repo: repo}
 }
 

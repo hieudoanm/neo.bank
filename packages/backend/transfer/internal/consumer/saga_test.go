@@ -3,6 +3,7 @@ package consumer
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 	"testing"
@@ -17,17 +18,25 @@ type transitionCall struct {
 }
 
 type fakeStore struct {
-	transfer    *models.Transfer
-	transitions []transitionCall
-	apply       bool
+	transfer      *models.Transfer
+	findErr       error
+	transitionErr error
+	transitions   []transitionCall
+	apply         bool
 }
 
 func (f *fakeStore) FindByID(_ context.Context, _ uuid.UUID) (*models.Transfer, error) {
+	if f.findErr != nil {
+		return nil, f.findErr
+	}
 	return f.transfer, nil
 }
 
 func (f *fakeStore) Transition(_ context.Context, t *models.Transfer, from, to string, _ *string) (bool, error) {
 	f.transitions = append(f.transitions, transitionCall{from: from, to: to})
+	if f.transitionErr != nil {
+		return false, f.transitionErr
+	}
 	if f.apply {
 		t.Status = to
 	}
@@ -35,16 +44,24 @@ func (f *fakeStore) Transition(_ context.Context, t *models.Transfer, from, to s
 }
 
 type fakePublisher struct {
-	commands []models.AccountCommand
-	events   []models.TransferEvent
+	commands   []models.AccountCommand
+	events     []models.TransferEvent
+	commandErr error
+	eventErr   error
 }
 
 func (f *fakePublisher) PublishAccountCommand(_ context.Context, cmd models.AccountCommand) error {
+	if f.commandErr != nil {
+		return f.commandErr
+	}
 	f.commands = append(f.commands, cmd)
 	return nil
 }
 
 func (f *fakePublisher) PublishTransferEvent(_ context.Context, ev models.TransferEvent) error {
+	if f.eventErr != nil {
+		return f.eventErr
+	}
 	f.events = append(f.events, ev)
 	return nil
 }
@@ -226,6 +243,160 @@ func TestSagaCreditFailedCompensatesAndFails(t *testing.T) {
 	}
 	if len(pub.events) != 1 || pub.events[0].EventType != models.EventTypeTransferFailed {
 		t.Fatalf("expected transfer_failed event")
+	}
+}
+
+func newConsumerWithPub(store SagaStore, pub *fakePublisher) *SagaConsumer {
+	return &SagaConsumer{
+		repo:     store,
+		producer: pub,
+		logger:   slog.New(slog.NewTextHandler(io.Discard, nil)),
+	}
+}
+
+func accountMessage(t *testing.T, ev models.AccountEvent) kafka.Message {
+	t.Helper()
+	return message(t, ev)
+}
+
+func TestSagaMalformedPayloadDropped(t *testing.T) {
+	c, pub := newConsumer(&fakeStore{})
+	if err := c.handle(context.Background(), kafka.Message{Value: []byte("not json")}); err != nil {
+		t.Fatalf("malformed payload must not error: %v", err)
+	}
+	if len(pub.commands)+len(pub.events) != 0 {
+		t.Fatal("malformed payload must not produce output")
+	}
+}
+
+func TestSagaUnknownEventTypeIgnored(t *testing.T) {
+	c, pub := newConsumer(&fakeStore{apply: true})
+	msg := message(t, models.TransferEvent{EventType: "something.else", EventVersion: models.EventVersionV1})
+	if err := c.handle(context.Background(), msg); err != nil {
+		t.Fatalf("handle: %v", err)
+	}
+	if len(pub.commands)+len(pub.events) != 0 {
+		t.Fatal("unknown event type must be ignored")
+	}
+}
+
+func TestSagaInitiatedFindErrors(t *testing.T) {
+	tr := sampleTransfer(models.StatusPending)
+	t.Run("not found", func(t *testing.T) {
+		c, pub := newConsumer(&fakeStore{transfer: nil})
+		msg := message(t, models.TransferEvent{EventType: models.EventTypeTransferInitiated, EventVersion: models.EventVersionV1, TransferID: tr.ID.String()})
+		if err := c.handle(context.Background(), msg); err != nil {
+			t.Fatalf("handle: %v", err)
+		}
+		if len(pub.commands) != 0 {
+			t.Fatal("missing transfer must not start the saga")
+		}
+	})
+	t.Run("find error", func(t *testing.T) {
+		c, _ := newConsumer(&fakeStore{findErr: errors.New("find")})
+		msg := message(t, models.TransferEvent{EventType: models.EventTypeTransferInitiated, EventVersion: models.EventVersionV1, TransferID: tr.ID.String()})
+		if err := c.handle(context.Background(), msg); err == nil {
+			t.Fatal("expected find error to propagate")
+		}
+	})
+	t.Run("transition error", func(t *testing.T) {
+		c, _ := newConsumer(&fakeStore{transfer: tr, transitionErr: errors.New("transition")})
+		msg := message(t, models.TransferEvent{EventType: models.EventTypeTransferInitiated, EventVersion: models.EventVersionV1, TransferID: tr.ID.String()})
+		if err := c.handle(context.Background(), msg); err == nil {
+			t.Fatal("expected transition error to propagate")
+		}
+	})
+}
+
+func TestSagaDebitedIgnoresNonProcessing(t *testing.T) {
+	tr := sampleTransfer(models.StatusPending)
+	c, pub := newConsumer(&fakeStore{transfer: tr, apply: true})
+	msg := accountMessage(t, models.AccountEvent{EventType: models.EventTypeAccountDebited, EventVersion: models.EventVersionV1, TransferID: tr.ID.String(), AccountID: tr.SourceAccountID.String()})
+	if err := c.handle(context.Background(), msg); err != nil {
+		t.Fatalf("handle: %v", err)
+	}
+	if len(pub.commands) != 0 {
+		t.Fatal("credit must only be issued while processing")
+	}
+}
+
+func TestSagaDebitedUnmarshalError(t *testing.T) {
+	c, _ := newConsumer(&fakeStore{})
+	if err := c.handle(context.Background(), kafka.Message{Value: []byte("not json")}); err != nil {
+		t.Fatalf("handle: %v", err)
+	}
+}
+
+func TestSagaDebitFailedDefaultsReason(t *testing.T) {
+	tr := sampleTransfer(models.StatusProcessing)
+	c, pub := newConsumer(&fakeStore{transfer: tr, apply: true})
+	msg := accountMessage(t, models.AccountEvent{EventType: models.EventTypeAccountDebitFailed, EventVersion: models.EventVersionV1, TransferID: tr.ID.String(), AccountID: tr.SourceAccountID.String()})
+	if err := c.handle(context.Background(), msg); err != nil {
+		t.Fatalf("handle: %v", err)
+	}
+	if len(pub.events) != 1 || pub.events[0].EventType != models.EventTypeTransferFailed {
+		t.Fatalf("expected transfer_failed event")
+	}
+}
+
+func TestSagaCreditedDuplicateDoesNotRepublish(t *testing.T) {
+	tr := sampleTransfer(models.StatusProcessing)
+	c, pub := newConsumer(&fakeStore{transfer: tr, apply: false})
+	msg := accountMessage(t, models.AccountEvent{EventType: models.EventTypeAccountCredited, EventVersion: models.EventVersionV1, TransferID: tr.ID.String(), AccountID: tr.DestAccountID.String()})
+	if err := c.handle(context.Background(), msg); err != nil {
+		t.Fatalf("handle: %v", err)
+	}
+	if len(pub.events) != 0 {
+		t.Fatal("a credit whose transition did not apply must not emit another event")
+	}
+}
+
+func TestSagaCreditFailedIgnoresCompensationToSource(t *testing.T) {
+	tr := sampleTransfer(models.StatusProcessing)
+	c, pub := newConsumer(&fakeStore{transfer: tr, apply: true})
+	msg := accountMessage(t, models.AccountEvent{EventType: models.EventTypeAccountCreditFailed, EventVersion: models.EventVersionV1, TransferID: tr.ID.String(), AccountID: tr.SourceAccountID.String()})
+	if err := c.handle(context.Background(), msg); err != nil {
+		t.Fatalf("handle: %v", err)
+	}
+	if len(pub.commands) != 0 || len(pub.events) != 0 {
+		t.Fatal("a failed compensation credit must not trigger another compensation")
+	}
+}
+
+func TestSagaCreditFailedIgnoresNonProcessing(t *testing.T) {
+	tr := sampleTransfer(models.StatusCompleted)
+	c, pub := newConsumer(&fakeStore{transfer: tr, apply: true})
+	msg := accountMessage(t, models.AccountEvent{EventType: models.EventTypeAccountCreditFailed, EventVersion: models.EventVersionV1, TransferID: tr.ID.String(), AccountID: tr.DestAccountID.String()})
+	if err := c.handle(context.Background(), msg); err != nil {
+		t.Fatalf("handle: %v", err)
+	}
+	if len(pub.commands) != 0 {
+		t.Fatal("credit failure must not compensate a non-processing transfer")
+	}
+}
+
+func TestSagaPublisherErrorsPropagate(t *testing.T) {
+	tr := sampleTransfer(models.StatusProcessing)
+	t.Run("initiated command error", func(t *testing.T) {
+		c := newConsumerWithPub(&fakeStore{transfer: tr, apply: true}, &fakePublisher{commandErr: errors.New("pub")})
+		msg := message(t, models.TransferEvent{EventType: models.EventTypeTransferInitiated, EventVersion: models.EventVersionV1, TransferID: tr.ID.String()})
+		if err := c.handle(context.Background(), msg); err == nil {
+			t.Fatal("expected publish error")
+		}
+	})
+	t.Run("completed event error", func(t *testing.T) {
+		c := newConsumerWithPub(&fakeStore{transfer: tr, apply: true}, &fakePublisher{eventErr: errors.New("pub")})
+		msg := accountMessage(t, models.AccountEvent{EventType: models.EventTypeAccountCredited, EventVersion: models.EventVersionV1, TransferID: tr.ID.String(), AccountID: tr.DestAccountID.String()})
+		if err := c.handle(context.Background(), msg); err == nil {
+			t.Fatal("expected publish error")
+		}
+	})
+}
+
+func TestSagaLoadTransferRejectsInvalidID(t *testing.T) {
+	c, _ := newConsumer(&fakeStore{})
+	if err := c.handle(context.Background(), kafka.Message{Value: []byte(`{"eventType":"transfer_initiated","eventVersion":1,"transferId":"nope"}`)}); err == nil {
+		t.Fatal("expected invalid transfer id to error")
 	}
 }
 

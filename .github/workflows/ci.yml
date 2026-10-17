@@ -25,12 +25,13 @@ jobs:
         run: |
           cd packages/backend/${{ matrix.service }}
           test -z "$(gofmt -l .)"
-      - name: Vet, build, and test
+      - name: Vet, build, and test with coverage
         run: |
           cd packages/backend/${{ matrix.service }}
           go vet ./...
           go build ./...
-          go test ./...
+          cd "$GITHUB_WORKSPACE"
+          bash scripts/coverage/backend.sh packages/backend/${{ matrix.service }}
 
   frontend:
     runs-on: ubuntu-latest

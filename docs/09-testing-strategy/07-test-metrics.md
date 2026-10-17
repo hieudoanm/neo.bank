@@ -16,14 +16,18 @@ Critical paths include: authentication, balance inquiry, transfer initiation, id
 
 ### Coverage Measurement
 
-- Backend: `go test -coverprofile=coverage.out ./...`
-- Frontend: Vitest with V8 provider (`provider: 'v8'`)
+- Backend: `scripts/coverage/backend.sh <module> [threshold]` (or `--all`) runs `go test -coverprofile` for each service module and fails if its statement coverage is below the threshold (default 80%). Wired into `make test` and the CI `backend` job.
+- Frontend: Vitest with V8 provider (`provider: 'v8'`), thresholds in `vitest.config.ts`.
 - Reports uploaded to Codecov/Coveralls as CI artifacts.
-- Coverage is enforced as a gate — PRs that reduce coverage are rejected.
+- Coverage is enforced as a gate — PRs that reduce coverage below the threshold are rejected.
 
 ### Exclusions
 
-Test files, generated code, and `main()` entry points are excluded from coverage:
+Test files, generated code, and `main()` entry points are excluded from coverage. The backend gate additionally excludes packages that cannot be exercised without a live Cassandra, from the denominator:
+
+- `cmd/...` — thin `main()` entry points (dependency injection only)
+- `internal/db/...` — embedded CQL schema and connection wiring
+- `internal/repositories/` — Cassandra CQL queries and row mapping
 
 ```go
 // main.go is excluded (thin entry point, no logic to test)

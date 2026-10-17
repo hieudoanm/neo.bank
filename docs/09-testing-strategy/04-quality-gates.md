@@ -44,7 +44,7 @@ GitHub Actions runs on every push and pull request.
 | Vet                | `go vet ./...`                    | Must pass                        |
 | Test (unit)        | `go test -short ./...`            | Must pass                        |
 | Test (integration) | `go test ./tests/integration/...` | Must pass (real Cassandra/Kafka) |
-| Coverage           | `go test -cover ./...`            | Must be ≥ 80% (backend)          |
+| Coverage           | `bash scripts/coverage/backend.sh <module>` | Must be ≥ 80% per backend service module (excludes `cmd/`, `internal/db/`, `internal/repositories/`) |
 | Security           | `trivy fs .`                      | No high-severity findings        |
 | Build              | `go build ./...`                  | Must pass                        |
 

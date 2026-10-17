@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"regexp"
@@ -8,16 +9,21 @@ import (
 	"github.com/gin-gonic/gin"
 	applierrors "github.com/hieudoanm/neo.bank/packages/backend/transfer/internal/core/errors"
 	"github.com/hieudoanm/neo.bank/packages/backend/transfer/internal/models"
-	"github.com/hieudoanm/neo.bank/packages/backend/transfer/internal/services"
 )
 
 var idempotencyKeyPattern = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,255}$`)
 
-type TransferHandler struct {
-	service *services.TransferService
+// TransferService initiates and reads transfers for an authenticated account.
+type TransferService interface {
+	InitiateTransfer(ctx context.Context, sourceAccountID string, req models.CreateTransferRequest, idempotencyKey string) (*models.TransferResponse, error)
+	GetTransfer(ctx context.Context, transferID, callerAccountID string) (*models.TransferResponse, error)
 }
 
-func NewTransferHandler(service *services.TransferService) *TransferHandler {
+type TransferHandler struct {
+	service TransferService
+}
+
+func NewTransferHandler(service TransferService) *TransferHandler {
 	return &TransferHandler{service: service}
 }
 

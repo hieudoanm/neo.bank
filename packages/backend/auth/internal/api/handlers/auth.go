@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"net/http"
 
@@ -10,11 +11,18 @@ import (
 	"github.com/hieudoanm/neo.bank/packages/backend/auth/internal/services"
 )
 
-type AuthHandler struct {
-	service *services.AuthService
+type AuthService interface {
+	Register(ctx context.Context, email, password string) (*services.RegisterResult, error)
+	Login(ctx context.Context, email, password string) (*services.RegisterResult, error)
+	Refresh(ctx context.Context, refreshToken string) (*services.RefreshResult, error)
+	Logout(ctx context.Context, refreshToken string) error
 }
 
-func NewAuthHandler(service *services.AuthService) *AuthHandler {
+type AuthHandler struct {
+	service AuthService
+}
+
+func NewAuthHandler(service AuthService) *AuthHandler {
 	return &AuthHandler{service: service}
 }
 

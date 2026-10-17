@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"strconv"
@@ -8,14 +9,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	applierrors "github.com/hieudoanm/neo.bank/packages/backend/transactions/internal/core/errors"
-	"github.com/hieudoanm/neo.bank/packages/backend/transactions/internal/services"
+	"github.com/hieudoanm/neo.bank/packages/backend/transactions/internal/models"
 )
 
-type TransactionHandler struct {
-	service *services.TransactionService
+// TransactionReader lists transaction history for an account.
+type TransactionReader interface {
+	ListTransactions(ctx context.Context, accountID uuid.UUID, callerAccountID, cursor string, limit int) (*models.TransactionListResponse, error)
 }
 
-func NewTransactionHandler(service *services.TransactionService) *TransactionHandler {
+type TransactionHandler struct {
+	service TransactionReader
+}
+
+func NewTransactionHandler(service TransactionReader) *TransactionHandler {
 	return &TransactionHandler{service: service}
 }
 
