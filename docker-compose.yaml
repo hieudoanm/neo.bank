@@ -14,7 +14,7 @@ services:
     restart: unless-stopped
 
   kafka:
-    image: confluentinc/cp-kafka:7.9.10
+    image: confluentinc/cp-kafka:8.3.2
     depends_on:
       zookeeper:
         condition: service_healthy
@@ -43,7 +43,7 @@ services:
     restart: unless-stopped
 
   kafka-init:
-    image: confluentinc/cp-kafka:7.9.10
+    image: confluentinc/cp-kafka:8.3.2
     depends_on:
       kafka:
         condition: service_healthy
