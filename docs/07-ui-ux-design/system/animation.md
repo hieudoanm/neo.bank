@@ -8,11 +8,11 @@ Defines animation timing, easing, and motion preferences used across the UI. Ani
 
 ## Transitions
 
-| Token | Duration | Easing | Usage |
-|-------|----------|--------|-------|
-| `transition-fast` | 200ms | ease-in-out | Button hover, badge state changes |
-| `transition-default` | 300ms | ease-in-out | Card hover, form field focus |
-| `transition-slow` | 500ms | ease-in-out | Modal open/close, drawer slide, page transitions |
+| Token                | Duration | Easing      | Usage                                            |
+| -------------------- | -------- | ----------- | ------------------------------------------------ |
+| `transition-fast`    | 200ms    | ease-in-out | Button hover, badge state changes                |
+| `transition-default` | 300ms    | ease-in-out | Card hover, form field focus                     |
+| `transition-slow`    | 500ms    | ease-in-out | Modal open/close, drawer slide, page transitions |
 
 ### Standard transition property
 
@@ -101,12 +101,12 @@ transition: transform 500ms ease-in-out, opacity 500ms ease-in-out;
 
 When the user has requested reduced motion:
 
-| Animation | Fallback |
-|-----------|----------|
-| Transitions | Instant (0ms) or 50ms fade |
-| Skeletons | Static pulse (no shimmer movement) |
-| Spinners | Static loading indicator |
-| Modal/drawer | Fade in/out (no slide) |
+| Animation          | Fallback                               |
+| ------------------ | -------------------------------------- |
+| Transitions        | Instant (0ms) or 50ms fade             |
+| Skeletons          | Static pulse (no shimmer movement)     |
+| Spinners           | Static loading indicator               |
+| Modal/drawer       | Fade in/out (no slide)                 |
 | Micro-interactions | Color change only (no transform/scale) |
 
 ### Implementation

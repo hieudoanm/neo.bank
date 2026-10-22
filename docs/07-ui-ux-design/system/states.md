@@ -17,12 +17,12 @@ Defines the state patterns used consistently across all screens: the six data-sc
 
 ### Visual pattern
 
-| Element | Specification |
-|---------|---------------|
+| Element         | Specification                                                                   |
+| --------------- | ------------------------------------------------------------------------------- |
 | Skeleton loader | Shimmer effect, `color-background-secondary` base, `color-border-light` shimmer |
-| Spinner | 24px, `color-primary`, 200ms rotation |
-| Button loading | Spinner inside button, button disabled |
-| Text | "Loading…" (`text-sm`, `color-text-secondary`) |
+| Spinner         | 24px, `color-primary`, 200ms rotation                                           |
+| Button loading  | Spinner inside button, button disabled                                          |
+| Text            | "Loading…" (`text-sm`, `color-text-secondary`)                                  |
 
 ### Behaviour
 
@@ -41,11 +41,11 @@ Defines the state patterns used consistently across all screens: the six data-sc
 
 ### Visual pattern
 
-| Element | Specification |
-|---------|---------------|
-| Illustration | Simple line icon, 64px, `color-text-tertiary` |
-| Heading | `text-lg`, `font-semibold`, `color-text-primary` |
-| Description | `text-sm`, `color-text-secondary` |
+| Element       | Specification                                        |
+| ------------- | ---------------------------------------------------- |
+| Illustration  | Simple line icon, 64px, `color-text-tertiary`        |
+| Heading       | `text-lg`, `font-semibold`, `color-text-primary`     |
+| Description   | `text-sm`, `color-text-secondary`                    |
 | Action button | Primary, full width on mobile, auto width on desktop |
 
 ### Examples
@@ -63,12 +63,12 @@ Defines the state patterns used consistently across all screens: the six data-sc
 
 ### Visual pattern
 
-| Element | Specification |
-|---------|---------------|
-| Field border | 1px solid `color-error` |
-| Field text | `color-text-primary` |
-| Error message | `text-sm`, `color-error-fg`, below field |
-| Helper text | `text-sm`, `color-text-secondary` (requirements) |
+| Element       | Specification                                    |
+| ------------- | ------------------------------------------------ |
+| Field border  | 1px solid `color-error`                          |
+| Field text    | `color-text-primary`                             |
+| Error message | `text-sm`, `color-error-fg`, below field         |
+| Helper text   | `text-sm`, `color-text-secondary` (requirements) |
 
 ### Behaviour
 
@@ -88,10 +88,10 @@ Defines the state patterns used consistently across all screens: the six data-sc
 
 ### Visual pattern
 
-| Element | Specification |
-|---------|---------------|
-| Message | Generic ("Account not found" or "Action not available") |
-| No details | Never reveals why access was denied |
+| Element    | Specification                                           |
+| ---------- | ------------------------------------------------------- |
+| Message    | Generic ("Account not found" or "Action not available") |
+| No details | Never reveals why access was denied                     |
 
 ### Behaviour
 
@@ -109,11 +109,11 @@ Defines the state patterns used consistently across all screens: the six data-sc
 
 ### Visual pattern
 
-| Element | Specification |
-|---------|---------------|
-| Error banner | `color-error-bg`, `color-error-fg` |
-| Message | "Unable to connect. Please check your internet connection." |
-| Retry button | Secondary button, "Try again" |
+| Element      | Specification                                               |
+| ------------ | ----------------------------------------------------------- |
+| Error banner | `color-error-bg`, `color-error-fg`                          |
+| Message      | "Unable to connect. Please check your internet connection." |
+| Retry button | Secondary button, "Try again"                               |
 
 ### Behaviour
 
@@ -131,14 +131,14 @@ Defines the state patterns used consistently across all screens: the six data-sc
 
 ### Visual pattern
 
-| Element | Specification |
-|---------|---------------|
-| Error banner | `color-error-bg` background, `color-error` border, `color-error-fg` text |
-| Error icon | Exclamation triangle, 20px, `color-error-fg` |
-| Error message | `text-sm`, `color-text-primary`; generic message for unexpected cases |
-| Retry button | Secondary button, "Try again" |
-| Dismiss button | Icon button, `color-text-tertiary` |
-| Request ID | `text-xs`, `color-text-tertiary` (for support) |
+| Element        | Specification                                                            |
+| -------------- | ------------------------------------------------------------------------ |
+| Error banner   | `color-error-bg` background, `color-error` border, `color-error-fg` text |
+| Error icon     | Exclamation triangle, 20px, `color-error-fg`                             |
+| Error message  | `text-sm`, `color-text-primary`; generic message for unexpected cases    |
+| Retry button   | Secondary button, "Try again"                                            |
+| Dismiss button | Icon button, `color-text-tertiary`                                       |
+| Request ID     | `text-xs`, `color-text-tertiary` (for support)                           |
 
 ### Behaviour
 
@@ -159,12 +159,12 @@ Defines the state patterns used consistently across all screens: the six data-sc
 
 ### Visual pattern
 
-| Element | Specification |
-|---------|---------------|
-| Success icon | Check circle, 24px, `color-success-fg` |
-| Success message | `text-base`, `color-text-primary` |
+| Element            | Specification                                                      |
+| ------------------ | ------------------------------------------------------------------ |
+| Success icon       | Check circle, 24px, `color-success-fg`                             |
+| Success message    | `text-base`, `color-text-primary`                                  |
 | Contextual details | Transfer ID, new balance, etc. (`text-sm`, `color-text-secondary`) |
-| Next action button | Primary button for next step |
+| Next action button | Primary button for next step                                       |
 
 ### Behaviour
 
@@ -185,10 +185,10 @@ Defines the state patterns used consistently across all screens: the six data-sc
 
 ### Visual pattern
 
-| Element | Specification |
-|---------|---------------|
-| Opacity | 0.5 |
-| Cursor | not-allowed |
+| Element | Specification                                                        |
+| ------- | -------------------------------------------------------------------- |
+| Opacity | 0.5                                                                  |
+| Cursor  | not-allowed                                                          |
 | Tooltip | Explains why disabled (e.g., "Insufficient funds for this transfer") |
 
 ### Behaviour
@@ -206,11 +206,11 @@ Defines the state patterns used consistently across all screens: the six data-sc
 
 ### Visual pattern
 
-| Element | Specification |
-|---------|---------------|
+| Element     | Specification                               |
+| ----------- | ------------------------------------------- |
 | Mixed icons | Check circle (success) + x circle (failure) |
-| Message | "1 of 2 transfers completed" |
-| Details | List of succeeded and failed items |
+| Message     | "1 of 2 transfers completed"                |
+| Details     | List of succeeded and failed items          |
 
 ### Behaviour
 

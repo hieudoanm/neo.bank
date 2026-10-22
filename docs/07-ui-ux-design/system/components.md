@@ -101,13 +101,13 @@ Defines reusable UI components: buttons, form fields, cards, badges, alerts, and
 
 ### Badge variants
 
-| Variant  | Background          | Text             |
-| -------- | ------------------- | ---------------- |
-| Success  | `color-success-bg`  | `color-success-fg` |
-| Error    | `color-error-bg`    | `color-error-fg`   |
-| Warning  | `color-warning-bg`  | `color-warning-fg` |
-| Info     | `color-info-bg`     | `color-info-fg`    |
-| Neutral  | `color-background-secondary` | `color-text-secondary` |
+| Variant | Background                   | Text                   |
+| ------- | ---------------------------- | ---------------------- |
+| Success | `color-success-bg`           | `color-success-fg`     |
+| Error   | `color-error-bg`             | `color-error-fg`       |
+| Warning | `color-warning-bg`           | `color-warning-fg`     |
+| Info    | `color-info-bg`              | `color-info-fg`        |
+| Neutral | `color-background-secondary` | `color-text-secondary` |
 
 ## Alerts
 
@@ -120,12 +120,12 @@ Defines reusable UI components: buttons, form fields, cards, badges, alerts, and
 
 ### Alert variants
 
-| Variant  | Border            | Background         | Text             |
-| -------- | ----------------- | ------------------ | ---------------- |
-| Success  | `color-success`   | `color-success-bg` | `color-success-fg` |
-| Error    | `color-error`     | `color-error-bg`   | `color-error-fg`   |
-| Warning  | `color-warning`   | `color-warning-bg` | `color-warning-fg` |
-| Info     | `color-info`      | `color-info-bg`    | `color-info-fg`    |
+| Variant | Border          | Background         | Text               |
+| ------- | --------------- | ------------------ | ------------------ |
+| Success | `color-success` | `color-success-bg` | `color-success-fg` |
+| Error   | `color-error`   | `color-error-bg`   | `color-error-fg`   |
+| Warning | `color-warning` | `color-warning-bg` | `color-warning-fg` |
+| Info    | `color-info`    | `color-info-bg`    | `color-info-fg`    |
 
 ## Theme Switcher
 
