@@ -17,7 +17,7 @@
     "node": "26.12.1"
   },
   "dependencies": {
-    "@tanstack/react-query": "5.104.5",
+    "@tanstack/react-query": "5.105.0",
     "autoprefixer": "10.6.1",
     "clsx": "2.1.1",
     "daisyui": "5.7.50",
