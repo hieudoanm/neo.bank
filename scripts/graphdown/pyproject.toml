@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "File graph extraction and visualization"
 requires-python = "==3.15.2"
 dependencies = [
-    "typer==0.27.3",
+    "typer==0.28.0",
     "pydantic==2.14.3",
     "markdown-it-py==4.2.0",
     "pyvis==0.3.2",
