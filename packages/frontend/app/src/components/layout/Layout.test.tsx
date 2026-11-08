@@ -1,17 +1,21 @@
 import { describe, it, expect } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { AuthProvider } from '@/context/AuthContext'
 import { Layout } from './Layout'
 
 const renderLayout = () =>
   render(
-    <MemoryRouter initialEntries={['/']}>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/" element={<div>Outlet content</div>} />
-        </Route>
-      </Routes>
-    </MemoryRouter>,
+    <AuthProvider>
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/" element={<div>Outlet content</div>} />
+            <Route path="/login" element={<div>Login page</div>} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    </AuthProvider>,
   )
 
 describe('Layout', () => {
@@ -25,5 +29,11 @@ describe('Layout', () => {
       '/transactions',
     )
     expect(screen.getByText('Outlet content')).toBeInTheDocument()
+  })
+
+  it('navigates to login when signing out', () => {
+    renderLayout()
+    fireEvent.click(screen.getByRole('button', { name: 'Sign out' }))
+    expect(screen.getByText('Login page')).toBeInTheDocument()
   })
 })

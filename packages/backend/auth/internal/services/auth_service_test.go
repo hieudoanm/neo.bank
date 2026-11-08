@@ -50,12 +50,14 @@ func (f *fakeUserStore) FindByID(_ context.Context, _ uuid.UUID) (*models.User, 
 }
 
 type fakeRefreshTokenStore struct {
-	insertErr error
-	getToken  *models.RefreshToken
-	getErr    error
-	revokeErr error
-	inserted  []string
-	revoked   []string
+	insertErr    error
+	getToken     *models.RefreshToken
+	getErr       error
+	revokeErr    error
+	revokeAllErr error
+	inserted     []string
+	revoked      []string
+	revokedAll   []uuid.UUID
 }
 
 func (f *fakeRefreshTokenStore) Insert(_ context.Context, tokenHash string, _ uuid.UUID, _ uuid.UUID, _ string, _ time.Time) error {
@@ -73,6 +75,11 @@ func (f *fakeRefreshTokenStore) GetByHash(_ context.Context, _ string) (*models.
 func (f *fakeRefreshTokenStore) Revoke(_ context.Context, tokenHash string) error {
 	f.revoked = append(f.revoked, tokenHash)
 	return f.revokeErr
+}
+
+func (f *fakeRefreshTokenStore) RevokeAllForUser(_ context.Context, userID uuid.UUID) error {
+	f.revokedAll = append(f.revokedAll, userID)
+	return f.revokeAllErr
 }
 
 type fakeSigner struct {
@@ -334,7 +341,30 @@ func TestLogout(t *testing.T) {
 
 	tokens = &fakeRefreshTokenStore{revokeErr: errors.New("revoke")}
 	svc = NewAuthService(&fakeUserStore{}, tokens, fakeSigner{token: "t"}, &fakePublisher{})
-	if err := svc.Logout(context.Background(), "raw"); !errors.Is(err, applierrors.ErrInvalidRefreshToken) {
+	if err := svc.Logout(context.Background(), "raw"); err == nil {
+		t.Fatal("expected the revoke error to propagate")
+	}
+
+	tokens = &fakeRefreshTokenStore{revokeErr: applierrors.ErrInvalidRefreshToken}
+	svc = NewAuthService(&fakeUserStore{}, tokens, fakeSigner{token: "t"}, &fakePublisher{})
+	if err := svc.Logout(context.Background(), "raw"); err != nil {
+		t.Fatalf("logout of an already-revoked token must be idempotent, got %v", err)
+	}
+}
+
+func TestRefreshReuseRevokesTokenFamily(t *testing.T) {
+	revoked := time.Now().UTC()
+	userID := uuid.New()
+	tokens := &fakeRefreshTokenStore{getToken: &models.RefreshToken{
+		UserID:    userID,
+		RevokedAt: &revoked,
+		ExpiresAt: time.Now().UTC().Add(time.Hour),
+	}}
+	svc := NewAuthService(&fakeUserStore{}, tokens, fakeSigner{token: "t"}, &fakePublisher{})
+	if _, err := svc.Refresh(context.Background(), "raw"); !errors.Is(err, applierrors.ErrInvalidRefreshToken) {
 		t.Fatalf("expected ErrInvalidRefreshToken, got %v", err)
+	}
+	if len(tokens.revokedAll) != 1 || tokens.revokedAll[0] != userID {
+		t.Fatalf("expected the token family to be revoked for %s, got %v", userID, tokens.revokedAll)
 	}
 }

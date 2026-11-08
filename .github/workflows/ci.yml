@@ -48,6 +48,8 @@ jobs:
           cd packages/frontend/app
           pnpm install --no-frozen-lockfile
           pnpm typecheck
+          pnpm lint
+          pnpm format:check
           pnpm test
           pnpm build
 

@@ -11,6 +11,11 @@ func TestValidateEmail(t *testing.T) {
 	if err := validateEmail("user@example.com"); err != nil {
 		t.Fatalf("expected no error for valid email, got %v", err)
 	}
+	for _, bad := range []string{"not-an-email", "missing@tld", "has space@example.com", "@example.com"} {
+		if err := validateEmail(bad); err == nil {
+			t.Fatalf("expected error for invalid email %q", bad)
+		}
+	}
 }
 
 func TestValidatePassword(t *testing.T) {

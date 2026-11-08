@@ -1,4 +1,5 @@
 import { logger } from '@/lib/log'
+import { refreshSession } from '@/lib/authSession'
 
 export type ApiError = {
   code: string
@@ -18,24 +19,43 @@ export class HttpError extends Error {
   }
 }
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8080'
+// Same-origin by default: the vite dev server and the production nginx image
+// both proxy /api to the gateway. Set VITE_API_BASE only to point at a
+// different absolute origin.
+const API_BASE = import.meta.env.VITE_API_BASE ?? ''
 
 function authHeader(accessToken?: string): Record<string, string> {
   return accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
 }
 
+const AUTH_PATHS = ['/api/v1/login', '/api/v1/register', '/api/v1/refresh', '/api/v1/logout']
+
 async function request<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const url = `${API_BASE}${typeof input === 'string' ? input : input.toString()}`
+  const send = (headers?: Record<string, string>) =>
+    fetch(url, {
+      ...init,
+      headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}), ...headers },
+    })
 
   let res: Response
   try {
-    res = await fetch(url, {
-      ...init,
-      headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
-    })
+    res = await send()
   } catch (error) {
     logger.error('api request failed', { url, error })
     throw error
+  }
+
+  if (res.status === 401 && !AUTH_PATHS.some((p) => url.includes(p))) {
+    const tokens = await refreshSession()
+    if (tokens) {
+      try {
+        res = await send({ Authorization: `Bearer ${tokens.accessToken}` })
+      } catch (error) {
+        logger.error('api retry failed', { url, error })
+        throw error
+      }
+    }
   }
 
   const body = (await res.text()) ?? ''

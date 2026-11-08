@@ -53,7 +53,6 @@ services:
         set -e
         kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic transfers --partitions 3 --replication-factor 1
         kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic transfers.dlq --partitions 3 --replication-factor 1
-        kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic transfers-test --partitions 1 --replication-factor 1
         kafka-topics --bootstrap-server kafka:9092 --list
     restart: "no"
 

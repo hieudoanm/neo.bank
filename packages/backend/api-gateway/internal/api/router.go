@@ -18,6 +18,10 @@ var logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 func NewRouter(authMiddleware *middleware.AuthMiddleware, authServiceURL, accountServiceURL, transferServiceURL, transactionServiceURL string, limits middleware.RateLimits, corsOrigins []string) *gin.Engine {
 	r := gin.New()
+	// Never trust X-Forwarded-For: client IPs feed the rate limiter and login
+	// lockout, and spoofed headers would bypass both. Deployments behind a
+	// known proxy must set trusted proxies explicitly.
+	r.ForwardedByClientIP = false
 	r.Use(gin.Recovery())
 	r.Use(requestIDMiddleware())
 	r.Use(corsMiddleware(corsOrigins))

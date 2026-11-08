@@ -34,7 +34,7 @@ func (r *UserRepository) Create(ctx context.Context, email string, accountID uui
 
 	applied, err := r.session.Query(insertEmailLWT, email, gocql.UUID(userID), now).
 		WithContext(ctx).
-		Consistency(gocql.One).
+		Consistency(gocql.Quorum).
 		SerialConsistency(gocql.Serial).
 		ScanCAS()
 	if err != nil {
@@ -79,10 +79,10 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*models
 	var userID uuid.UUID
 	if err := r.session.Query(selectUserIDByEmail, email).
 		WithContext(ctx).
-		Consistency(gocql.One).
+		Consistency(gocql.Quorum).
 		Scan(&userID); err != nil {
 		if err == gocql.ErrNotFound {
-			return nil, errors.ErrAccountNotFound
+			return nil, errors.ErrInvalidCredentials
 		}
 		return nil, fmt.Errorf("find user id by email: %w", err)
 	}
@@ -94,11 +94,11 @@ func (r *UserRepository) FindByID(ctx context.Context, userID uuid.UUID) (*model
 	var createdAt, updatedAt time.Time
 	err := r.session.Query(selectByID, userID).
 		WithContext(ctx).
-		Consistency(gocql.One).
+		Consistency(gocql.Quorum).
 		Scan(&u.ID, &u.Email, &u.AccountID, &u.PasswordHash, &createdAt, &updatedAt)
 	if err != nil {
 		if err == gocql.ErrNotFound {
-			return nil, errors.ErrAccountNotFound
+			return nil, errors.ErrInvalidCredentials
 		}
 		return nil, fmt.Errorf("find user by id: %w", err)
 	}

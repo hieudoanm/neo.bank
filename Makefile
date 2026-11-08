@@ -1,7 +1,11 @@
-.PHONY: help build test lint typecheck clean
+.PHONY: help build test lint typecheck clean compose-up compose-down compose-logs compose-ps
 
 help:
-	@echo "Available targets: build, test, lint, typecheck, clean"
+	@echo "Available targets: build, test, lint, typecheck, clean, compose-up, compose-down, compose-logs, compose-ps"
+	@echo "  compose-up      Start the full local stack (docker compose up -d --build)"
+	@echo "  compose-down    Stop the local stack (docker compose down)"
+	@echo "  compose-logs    Tail logs from the local stack"
+	@echo "  compose-ps      Show running stack containers"
 
 build:
 	@for d in packages/backend/*; do (cd $$d && go build ./...); done
@@ -20,6 +24,18 @@ lint:
 typecheck:
 	@for d in packages/backend/*; do (cd $$d && go vet ./...); done
 	@cd packages/frontend/app && pnpm typecheck
+
+compose-up:
+	docker compose up -d --build
+
+compose-down:
+	docker compose down
+
+compose-logs:
+	docker compose logs -f --tail=100
+
+compose-ps:
+	docker compose ps
 
 clean:
 	@rm -rf packages/frontend/app/dist packages/frontend/app/node_modules/.cache

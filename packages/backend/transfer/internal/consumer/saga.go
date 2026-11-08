@@ -14,6 +14,10 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
+// fetchBackoff pauses between fetch retries so a broker outage does not
+// spin the consume loop.
+const fetchBackoff = time.Second
+
 // SagaStore is the persistence the saga needs. *repositories.TransferRepository
 // satisfies it in production; tests provide a fake.
 type SagaStore interface {
@@ -70,6 +74,11 @@ func (c *SagaConsumer) Run(ctx context.Context) error {
 				return nil
 			}
 			c.logger.Error("fetch message", "err", err)
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-time.After(fetchBackoff):
+			}
 			continue
 		}
 		if err := c.handle(ctx, msg); err != nil {
@@ -145,7 +154,7 @@ func (c *SagaConsumer) onAccountDebited(ctx context.Context, msg kafka.Message) 
 	if err != nil {
 		return err
 	}
-	if t == nil || t.Status != models.StatusProcessing {
+	if t == nil || t.Status != models.StatusProcessing || ev.AccountID != t.SourceAccountID.String() {
 		return nil
 	}
 	return c.publishAccountCommand(ctx, models.EventTypeAccountCreditRequested, t, t.DestAccountID, ":credit")
@@ -160,7 +169,7 @@ func (c *SagaConsumer) onAccountDebitFailed(ctx context.Context, msg kafka.Messa
 	if err != nil {
 		return err
 	}
-	if t == nil {
+	if t == nil || ev.AccountID != t.SourceAccountID.String() {
 		return nil
 	}
 	reason := failureReason(ev)

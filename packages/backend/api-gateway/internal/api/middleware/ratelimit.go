@@ -29,7 +29,12 @@ type RateLimiter struct {
 	window time.Duration
 	events map[string][]time.Time
 	now    nowFunc
+	ops    int
 }
+
+// sweepEvery bounds how often expired keys are reclaimed so the map cannot
+// grow without limit under many distinct client keys.
+const sweepEvery = 256
 
 func NewRateLimiter(max int, window time.Duration) *RateLimiter {
 	return &RateLimiter{
@@ -47,6 +52,10 @@ func (l *RateLimiter) Allow(key string) (bool, time.Duration) {
 	defer l.mu.Unlock()
 
 	now := l.now()
+	l.ops++
+	if l.ops%sweepEvery == 0 {
+		l.evictExpired(now.Add(-l.window))
+	}
 	kept := prune(l.events[key], now.Add(-l.window))
 	if len(kept) >= l.max {
 		l.events[key] = kept
@@ -54,6 +63,14 @@ func (l *RateLimiter) Allow(key string) (bool, time.Duration) {
 	}
 	l.events[key] = append(kept, now)
 	return true, 0
+}
+
+func (l *RateLimiter) evictExpired(cutoff time.Time) {
+	for k, events := range l.events {
+		if len(prune(events, cutoff)) == 0 {
+			delete(l.events, k)
+		}
+	}
 }
 
 // FailureTracker counts failed attempts (for example failed logins) per key and
@@ -64,6 +81,7 @@ type FailureTracker struct {
 	window    time.Duration
 	events    map[string][]time.Time
 	now       nowFunc
+	ops       int
 }
 
 func NewFailureTracker(threshold int, window time.Duration) *FailureTracker {
@@ -81,7 +99,20 @@ func (t *FailureTracker) Record(key string) {
 	defer t.mu.Unlock()
 
 	now := t.now()
+	t.maybeSweep(now)
 	t.events[key] = append(prune(t.events[key], now.Add(-t.window)), now)
+}
+
+func (t *FailureTracker) maybeSweep(now time.Time) {
+	t.ops++
+	if t.ops%sweepEvery != 0 {
+		return
+	}
+	for k, events := range t.events {
+		if len(prune(events, now.Add(-t.window))) == 0 {
+			delete(t.events, k)
+		}
+	}
 }
 
 // Locked reports whether key has reached the failure threshold within the
@@ -91,6 +122,7 @@ func (t *FailureTracker) Locked(key string) (bool, time.Duration) {
 	defer t.mu.Unlock()
 
 	now := t.now()
+	t.maybeSweep(now)
 	kept := prune(t.events[key], now.Add(-t.window))
 	t.events[key] = kept
 	if len(kept) >= t.threshold {

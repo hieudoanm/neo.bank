@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/google/uuid"
@@ -42,6 +43,7 @@ type RefreshTokenStore interface {
 	Insert(ctx context.Context, tokenHash string, userID uuid.UUID, accountID uuid.UUID, email string, expiresAt time.Time) error
 	GetByHash(ctx context.Context, tokenHash string) (*models.RefreshToken, error)
 	Revoke(ctx context.Context, tokenHash string) error
+	RevokeAllForUser(ctx context.Context, userID uuid.UUID) error
 }
 
 // TokenSigner issues access tokens.
@@ -125,9 +127,21 @@ func (s *AuthService) Register(ctx context.Context, email, password string) (*Re
 	}, nil
 }
 
+// dummyPasswordHash is a valid Argon2id hash verified against when the email
+// is unknown, so login responses take the same time whether or not the account
+// exists (mitigates user enumeration via timing).
+var dummyPasswordHash = func() string {
+	h, err := security.HashPassword("dummy-password-for-timing")
+	if err != nil {
+		panic(err)
+	}
+	return h
+}()
+
 func (s *AuthService) Login(ctx context.Context, email, password string) (*RegisterResult, error) {
 	user, err := s.userRepo.FindByEmail(ctx, email)
 	if err != nil {
+		security.VerifyPassword(password, dummyPasswordHash)
 		// Generic failure to avoid account enumeration.
 		return nil, applierrors.ErrInvalidCredentials
 	}
@@ -160,6 +174,11 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*Refres
 		return nil, applierrors.ErrInvalidRefreshToken
 	}
 	if rt.RevokedAt != nil {
+		// A rotated token was presented again: possible token theft. Revoke the
+		// user's whole token family before rejecting.
+		if err := s.refreshTokenRepo.RevokeAllForUser(ctx, rt.UserID); err != nil {
+			return nil, applierrors.ErrInternal
+		}
 		return nil, applierrors.ErrInvalidRefreshToken
 	}
 	if time.Now().UTC().After(rt.ExpiresAt) {
@@ -185,7 +204,12 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*Refres
 func (s *AuthService) Logout(ctx context.Context, refreshToken string) error {
 	tokenHash := auth.HashRefreshToken(refreshToken)
 	if err := s.refreshTokenRepo.Revoke(ctx, tokenHash); err != nil {
-		return applierrors.ErrInvalidRefreshToken
+		// Already revoked or unknown tokens are treated as logged out so the
+		// endpoint stays idempotent.
+		if errors.Is(err, applierrors.ErrInvalidRefreshToken) {
+			return nil
+		}
+		return err
 	}
 	return nil
 }
@@ -206,9 +230,14 @@ func (s *AuthService) issueTokens(ctx context.Context, userID uuid.UUID, account
 	return accessToken, refreshRaw, nil
 }
 
+var emailPattern = regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`)
+
 func validateEmail(email string) error {
 	if email == "" {
 		return applierrors.ValidationError(map[string]string{"email": "email is required"})
+	}
+	if len(email) > 254 || !emailPattern.MatchString(email) {
+		return applierrors.ValidationError(map[string]string{"email": "enter a valid email address"})
 	}
 	return nil
 }

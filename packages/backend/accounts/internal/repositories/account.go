@@ -75,14 +75,14 @@ func (r *AccountRepository) CreateAccount(ctx context.Context, accountID, userID
 	if err != nil {
 		return false, fmt.Errorf("create account: %w", err)
 	}
-	if !applied {
-		return false, nil
-	}
+	// The user link is an idempotent upsert written even when the account row
+	// already exists, so a retry after a partial failure cannot leave an
+	// account that FindByUserID can never reach.
 	if err := r.session.Query(insertAccountByUser, userID, accountID, now).
 		WithContext(ctx).Consistency(gocql.Quorum).Exec(); err != nil {
 		return false, fmt.Errorf("link account to user: %w", err)
 	}
-	return true, nil
+	return applied, nil
 }
 
 // Debit atomically subtracts amount from the account balance using a

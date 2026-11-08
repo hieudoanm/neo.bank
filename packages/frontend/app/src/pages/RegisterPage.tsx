@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { authApi, HttpError } from '@/lib/api/client'
 import { useAuth } from '@/context/AuthContext'
@@ -150,9 +150,9 @@ export const RegisterPage = () => {
 
         <p className="text-center text-text-secondary text-sm mt-6">
           Already have an account?{' '}
-          <a href="/login" className="text-primary hover:text-primary-hover underline">
+          <Link to="/login" className="text-primary hover:text-primary-hover underline">
             Sign in
-          </a>
+          </Link>
         </p>
       </Card>
     </div>
