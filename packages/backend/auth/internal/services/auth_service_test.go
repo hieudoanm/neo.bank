@@ -17,8 +17,10 @@ type fakeUserStore struct {
 	createErr   error
 	findErr     error
 	deleteErr   error
+	auditErr    error
 	createCalls int
 	deleteCalls int
+	auditCalls  int
 }
 
 func (f *fakeUserStore) Create(_ context.Context, email string, accountID uuid.UUID, passwordHash string) (*models.User, error) {
@@ -47,6 +49,11 @@ func (f *fakeUserStore) FindByID(_ context.Context, _ uuid.UUID) (*models.User, 
 		return nil, f.findErr
 	}
 	return f.user, nil
+}
+
+func (f *fakeUserStore) WriteAudit(_ context.Context, _ models.AuditEvent) error {
+	f.auditCalls++
+	return f.auditErr
 }
 
 type fakeRefreshTokenStore struct {

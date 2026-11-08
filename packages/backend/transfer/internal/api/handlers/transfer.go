@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"regexp"
 
@@ -13,6 +14,27 @@ import (
 )
 
 var idempotencyKeyPattern = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,255}$`)
+
+// maxRequestBodyBytes bounds JSON request bodies; transfer payloads are a few
+// hundred bytes, so 1 MiB is generous while preventing memory exhaustion.
+const maxRequestBodyBytes = 1 << 20
+
+func decodeJSON(c *gin.Context, v any) error {
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxRequestBodyBytes)
+	dec := json.NewDecoder(c.Request.Body)
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(v); err != nil {
+		return err
+	}
+	var extra json.RawMessage
+	if err := dec.Decode(&extra); err != io.EOF {
+		if err == nil {
+			return errors.New("unexpected trailing data")
+		}
+		return err
+	}
+	return nil
+}
 
 // TransferService initiates and reads transfers for an authenticated account.
 type TransferService interface {
@@ -54,9 +76,7 @@ func (h *TransferHandler) CreateTransfer(c *gin.Context) {
 	}
 
 	var body models.CreateTransferRequest
-	dec := json.NewDecoder(c.Request.Body)
-	dec.DisallowUnknownFields()
-	if err := dec.Decode(&body); err != nil {
+	if err := decodeJSON(c, &body); err != nil {
 		writeError(c, applierrors.ValidationError(map[string]string{"body": "invalid body"}), reqID)
 		return
 	}

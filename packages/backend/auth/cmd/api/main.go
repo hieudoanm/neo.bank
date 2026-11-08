@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/apache/cassandra-gocql-driver/v2"
 	"github.com/hieudoanm/neo.bank/packages/backend/auth/internal/api"
@@ -43,8 +44,16 @@ func main() {
 	router := api.NewRouter(authHandler, session)
 
 	port := cfg.Port
+	server := &http.Server{
+		Addr:              ":" + port,
+		Handler:           router,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      15 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
 	log.Printf("auth listening on :%s", port)
-	if err := http.ListenAndServe(":"+port, router); err != nil {
+	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
 }

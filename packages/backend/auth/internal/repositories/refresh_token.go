@@ -20,8 +20,11 @@ func NewRefreshTokenRepository(session *gocql.Session) *RefreshTokenRepository {
 }
 
 const (
-	insertRefreshToken       = `INSERT INTO refresh_tokens (token_hash, user_id, account_id, email, expires_at, revoked_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`
-	insertRefreshTokenByUser = `INSERT INTO refresh_tokens_by_user (user_id, token_hash, expires_at, revoked_at, created_at) VALUES (?, ?, ?, ?, ?)`
+	// Refresh tokens carry a TTL matching their lifetime so expired rows are
+	// reclaimed by Cassandra instead of accumulating forever.
+	refreshTokenTTLSeconds   = 7 * 24 * 60 * 60 // matches services.refreshTokenTTL
+	insertRefreshToken       = `INSERT INTO refresh_tokens (token_hash, user_id, account_id, email, expires_at, revoked_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?) USING TTL ?`
+	insertRefreshTokenByUser = `INSERT INTO refresh_tokens_by_user (user_id, token_hash, expires_at, revoked_at, created_at) VALUES (?, ?, ?, ?, ?) USING TTL ?`
 	selectTokenHashesByUser  = `SELECT token_hash FROM refresh_tokens_by_user WHERE user_id = ?`
 	revokeAllRefreshTokens   = `UPDATE refresh_tokens SET revoked_at = ? WHERE token_hash = ?`
 	refreshTokenByHash       = `SELECT token_hash, user_id, account_id, email, expires_at, revoked_at, created_at FROM refresh_tokens WHERE token_hash = ?`
@@ -30,13 +33,13 @@ const (
 
 func (r *RefreshTokenRepository) Insert(ctx context.Context, tokenHash string, userID uuid.UUID, accountID uuid.UUID, email string, expiresAt time.Time) error {
 	now := time.Now().UTC()
-	if err := r.session.Query(insertRefreshTokenByUser, userID, tokenHash, expiresAt, nil, now).
+	if err := r.session.Query(insertRefreshTokenByUser, userID, tokenHash, expiresAt, nil, now, refreshTokenTTLSeconds).
 		WithContext(ctx).
 		Consistency(gocql.Quorum).
 		Exec(); err != nil {
 		return fmt.Errorf("index refresh token by user: %w", err)
 	}
-	return r.session.Query(insertRefreshToken, tokenHash, userID, accountID, email, expiresAt, nil, now).
+	return r.session.Query(insertRefreshToken, tokenHash, userID, accountID, email, expiresAt, nil, now, refreshTokenTTLSeconds).
 		WithContext(ctx).
 		Consistency(gocql.Quorum).
 		Exec()
@@ -47,7 +50,7 @@ func (r *RefreshTokenRepository) GetByHash(ctx context.Context, tokenHash string
 	var revokedAt *time.Time
 	err := r.session.Query(refreshTokenByHash, tokenHash).
 		WithContext(ctx).
-		Consistency(gocql.One).
+		Consistency(gocql.Quorum).
 		Scan(&rt.TokenHash, &rt.UserID, &rt.AccountID, &rt.Email, &rt.ExpiresAt, &revokedAt, &rt.CreatedAt)
 	if err != nil {
 		if err == gocql.ErrNotFound {
@@ -63,7 +66,7 @@ func (r *RefreshTokenRepository) Revoke(ctx context.Context, tokenHash string) e
 	now := time.Now().UTC()
 	applied, err := r.session.Query(revokeRefreshToken, now, tokenHash).
 		WithContext(ctx).
-		Consistency(gocql.One).
+		Consistency(gocql.Quorum).
 		SerialConsistency(gocql.Serial).
 		ScanCAS()
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"regexp"
 	"time"
 
@@ -30,6 +31,7 @@ type UserStore interface {
 	Delete(ctx context.Context, userID uuid.UUID, email string) error
 	FindByEmail(ctx context.Context, email string) (*models.User, error)
 	FindByID(ctx context.Context, userID uuid.UUID) (*models.User, error)
+	WriteAudit(ctx context.Context, ev models.AuditEvent) error
 }
 
 // UserEventPublisher publishes auth lifecycle events so downstream services can
@@ -72,6 +74,26 @@ type RegisterResult struct {
 	AccountID    string
 	AccessToken  string
 	RefreshToken string
+}
+
+// audit records a security-relevant event. Audit writes are best-effort: a
+// failure is logged but does not fail the auth operation itself.
+func (s *AuthService) audit(ctx context.Context, actorID *uuid.UUID, action, resourceType string, resourceID uuid.UUID, metadata map[string]string) {
+	now := time.Now().UTC()
+	ev := models.AuditEvent{
+		Day:           now,
+		Timestamp:     now,
+		EventID:       uuid.New(),
+		ActorUserID:   actorID,
+		Action:        action,
+		ResourceType:  resourceType,
+		ResourceID:    resourceID,
+		CorrelationID: uuid.New().String(),
+		Metadata:      metadata,
+	}
+	if err := s.userRepo.WriteAudit(ctx, ev); err != nil {
+		log.Printf("auth audit write failed: action=%s err=%v", action, err)
+	}
 }
 
 func (s *AuthService) Register(ctx context.Context, email, password string) (*RegisterResult, error) {
@@ -119,6 +141,8 @@ func (s *AuthService) Register(ctx context.Context, email, password string) (*Re
 		return nil, fmt.Errorf("issue tokens: %w", err)
 	}
 
+	s.audit(ctx, &user.ID, "register", "user", user.ID, map[string]string{"accountId": user.AccountID.String()})
+
 	return &RegisterResult{
 		UserID:       user.ID.String(),
 		AccountID:    user.AccountID.String(),
@@ -142,10 +166,12 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (*Regis
 	user, err := s.userRepo.FindByEmail(ctx, email)
 	if err != nil {
 		security.VerifyPassword(password, dummyPasswordHash)
+		s.audit(ctx, nil, "login", "user", uuid.Nil, map[string]string{"outcome": "failure", "reason": "invalid_credentials"})
 		// Generic failure to avoid account enumeration.
 		return nil, applierrors.ErrInvalidCredentials
 	}
 	if !security.VerifyPassword(password, user.PasswordHash) {
+		s.audit(ctx, &user.ID, "login", "user", user.ID, map[string]string{"outcome": "failure", "reason": "invalid_credentials"})
 		return nil, applierrors.ErrInvalidCredentials
 	}
 
@@ -153,6 +179,8 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (*Regis
 	if err != nil {
 		return nil, fmt.Errorf("issue tokens: %w", err)
 	}
+
+	s.audit(ctx, &user.ID, "login", "user", user.ID, map[string]string{"outcome": "success"})
 
 	return &RegisterResult{
 		UserID:       user.ID.String(),
@@ -163,6 +191,8 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (*Regis
 }
 
 type RefreshResult struct {
+	UserID       string
+	AccountID    string
 	AccessToken  string
 	RefreshToken string
 }
@@ -176,6 +206,7 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*Refres
 	if rt.RevokedAt != nil {
 		// A rotated token was presented again: possible token theft. Revoke the
 		// user's whole token family before rejecting.
+		s.audit(ctx, &rt.UserID, "token_revoked", "user", rt.UserID, map[string]string{"reason": "refresh_token_reuse"})
 		if err := s.refreshTokenRepo.RevokeAllForUser(ctx, rt.UserID); err != nil {
 			return nil, applierrors.ErrInternal
 		}
@@ -196,6 +227,8 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*Refres
 	}
 
 	return &RefreshResult{
+		UserID:       rt.UserID.String(),
+		AccountID:    rt.AccountID.String(),
 		AccessToken:  accessToken,
 		RefreshToken: newRefreshToken,
 	}, nil
@@ -203,6 +236,9 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*Refres
 
 func (s *AuthService) Logout(ctx context.Context, refreshToken string) error {
 	tokenHash := auth.HashRefreshToken(refreshToken)
+	if rt, err := s.refreshTokenRepo.GetByHash(ctx, tokenHash); err == nil && rt != nil {
+		s.audit(ctx, &rt.UserID, "logout", "user", rt.UserID, nil)
+	}
 	if err := s.refreshTokenRepo.Revoke(ctx, tokenHash); err != nil {
 		// Already revoked or unknown tokens are treated as logged out so the
 		// endpoint stays idempotent.

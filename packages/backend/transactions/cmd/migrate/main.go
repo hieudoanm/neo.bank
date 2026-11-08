@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -17,11 +18,24 @@ var errNoKeyspace = errors.New("no CREATE KEYSPACE statement found in migration"
 func main() {
 	hosts := strings.Split(env("CASSANDRA_HOST", defaultHosts), ",")
 
-	data, err := os.ReadFile("internal/db/migrations/001_create_tables.cql")
+	// Apply every migration file in lexical order so later schema changes are
+	// picked up automatically; each file may rely on the keyspace created by
+	// an earlier one.
+	files, err := filepath.Glob("internal/db/migrations/*.cql")
 	if err != nil {
-		log.Fatalf("read migration: %v", err)
+		log.Fatalf("find migrations: %v", err)
 	}
-	stmts := splitStmts(string(data))
+	if len(files) == 0 {
+		log.Fatal("no migration files found in internal/db/migrations")
+	}
+	var stmts []string
+	for _, f := range files {
+		data, err := os.ReadFile(f)
+		if err != nil {
+			log.Fatalf("read migration %s: %v", f, err)
+		}
+		stmts = append(stmts, splitStmts(string(data))...)
+	}
 
 	keyspace, err := parseKeyspace(stmts)
 	if err != nil {

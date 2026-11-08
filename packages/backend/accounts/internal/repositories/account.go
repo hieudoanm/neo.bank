@@ -37,7 +37,7 @@ const (
 func (r *AccountRepository) FindByID(ctx context.Context, accountID uuid.UUID) (*models.Account, error) {
 	var a models.Account
 	err := r.session.Query(selectAccountByID, accountID).
-		WithContext(ctx).Consistency(gocql.One).
+		WithContext(ctx).Consistency(gocql.Quorum).
 		Scan(&a.ID, &a.UserID, &a.BalanceCents, &a.CurrencyCode, &a.CreatedAt, &a.UpdatedAt)
 	if err != nil {
 		if err == gocql.ErrNotFound {
@@ -49,7 +49,7 @@ func (r *AccountRepository) FindByID(ctx context.Context, accountID uuid.UUID) (
 }
 
 func (r *AccountRepository) FindByUserID(ctx context.Context, userID uuid.UUID) ([]uuid.UUID, error) {
-	iter := r.session.Query(selectAccountsByUser, userID).WithContext(ctx).Consistency(gocql.One).Iter()
+	iter := r.session.Query(selectAccountsByUser, userID).WithContext(ctx).Consistency(gocql.Quorum).Iter()
 	var accountIDs []uuid.UUID
 	for {
 		var accountID uuid.UUID
