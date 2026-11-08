@@ -13,16 +13,7 @@ This document covers how Zookeeper is configured and operated in the local Docke
 
 ## 2. Role in the Stack
 
-```
-┌─────────┐     ┌─────────┐
-│   API   │────▶│  Kafka  │─────┐
-└─────────┘     └────┬────┘     │
-                     │          ▼
-              ┌──────▼──────┐  ┌─────────┐
-              │ Zookeeper   │◀─┤ Consumer│
-              │ (coordination)│  └─────────┘
-              └─────────────┘
-```
+![Zookeeper coordination](./svg/zookeeper-coordination.svg)
 
 Zookeeper is responsible for:
 - Kafka broker registration and membership

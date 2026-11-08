@@ -240,8 +240,10 @@ Architecture, data-model, and deployment diagrams are maintained as standalone S
 | Directory                | Diagrams                                                                                     |
 | ------------------------ | -------------------------------------------------------------------------------------------- |
 | `04-architecture/svg/`   | High-level architecture, account registration flow, transfer saga flow, auth session lifecycle |
-| `05-data-model/svg/`     | Cross-service data-model overview (ER)                                                        |
+| `05-data-model/svg/`     | Cross-service data-model overview (ER), transfer status flow                                   |
 | `11-deployment/svg/`     | Local Docker Compose topology                                                                 |
+| `08-tech-stack/backend/svg/` | Request lifecycle, Zookeeper coordination                                                |
+| `10-implementation-plan/svg/` | Phase and milestone dependency flows                                                    |
 | `07-ui-ux-design/brand/` | Logo SVG sources (rasterised to PNG by `brand.sh`)                                            |
 
 Edit the SVG files directly; there is no diagram-generation pipeline to run.

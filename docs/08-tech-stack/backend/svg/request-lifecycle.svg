@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="140" viewBox="0 0 980 140" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="980" height="140" fill="#ffffff"/>
+
+  <g>
+    <rect x="10" y="45" width="160" height="54" rx="10" fill="#f1f5f9" stroke="#334155" stroke-width="1.5"/>
+    <text x="90" y="78" text-anchor="middle" font-size="15" font-weight="600" fill="#0f172a">HTTP Request</text>
+
+    <rect x="205" y="45" width="160" height="54" rx="10" fill="#f1f5f9" stroke="#334155" stroke-width="1.5"/>
+    <text x="285" y="78" text-anchor="middle" font-size="15" font-weight="600" fill="#0f172a">Gin Handler</text>
+
+    <rect x="400" y="45" width="160" height="54" rx="10" fill="#f1f5f9" stroke="#334155" stroke-width="1.5"/>
+    <text x="480" y="78" text-anchor="middle" font-size="15" font-weight="600" fill="#0f172a">Service</text>
+
+    <rect x="595" y="45" width="160" height="54" rx="10" fill="#f1f5f9" stroke="#334155" stroke-width="1.5"/>
+    <text x="675" y="78" text-anchor="middle" font-size="15" font-weight="600" fill="#0f172a">Repository</text>
+
+    <rect x="790" y="45" width="180" height="54" rx="10" fill="#f1f5f9" stroke="#334155" stroke-width="1.5"/>
+    <text x="880" y="72" text-anchor="middle" font-size="15" font-weight="600" fill="#0f172a">Cassandra /</text>
+    <text x="880" y="90" text-anchor="middle" font-size="15" font-weight="600" fill="#0f172a">Kafka</text>
+  </g>
+
+  <g stroke="#475569" stroke-width="2" fill="none">
+    <line x1="172" y1="72" x2="200" y2="72" marker-end="url(#arr)"/>
+    <line x1="367" y1="72" x2="395" y2="72" marker-end="url(#arr)"/>
+    <line x1="562" y1="72" x2="590" y2="72" marker-end="url(#arr)"/>
+    <line x1="757" y1="72" x2="785" y2="72" marker-end="url(#arr)"/>
+  </g>
+</svg>

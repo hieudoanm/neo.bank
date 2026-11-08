@@ -54,9 +54,7 @@ packages/backend/<service>/
 
 All business flows follow this layered pattern:
 
-```
-HTTP Request → Gin Handler → Service → Repository → Cassandra/Kafka
-```
+![Request lifecycle](./svg/request-lifecycle.svg)
 
 **Handlers stay thin** — they bind input, delegate to services, and write responses. They contain no business logic.
 

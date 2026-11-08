@@ -240,16 +240,7 @@ CREATE TABLE audit_events (
 
 The Transfer Service maintains the following state machine per transfer:
 
-```
-pending
-  │
-  ▼ (Kafka consumer picks up transfer.initiated)
-processing
-  │
-  ├─► completed (account.debited + account.credited both succeed)
-  │
-  └─► failed (account.debited or account.credited fails; compensation applied)
-```
+![Transfer status flow](../svg/02-transfer-status-flow.svg)
 
 On failure after a successful debit, compensation reverses the debit by crediting the source account back, then marks the transfer as `failed`.
 

@@ -149,9 +149,7 @@ _Part of [10-implementation-plan.md](../10-implementation-plan.md)._
 
 ## Milestone Dependencies
 
-```
-Milestone 1 → Milestone 2 → Milestone 3 → Milestone 4
-```
+![Milestone dependency flow](../10-implementation-plan/svg/milestone-flow.svg)
 
 - Milestone 1 has no dependencies (builds on Phase 0-2).
 - Milestone 2 depends on Milestone 1 (authentication for protected endpoints).
