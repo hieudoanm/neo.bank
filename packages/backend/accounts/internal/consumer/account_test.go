@@ -269,17 +269,18 @@ func TestAccountHandleErrors(t *testing.T) {
 	})
 }
 
-func TestAccountDuplicateWithoutStoredResultApplies(t *testing.T) {
+func TestAccountDuplicateWithoutStoredResultGoesToDLQ(t *testing.T) {
 	store := &fakeStore{claimed: false, debitBalance: 100}
 	c, pub := newConsumer(store)
-	if err := c.handle(context.Background(), command(t, models.EventTypeAccountDebitRequested)); err != nil {
+	msg := command(t, models.EventTypeAccountDebitRequested)
+	if err := c.handle(context.Background(), msg); err != nil {
 		t.Fatalf("handle: %v", err)
 	}
-	if store.debitCalls != 1 {
-		t.Fatalf("expected the movement to apply when no stored result exists, got %d", store.debitCalls)
+	if store.debitCalls != 0 {
+		t.Fatalf("ambiguous command must not move funds again, got %d debit calls", store.debitCalls)
 	}
-	if len(pub.events) != 1 {
-		t.Fatalf("expected one emitted event")
+	if len(pub.events) != 0 {
+		t.Fatalf("no result event expected for an ambiguous command")
 	}
 }
 

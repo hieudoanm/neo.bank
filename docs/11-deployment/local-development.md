@@ -97,7 +97,7 @@ service names are `zookeeper`, `kafka`, `kafka-init`, `cassandra`, `api-gateway`
   - Port: 3000 (host) → 80 (nginx)
   - Build context: `./packages/frontend/app`
   - Dependencies: api-gateway
-  - Environment: the API base URL is compiled into the bundle at build time from `VITE_API_BASE` (defaults to `http://localhost:8080`)
+  - Environment: the API base URL is compiled into the bundle at build time from `VITE_API_BASE` (empty by default = same-origin; nginx proxies `/api` to the gateway)
 
 ## Environment Variables (.env.example)
 
@@ -159,8 +159,9 @@ CORS_ORIGINS=http://localhost:3000
 ### Frontend Configuration
 
 ```env
-# Baked into the bundle at build time (defaults to http://localhost:8080).
-VITE_API_BASE=http://localhost:8080
+# Baked into the bundle at build time. Empty (default) = same-origin, which
+# the vite dev server and the nginx image both proxy to the gateway.
+VITE_API_BASE=
 ```
 
 ## Development Workflow

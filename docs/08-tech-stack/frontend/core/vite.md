@@ -62,7 +62,7 @@ Only variables prefixed `VITE_` are exposed to the client; everything else stays
 
 ```env
 // .env.example
-VITE_API_BASE=http://localhost:8080
+VITE_API_BASE=
 ```
 
 The API base URL is read once in the API client; request paths include the
@@ -70,13 +70,13 @@ versioned prefix (e.g. `/api/v1/login`):
 
 ```ts
 // src/lib/api/client.ts
-const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8080'
+const API_BASE = import.meta.env.VITE_API_BASE ?? ''
 ```
 
 Rules:
 
 - Never put secrets in a `VITE_` variable — they are bundled into the client and visible to everyone.
-- `VITE_API_BASE` is the gateway origin (scheme + host + port), without the `/api/v1` path; callers supply the versioned path.
+- `VITE_API_BASE` is optional; when empty the app calls the API same-origin and relies on the dev-server/nginx `/api` proxy. When set, it is the gateway origin (scheme + host + port), without the `/api/v1` path.
 - `.env.example` holds placeholders only; `.env*` real files are git-ignored.
 - Prefer a single module for environment access rather than scattering `import.meta.env` reads (the dedicated `env` module is not yet implemented; `VITE_API_BASE` is currently read in `src/lib/api/client.ts`).
 

@@ -1,4 +1,11 @@
-import { createContext, useContext, useReducer, useCallback, ReactNode } from 'react'
+import { createContext, useContext, useEffect, useReducer, useCallback, ReactNode } from 'react'
+import { authApi } from '@/lib/api/client'
+import {
+  setSessionTokens,
+  getSessionTokens,
+  clearSessionTokens,
+  setSessionRefresher,
+} from '@/lib/authSession'
 
 export type User = {
   userId: string
@@ -59,7 +66,27 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(authReducer, initialState)
 
+  useEffect(() => {
+    setSessionRefresher(async () => {
+      const tokens = getSessionTokens()
+      if (!tokens?.refreshToken) return null
+      try {
+        const res = await authApi.refresh({ refreshToken: tokens.refreshToken })
+        const next = { accessToken: res.accessToken, refreshToken: res.refreshToken }
+        setSessionTokens(next)
+        dispatch({ type: 'REFRESH', payload: next })
+        return next
+      } catch {
+        clearSessionTokens()
+        dispatch({ type: 'LOGOUT' })
+        return null
+      }
+    })
+    return () => setSessionRefresher(null)
+  }, [])
+
   const login = useCallback((user: User, accessToken: string, refreshToken: string) => {
+    setSessionTokens({ accessToken, refreshToken })
     dispatch({
       type: 'LOGIN',
       payload: { user, accessToken, refreshToken },
@@ -67,10 +94,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [])
 
   const refresh = useCallback((accessToken: string, refreshToken: string) => {
+    setSessionTokens({ accessToken, refreshToken })
     dispatch({ type: 'REFRESH', payload: { accessToken, refreshToken } })
   }, [])
 
   const logout = useCallback(() => {
+    const tokens = getSessionTokens()
+    if (tokens?.refreshToken) {
+      void authApi.logout({ refreshToken: tokens.refreshToken }).catch(() => {
+        // best-effort server-side revocation; local logout proceeds regardless
+      })
+    }
+    clearSessionTokens()
     dispatch({ type: 'LOGOUT' })
   }, [])
 

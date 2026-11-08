@@ -14,6 +14,10 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
+// fetchBackoff pauses between fetch retries so a broker outage does not
+// spin the consume loop.
+const fetchBackoff = time.Second
+
 // CommandStore is the persistence the account consumer needs.
 // *repositories.AccountRepository satisfies it in production; tests provide a fake.
 type CommandStore interface {
@@ -77,6 +81,11 @@ func (c *AccountConsumer) Run(ctx context.Context) error {
 				return nil
 			}
 			c.logger.Error("fetch message", "err", err)
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-time.After(fetchBackoff):
+			}
 			continue
 		}
 		if err := c.handle(ctx, msg); err != nil {
@@ -145,6 +154,12 @@ func (c *AccountConsumer) handle(ctx context.Context, msg kafka.Message) error {
 		if existing != nil && existing.ResultEventType != "" {
 			return c.emitResult(ctx, cmd, existing.ResultEventType, existing.BalanceCents, existing.FailureReason)
 		}
+		// The command was claimed but no result was recorded, so the balance
+		// movement outcome is unknown (e.g. a crash between applying it and
+		// recording the result). Re-applying could move funds twice; route the
+		// message to the DLQ for reconciliation instead.
+		c.sendToDLQ(ctx, msg, "command claimed but result missing")
+		return nil
 	}
 	return c.applyAndEmit(ctx, cmd, accountID)
 }

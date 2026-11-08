@@ -44,7 +44,7 @@ func (r *TransferRepository) ReserveIdempotency(ctx context.Context, key string,
 	now := time.Now().UTC()
 	expiresAt := now.Add(idempotencyTTL)
 	applied, err := r.session.Query(insertIdempotencyPending, key, transferID, requestHash, expiresAt, now, int(idempotencyTTL.Seconds())).
-		WithContext(ctx).Consistency(gocql.One).SerialConsistency(gocql.LocalSerial).ScanCAS()
+		WithContext(ctx).Consistency(gocql.Quorum).SerialConsistency(gocql.LocalSerial).ScanCAS()
 	if err != nil {
 		return false, uuid.Nil, fmt.Errorf("reserve idempotency: %w", err)
 	}
@@ -54,7 +54,7 @@ func (r *TransferRepository) ReserveIdempotency(ctx context.Context, key string,
 
 	var existingResourceID uuid.UUID
 	var existingHash string
-	if err := r.session.Query(selectIdempotency, key).WithContext(ctx).Consistency(gocql.One).Scan(&existingResourceID, &existingHash); err != nil {
+	if err := r.session.Query(selectIdempotency, key).WithContext(ctx).Consistency(gocql.Quorum).Scan(&existingResourceID, &existingHash); err != nil {
 		if err == gocql.ErrNotFound {
 			return false, uuid.Nil, errors.ErrInternal
 		}

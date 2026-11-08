@@ -2,8 +2,9 @@ package services
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
-	"hash/fnv"
 	"time"
 
 	"github.com/google/uuid"
@@ -140,7 +141,6 @@ func newUUID() uuid.UUID {
 }
 
 func hashRequest(source, dest string, amount int64) string {
-	h := fnv.New64a()
-	_, _ = fmt.Fprintf(h, "%s|%s|%d", source, dest, amount)
-	return fmt.Sprintf("%016x", h.Sum64())
+	sum := sha256.Sum256([]byte(fmt.Sprintf("%s|%s|%d", source, dest, amount)))
+	return hex.EncodeToString(sum[:])
 }

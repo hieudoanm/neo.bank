@@ -14,6 +14,10 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
+// fetchBackoff pauses between fetch retries so a broker outage does not
+// spin the consume loop.
+const fetchBackoff = time.Second
+
 // ProjectionStore is the persistence the read-model projection needs.
 // *repositories.TransactionRepository satisfies it in production; tests provide a fake.
 type ProjectionStore interface {
@@ -66,6 +70,11 @@ func (c *ProjectionConsumer) Run(ctx context.Context) error {
 				return nil
 			}
 			c.logger.Error("fetch message", "err", err)
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-time.After(fetchBackoff):
+			}
 			continue
 		}
 		if err := c.handle(ctx, msg); err != nil {

@@ -28,7 +28,7 @@ type ListParams struct {
 
 const (
 	selectTransactionsFirstPage = `SELECT account_id, created_at, transaction_id, transfer_id, type, amount_cents, counterparty_account_id, status FROM transactions WHERE account_id = ? LIMIT ?`
-	selectTransactionsAfter     = `SELECT account_id, created_at, transaction_id, transfer_id, type, amount_cents, counterparty_account_id, status FROM transactions WHERE account_id = ? AND (created_at, transaction_id) < (?, ?) LIMIT ?`
+	selectTransactionsAfter     = `SELECT account_id, created_at, transaction_id, transfer_id, type, amount_cents, counterparty_account_id, status FROM transactions WHERE account_id = ? AND (created_at, transaction_id) > (?, ?) LIMIT ?`
 
 	insertTransaction = `INSERT INTO transactions (account_id, created_at, transaction_id, transfer_id, type, amount_cents, counterparty_account_id, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 	updateStatus      = `UPDATE transactions SET status = ? WHERE account_id = ? AND created_at = ? AND transaction_id = ?`

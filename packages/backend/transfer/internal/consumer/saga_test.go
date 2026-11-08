@@ -320,6 +320,18 @@ func TestSagaDebitedIgnoresNonProcessing(t *testing.T) {
 	}
 }
 
+func TestSagaDebitedIgnoresForeignAccount(t *testing.T) {
+	tr := sampleTransfer(models.StatusProcessing)
+	c, pub := newConsumer(&fakeStore{transfer: tr, apply: true})
+	msg := accountMessage(t, models.AccountEvent{EventType: models.EventTypeAccountDebited, EventVersion: models.EventVersionV1, TransferID: tr.ID.String(), AccountID: uuid.NewString()})
+	if err := c.handle(context.Background(), msg); err != nil {
+		t.Fatalf("handle: %v", err)
+	}
+	if len(pub.commands) != 0 {
+		t.Fatal("a debit result for a different account must not trigger the credit command")
+	}
+}
+
 func TestSagaDebitedUnmarshalError(t *testing.T) {
 	c, _ := newConsumer(&fakeStore{})
 	if err := c.handle(context.Background(), kafka.Message{Value: []byte("not json")}); err != nil {
