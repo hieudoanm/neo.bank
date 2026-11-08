@@ -51,7 +51,7 @@ On error:
 
 | Status | Code | Condition |
 |--------|------|-----------|
-| `401` | `UNAUTHENTICATED` | Missing or invalid access token |
+| `401` | `UNAUTHORIZED` | Missing or invalid access token |
 | `404` | `ACCOUNT_NOT_FOUND` | Account does not exist |
 | `400` | `VALIDATION_ERROR` | Malformed pagination cursor (details identify the `cursor` field) |
 | `503` | `SERVICE_UNAVAILABLE` | Transaction Service temporarily unavailable |
@@ -99,7 +99,7 @@ Response (200):
 Response (401):
 {
   "error": {
-    "code": "UNAUTHENTICATED",
+    "code": "UNAUTHORIZED",
     "message": "Authentication required",
     "requestId": "req_..."
   }
@@ -117,7 +117,7 @@ Response (401):
 
 ## Edge cases
 
-- **Invalid or expired access token**: Returns `401 UNAUTHENTICATED`; client redirects to login.
+- **Invalid or expired access token**: Returns `401 UNAUTHORIZED`; client redirects to login.
 - **Empty transaction history**: Returns empty list with `hasMore: false`; frontend shows empty state.
 - **Network error during fetch**: Frontend shows error state with retry option.
 - **Invalid pagination cursor**: Returns `400 VALIDATION_ERROR` (details identify the `cursor` field); client resets to first page.

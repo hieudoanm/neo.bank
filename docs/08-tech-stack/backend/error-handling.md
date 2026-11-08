@@ -38,9 +38,9 @@ func (e *AppError) Unwrap() error { return e.Err }
 // HTTPStatus maps error codes to HTTP status codes (docs/06-api-specification.md §5).
 func (e *AppError) HTTPStatus() int {
     switch e.Code {
-    case "VALIDATION_ERROR", "INVALID_AMOUNT", "INSUFFICIENT_FUNDS", "SAME_ACCOUNT":
+    case "VALIDATION_ERROR", "VALIDATION_ERROR", "INSUFFICIENT_FUNDS", "VALIDATION_ERROR":
         return http.StatusBadRequest
-    case "UNAUTHENTICATED", "INVALID_CREDENTIALS", "INVALID_REFRESH_TOKEN", "TOKEN_EXPIRED":
+    case "UNAUTHORIZED", "INVALID_CREDENTIALS", "INVALID_REFRESH_TOKEN", "TOKEN_EXPIRED":
         return http.StatusUnauthorized
     case "ACCOUNT_NOT_FOUND", "TRANSFER_NOT_FOUND":
         return http.StatusNotFound
@@ -62,15 +62,15 @@ func (e *AppError) HTTPStatus() int {
 
 ```go
 var (
-    ErrUnauthorized       = &AppError{Code: "UNAUTHENTICATED", Message: "Authentication required"}
+    ErrUnauthorized       = &AppError{Code: "UNAUTHORIZED", Message: "Authentication required"}
     ErrAccountNotFound    = &AppError{Code: "ACCOUNT_NOT_FOUND", Message: "Account not found"}
     ErrTransferNotFound   = &AppError{Code: "TRANSFER_NOT_FOUND", Message: "Transfer not found"}
     ErrValidation         = &AppError{Code: "VALIDATION_ERROR", Message: "Invalid input"}
     ErrInsufficientFunds  = &AppError{Code: "INSUFFICIENT_FUNDS", Message: "Insufficient funds"}
     ErrIdempotency        = &AppError{Code: "IDEMPOTENCY_KEY_EXISTS", Message: "Idempotency key already used"}
     ErrInternal           = &AppError{Code: "INTERNAL_ERROR", Message: "Internal server error"}
-    ErrSameAccount        = &AppError{Code: "SAME_ACCOUNT", Message: "Source and destination are the same account"}
-    ErrInvalidAmount      = &AppError{Code: "INVALID_AMOUNT", Message: "Amount must be a positive integer"}
+    ErrSameAccount        = &AppError{Code: "VALIDATION_ERROR", Message: "Source and destination are the same account"}
+    ErrInvalidAmount      = &AppError{Code: "VALIDATION_ERROR", Message: "Amount must be a positive integer"}
     ErrServiceUnavailable = &AppError{Code: "SERVICE_UNAVAILABLE", Message: "Service temporarily unavailable"}
 )
 ```
@@ -151,7 +151,7 @@ func respondError(w http.ResponseWriter, err error, requestID string) {
 ## Rules
 
 - **All errors use the same nested envelope** (`error.code`, `error.message`, `error.details`, `error.requestId`) exactly as defined in [`docs/06-api-specification.md`](../../06-api-specification.md#5-error-response-format).
-- **Every error `code` is canonical and maps to one HTTP status** (for example `INSUFFICIENT_FUNDS` → `400`, `EMAIL_ALREADY_REGISTERED` → `409`, `SERVICE_UNAVAILABLE` → `503`); never invent codes outside the documented set.
+- **Every error `code` is canonical and maps to one HTTP status** (for example `INSUFFICIENT_FUNDS` → `422`, `EMAIL_ALREADY_REGISTERED` → `409`, `SERVICE_UNAVAILABLE` → `503`); never invent codes outside the documented set.
 - **`404` is returned for unauthorised access** to another account's resource (never `403`, to avoid information leakage).
 - **Never return stack traces, CQL, or credentials** in error responses.
 - **Errors are wrapped with `%w`** for unwrapping with `errors.As` and `errors.Is`.

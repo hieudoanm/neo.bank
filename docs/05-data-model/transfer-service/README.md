@@ -4,6 +4,8 @@
 
 Saga orchestrator. Owns transfer aggregate state and orchestrates the debit/credit flow via Kafka events. Manages saga state, idempotency for orchestration, and compensation logic. Private Cassandra keyspace; no other service may access these tables directly. The Transfer Service is the source of truth for transfer status and saga state.
 
+For the cross-service entity overview see [`../svg/01-data-model-overview.svg`](../svg/01-data-model-overview.svg).
+
 ## Tables
 
 ### transfers

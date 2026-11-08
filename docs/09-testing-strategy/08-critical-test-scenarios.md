@@ -39,7 +39,7 @@ func TestTransfer_ConcurrentSameAccount(t *testing.T) {
 
 | ID | Scenario | Expected Result |
 |----|----------|-----------------|
-| SEC-001 | Unauthenticated request to protected endpoint | `401 UNAUTHENTICATED` |
+| SEC-001 | Unauthenticated request to protected endpoint | `401 UNAUTHORIZED` |
 | SEC-002 | Access another account's balance | `404 ACCOUNT_NOT_FOUND` (not `403`) |
 | SEC-003 | Invalid login credentials | `401 INVALID_CREDENTIALS` (generic) |
 | SEC-004 | Rate limit exceeded (5 failures / 15 min) | `429 RATE_LIMITED` |
@@ -84,8 +84,8 @@ func TestConsumer_IdempotentUnderDuplicateDelivery(t *testing.T) {
 | ID | Scenario | Expected Result |
 |----|----------|-----------------|
 | EDG-001 | Transfer to non-existent account | `404 ACCOUNT_NOT_FOUND` |
-| EDG-002 | Transfer with amount ≤ 0 | `400 INVALID_AMOUNT` |
-| EDG-003 | Transfer to same account | `400 SAME_ACCOUNT` |
+| EDG-002 | Transfer with amount ≤ 0 | `400 VALIDATION_ERROR` |
+| EDG-003 | Transfer to same account | `400 VALIDATION_ERROR` |
 | EDG-004 | Expired idempotency key | Request processed as new |
 | EDG-005 | Network error during transfer initiation | `503 SERVICE_UNAVAILABLE`, retry safe |
 | EDG-006 | Empty transaction history | Empty list with `hasMore: false` |

@@ -32,7 +32,7 @@ It enables users to register accounts, authenticate securely, view balances, tra
 
 The product demonstrates end-to-end software engineering across a React and TypeScript frontend, Go microservices with Cassandra and Kafka, containerised with Docker, orchestrated with Kubernetes (EKS on AWS, GKE on GCP), and deployed via Terraform on AWS and GCP.
 
-## Product principles
+### Product principles
 
 **Financial integrity first** — Preserve audit trails and distinguish display formatting from stored precision.
 
@@ -136,6 +136,8 @@ Success metric: status update accuracy, history query performance.
 
 The platform is an event-driven microservices system (see [`04-architecture.md`](04-architecture.md)). An API gateway fronts four services — Auth, Account, Transfer, and Transaction — each owning its own Cassandra keyspace and writing its own audit events. The Transfer Service is the saga orchestrator: it accepts transfer initiation, records idempotency keys, and publishes to the `transfers` topic. Kafka consumers process the financial operations (balance updates, transaction recording) asynchronously and idempotently, with failures routed to `transfers.dlq`. The frontend requests data through the gateway and polls for transfer status updates.
 
+![High-level architecture](./04-architecture/svg/01-high-level-architecture.svg)
+
 ### 7.2 Technology stack
 
 | Layer            | Technology                                         | Responsibility                                                          |
@@ -157,11 +159,11 @@ This snapshot reflects the repository state on 2026-10-17. It is intentionally s
 
 ### Implemented
 
-- **Backend services** (`packages/backend/`): `api-gateway`, `auth`, `account`, `transfer`, and `transaction` — each an independent Go module with its own Cassandra keyspace, CQL migrations, and `/healthz`/`/readyz` endpoints.
-  - Auth: `POST /api/v1/auth/register`, `/login`, `/refresh`, `/logout` (Argon2id passwords, RS256 JWT).
-  - Account: `GET /api/v1/accounts/{accountId}/balance`.
+- **Backend services** (`packages/backend/`): `api-gateway`, `auth`, `accounts`, `transfer`, and `transactions` — each an independent Go module with its own Cassandra keyspace, CQL migrations, and `/healthz`/`/readyz` endpoints.
+  - Auth: `POST /api/v1/register`, `/login`, `/refresh`, `/logout` (Argon2id passwords, RS256 JWT).
+  - Accounts: `GET /api/v1/accounts/{accountId}/balance`.
   - Transfer: `POST /api/v1/transfers` (idempotency key), `GET /api/v1/transfers/{transferId}`.
-  - Transaction: `GET /api/v1/accounts/{accountId}/transactions` (cursor pagination, max page size 100).
+  - Transactions: `GET /api/v1/accounts/{accountId}/transactions` (cursor pagination, max page size 100).
 - **Event-driven saga** on the `transfers` topic: the Transfer Service orchestrates debit/credit commands, the Account Service applies them with Cassandra LWTs and claims idempotency keys in `processed_commands`, and a Transaction Service projection consumer builds the read model. Consumers run in distinct groups (`transfer-service-saga`, `account-service-saga`, `transaction-service-projection`).
 - **Frontend** (`packages/frontend/app/`): React + TypeScript + TanStack Query with Login, Register, Dashboard (balance), Transfer form, Transfer Status (polling), and Transactions (cursor-paginated) screens. Protected calls send `Authorization: Bearer`.
 - **Local topology**: `docker-compose.yaml` runs gateway + 4 services + 3 consumers + Cassandra + Kafka + ZooKeeper + frontend.
@@ -230,6 +232,19 @@ See [`11-deployment.md`](11-deployment.md) for the complete deployment strategy 
 ## 13. Contributing
 
 See `AGENTS.md` for contributor guidelines.
+
+### Diagrams
+
+Architecture, data-model, and deployment diagrams are maintained as standalone SVG assets — vector-based, searchable, and editable in any SVG tool:
+
+| Directory                | Diagrams                                                                                     |
+| ------------------------ | -------------------------------------------------------------------------------------------- |
+| `04-architecture/svg/`   | High-level architecture, account registration flow, transfer saga flow, auth session lifecycle |
+| `05-data-model/svg/`     | Cross-service data-model overview (ER)                                                        |
+| `11-deployment/svg/`     | Local Docker Compose topology                                                                 |
+| `07-ui-ux-design/brand/` | Logo SVG sources (rasterised to PNG by `brand.sh`)                                            |
+
+Edit the SVG files directly; there is no diagram-generation pipeline to run.
 
 ### Repository conventions
 

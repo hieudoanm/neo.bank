@@ -25,7 +25,7 @@ Implement user registration, login, token refresh, and logout. Phase 2 establish
 - [ ] Implement password hashing with Argon2id (recommended parameters).
 - [ ] Implement JWT token generation (RS256, 15-minute expiry).
 - [ ] Implement JWT token validation middleware for protected endpoints (the single authentication middleware owned by Phase 2 and reused by every later phase).
-- [ ] Implement API Gateway JWT enforcement: deny-by-default middleware that validates the RS256 access token on every `/api/v1/*` route except the public auth routes (`POST /register`, `/login`, `/refresh`, `/logout`), returns `401 UNAUTHENTICATED`/`TOKEN_EXPIRED` in the standard error envelope, and forwards the (validated) `Authorization` header to the upstream service. Downstream services still validate independently (defence in depth).
+- [ ] Implement API Gateway JWT enforcement: deny-by-default middleware that validates the RS256 access token on every `/api/v1/*` route except the public auth routes (`POST /register`, `/login`, `/refresh`, `/logout`), returns `401 UNAUTHORIZED`/`TOKEN_EXPIRED` in the standard error envelope, and forwards the (validated) `Authorization` header to the upstream service. Downstream services still validate independently (defence in depth).
 - [ ] Implement `POST /register` endpoint (email validation, password strength, duplicate check).
 - [ ] Implement `POST /login` endpoint (credential validation, issue access + refresh tokens).
 - [ ] Implement `POST /refresh` endpoint (validate refresh token, issue new access token).

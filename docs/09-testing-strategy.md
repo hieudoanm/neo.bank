@@ -15,7 +15,7 @@ The testing strategy must ensure:
 
 ## 2. Test Layers
 
-Testing is organised into seven layers, each documented separately:
+Testing is organised into layers and supporting practices, each documented separately:
 
 - [`01-test-layers.md`](./09-testing-strategy/01-test-layers.md) — Unit, Integration, Contract, E2E, Security, Performance, Reliability
 - [`02-test-fixtures.md`](./09-testing-strategy/02-test-fixtures.md) — Synthetic data and test seeds

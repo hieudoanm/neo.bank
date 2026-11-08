@@ -12,8 +12,8 @@ It complements:
 - `04-architecture.md` — system boundaries and technical responsibilities.
 - `05-data-model.md` — entities, relationships, and constraints.
 - `06-api-specification.md` — REST endpoints and request/response models.
-- `08-tech-stack.md` — technology choices and rationale.
 - `07-ui-ux-design.md` — interface and interaction design.
+- `08-tech-stack.md` — technology choices and rationale.
 
 Features should be delivered in vertical slices: a user should be able to complete a useful workflow through the frontend, API, database, and relevant background services before the next major workflow is started.
 
@@ -31,8 +31,6 @@ Each feature section below states its **user-visible behaviour**, **inputs**, **
 | P1       | Important for a complete experience | Enhancement   |
 
 ## 3. Feature Completion Definition
-
-A feature is complete when: behaviour documented, FE/BE implement contract, authz enforced, validation/failure handled, tests pass, migrations added, logs/ops adequate, docs updated, no critical security issues, E2E exercised where practical, quality gates pass.
 
 - Feature behaves as documented in the specification.
 - Frontend and backend implementations match the agreed-upon contract.

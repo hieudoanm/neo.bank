@@ -74,8 +74,8 @@ Two rules are non-negotiable, and every decision below is subordinate to them:
 | Styling             | Tailwind CSS + DaisyUI                             | [§4.2](#42-tailwind-css--daisyui)       |
 | Frontend data layer | TanStack Query                                     | [§4.3](#43-tanstack-query)              |
 | Frontend routing    | React Router                                       | [§4.4](#44-react-router)                |
-| Frontend icons      | react-icons (Phosphor Icons, `pi`)                 | [§4.6](#46-icons-react-icons--phosphor) |
 | Frontend testing    | Vitest + Playwright                                | [§4.5](#45-vitest--playwright)          |
+| Frontend icons      | react-icons (Phosphor Icons, `pi`)                 | [§4.6](#46-icons-react-icons--phosphor) |
 | Package manager     | pnpm (workspaces)                                  | [§13.1](#13-package-manager--git-hooks) |
 | Git hooks           | Husky                                              | [§13.2](#13-package-manager--git-hooks) |
 | API                 | Go 1.22+, Gin router                               | [§5.1](#51-go--gin)                     |
@@ -196,9 +196,11 @@ Two rules are non-negotiable, and every decision below is subordinate to them:
 
 - **Chosen:** Docker Compose for local development; GitHub Actions for CI.
 - **Considered:** a cloud-only dev loop, other CI providers.
-- **Why:** A banking stack with Cassandra and Kafka must be reproducible on any machine without cloud credentials. Docker Compose brings up the full event-driven topology with one command: the `api-gateway`, the four Go services (`auth-service`, `account-service`, `transfer-service`, `transaction-service`), the `frontend`, plus `cassandra`, `kafka`, and `zookeeper`. Each service owns its own keyspace; the services interact through the gateway and Kafka topics (`transfers`, `transfers.dlq`). GitHub Actions runs the same checks with real Cassandra and Kafka service containers.
+- **Why:** A banking stack with Cassandra and Kafka must be reproducible on any machine without cloud credentials. Docker Compose brings up the full event-driven topology with one command: the `api-gateway`, the four Go services (`auth-service`, `account-service`, `transfer-service`, `transaction-service`), the `frontend`, plus `cassandra`, `kafka`, and `zookeeper`. Each service owns its own keyspace; the services interact through the gateway and Kafka topics (`transfers`, `transfers.dlq`). GitHub Actions is designed to run the same checks with real Cassandra and Kafka service containers (see [`github-actions.md`](./08-tech-stack/infrastructure/github-actions.md)).
 - **Consequences:** Same images across environments; configuration via `.env` with no secrets in the repository. See [`11-deployment.md`](./11-deployment.md) for the topology and [`docker.md`](./08-tech-stack/infrastructure/docker.md) for the Compose service list.
 - **How:** [`docker.md`](./08-tech-stack/infrastructure/docker.md), [`github-actions.md`](./08-tech-stack/infrastructure/github-actions.md).
+
+![Local Docker Compose topology](./11-deployment/svg/01-local-topology.svg)
 
 ## 10. Infrastructure
 
@@ -263,7 +265,6 @@ New significant decisions (for example splitting the consumer into per-event ser
 - **How:** Root `package.json` `prepare` script and `.husky/` hooks.
 
 ## 14. Configuration & Secrets
-
 
 - Environment variables locally via `.env`; managed secrets in production.
 - Required: `APP_ENV`, `JWT_PRIVATE_KEY_PEM`, `JWT_PUBLIC_KEY_PEM`, `CASSANDRA_HOST`, `CASSANDRA_KEYSPACE`, `KAFKA_BROKERS`, `KAFKA_TOPIC_TRANSFERS`, `LOG_LEVEL`, `CORS_ORIGINS`.

@@ -78,6 +78,21 @@
           "409": {
             "$ref": "#/components/responses/ErrorResponse"
           },
+          "422": {
+            "description": "Unprocessable entity (for example INSUFFICIENT_FUNDS)",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/X-Request-ID"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "429": {
             "$ref": "#/components/responses/ErrorResponse"
           },

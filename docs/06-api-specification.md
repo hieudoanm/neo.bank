@@ -47,6 +47,8 @@ Authorization: Bearer <access_token>
 
 Access tokens expire after 15 minutes. Refresh tokens (7 day expiry) can be used to obtain new access tokens via the token refresh endpoint.
 
+![Auth session lifecycle](./04-architecture/svg/04-auth-session-lifecycle.svg)
+
 ## 5. Error Response Format
 
 All error responses follow this structure:
@@ -68,11 +70,9 @@ All error responses follow this structure:
 
 | Code                    | HTTP Status | Description                     |
 | ----------------------- | ----------- | ------------------------------- |
-| `VALIDATION_ERROR`      | 400         | Request validation failed       |
-| `INVALID_AMOUNT`        | 400         | Invalid transfer amount         |
-| `INSUFFICIENT_FUNDS`    | 400         | Insufficient funds              |
-| `SAME_ACCOUNT`          | 400         | Source equals destination       |
-| `UNAUTHENTICATED`       | 401         | Missing or invalid auth         |
+| `VALIDATION_ERROR`      | 400         | Request validation failed (invalid amount, same-account transfer, malformed fields) |
+| `INSUFFICIENT_FUNDS`    | 422         | Insufficient funds              |
+| `UNAUTHORIZED`          | 401         | Missing or invalid auth         |
 | `INVALID_CREDENTIALS`   | 401         | Invalid credentials             |
 | `TOKEN_EXPIRED`         | 401         | Access token expired            |
 | `INVALID_REFRESH_TOKEN` | 401         | Invalid refresh token           |
@@ -104,8 +104,7 @@ The canonical idempotency mechanism is the `Idempotency-Key` request **header**;
 Idempotency-Key: <unique-key>
 ```
 
-- `Idempotency-Key` is **required** on `POST /api/v1/transfers`.
-- It is optional but supported on other mutating endpoints.
+- `Idempotency-Key` is **required** on `POST /api/v1/transfers` — the only mutating client endpoint today; other endpoints are reads or auth operations without idempotency records.
 - Format: 1–255 characters matching `[a-zA-Z0-9_-]`.
 - Repeating a request with the same key and an **identical payload** returns the cached original response (status code and body) without re-executing the operation.
 - Reusing the key with a **different payload** returns `409 IDEMPOTENCY_KEY_EXISTS`.
@@ -119,8 +118,8 @@ Rate limits are enforced **at the API Gateway** (the only component that sees ev
 
 | Endpoint                | Rate Limit                                           |
 | ----------------------- | ---------------------------------------------------- |
-| POST /register          | 100 req/min per IP; lockout after 5 failed logins/15 min |
-| POST /login             | 100 req/min per IP; lockout after 5 failed logins/15 min |
+| POST /register          | 100 req/min per IP                                    |
+| POST /login             | 100 req/min per IP; account lockout after 5 failed attempts/15 min |
 | Authenticated endpoints | 1000 req/min per user                                |
 
 Rate-limited responses include a `Retry-After` header:
@@ -203,6 +202,7 @@ Financial operations never run inside web request handlers. Transfers execute as
 | Event | `account.credited` / `account.credit.failed` | Account Service | Transfer Service, Transaction Service |
 | Event | `transfer.initiated` | Transfer Service | Transfer Service (saga continuation) |
 | Event | `transfer.completed` / `transfer.failed` | Transfer Service | Transaction Service |
+| Event | `auth.user.created` | Auth Service | Account Service (account provisioning) |
 
 Rules:
 

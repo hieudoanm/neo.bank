@@ -77,7 +77,7 @@ Users can only access their own accounts and perform authorised operations.
 
 ### Goal 5: Support event-driven transaction processing
 
-Transfers are processed asynchronously via Kafka with idempotent consumers and exactly-once semantics.
+Transfers are processed asynchronously via Kafka with idempotent consumers (at-least-once delivery, deduplicated by idempotency keys).
 
 ### Goal 6: Provide a maintainable codebase
 
@@ -150,6 +150,10 @@ The intended technology stack is:
 
 Local commits use Husky and lint-staged to apply fast formatting and lint checks to staged source files. CI remains the authoritative full quality gate.
 
+![High-level architecture](./04-architecture/svg/01-high-level-architecture.svg)
+
+The diagram shows the API gateway fronting the Auth, Account, Transfer, and Transaction services, the per-service Cassandra keyspaces, and the Kafka event backbone. See [`04-architecture.md`](./04-architecture.md) for details.
+
 ## 10. Security and Privacy Principles
 
 Security must be implemented as part of the architecture, not added as a final polishing step.
@@ -180,7 +184,7 @@ The minimum viable product is complete when:
 - A user can log in and receive a session token.
 - A user can view their current balance.
 - A user can transfer funds to another valid account.
-- Transfers are processed asynchronously via Kafka with exactly-once semantics.
+- Transfers are processed asynchronously via Kafka with idempotent consumers.
 - Balance updates are atomic and consistent.
 - Invalid transfers (insufficient funds, invalid account, negative amount) produce understandable errors.
 - Automated tests cover the core workflow and security boundaries.

@@ -20,12 +20,15 @@ All financial amounts are stored as integers in minor units (cents) to avoid flo
 
 Each microservice owns a private Cassandra keyspace. Cross-service direct database access is forbidden; state is shared only via APIs or Kafka events. There is no shared keyspace and no shared audit store: each service records its own `audit_events` table in its own keyspace.
 
+![Data model overview](./05-data-model/svg/01-data-model-overview.svg)
+
+
 | Service             | Data Model File                                                            | Tables                                                     | Keyspace               |
 | ------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------- | ---------------------- |
-| Auth Service        | [`README.md`](./05-data-model/auth-service/README.md)               | `users`, `users_by_email`, `refresh_tokens`, `refresh_tokens_by_user`, `audit_events` | `auth_keyspace`        |
-| Account Service     | [`README.md`](./05-data-model/account-service/README.md)         | `accounts`, `accounts_by_user`, `processed_commands`, `audit_events` | `account_keyspace`     |
-| Transfer Service    | [`README.md`](./05-data-model/transfer-service/README.md)       | `transfers`, `transfers_by_account`, `idempotency_keys`, `audit_events` | `transfer_keyspace`    |
-| Transaction Service | [`README.md`](./05-data-model/transaction-service/README.md) | `transactions`, `audit_events`                             | `transaction_keyspace` |
+| Auth Service        | [`README.md`](./05-data-model/auth-service/README.md)                 | `users`, `users_by_email`, `refresh_tokens`, `refresh_tokens_by_user`, `audit_events` | `auth_keyspace`        |
+| Account Service     | [`README.md`](./05-data-model/account-service/README.md)               | `accounts`, `accounts_by_user`, `processed_commands`, `audit_events` | `account_keyspace`     |
+| Transfer Service    | [`README.md`](./05-data-model/transfer-service/README.md)             | `transfers`, `transfers_by_account`, `idempotency_keys`, `audit_events` | `transfer_keyspace`    |
+| Transaction Service | [`README.md`](./05-data-model/transaction-service/README.md)           | `transactions`, `audit_events`                             | `transaction_keyspace` |
 
 ## 3. Design Principles
 
@@ -39,6 +42,8 @@ Each microservice owns a private Cassandra keyspace. Cross-service direct databa
 8. **Lookup tables, never secondary indexes:** Every non-primary-key access path is a dedicated table partitioned by the lookup column (`accounts_by_user`, `users_by_email`, `transfers_by_account`). This keeps queries single-partition, avoids eventual-consistency surprises, and stays portable to Amazon Keyspaces, which rejects `CREATE INDEX`. Note: the Keyspaces LWT apply `IF balance_cents >= ?` — a conditional debit on a non-key column — is supported today but is verified against the managed service before each deployment (see [`cloud-deployment-aws.md`](./11-deployment/cloud-deployment-aws.md#keyspaces-amazon-keyspaces)).
 
 ## 4. Relationships
+
+These are **logical** relationships expressed through APIs and events — there are no foreign keys across keyspaces, and no service reads another service's tables.
 
 ### 4.1 User to Account
 
@@ -76,7 +81,7 @@ Each microservice owns a private Cassandra keyspace. Cross-service direct databa
 3. Hash password with Argon2id.
 4. Auth Service inserts the user and the email lookup (INSERT INTO users; INSERT INTO users_by_email) in `auth_keyspace`.
 5. Generate account_id (UUID v7).
-6. Account Service inserts the account with balance_cents = 0 (INSERT INTO accounts) in `account_keyspace`.
+6. Account Service provisions the account via the `auth.user.created` event with the configured initial balance (`INITIAL_BALANCE_CENTS`, `CURRENCY_CODE`; INSERT INTO accounts in `account_keyspace`).
 7. Generate JWT tokens.
 8. Auth Service hashes the refresh token and inserts it (INSERT INTO refresh_tokens) in `auth_keyspace`.
 9. Each owning service records its own audit event (INSERT INTO audit_events) in its own keyspace.
@@ -166,14 +171,14 @@ WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
 | Profile | Reads | Writes | Lightweight transactions |
 | ------- | ----- | ------ | ------------------------ |
 | Production (RF=3) | `QUORUM` | `QUORUM` | `SERIAL` |
-| Local / CI (RF=1) | `ONE` or `LOCAL_ONE` | `ONE` or `LOCAL_ONE` | `SERIAL` (equals `ONE` on one node) |
+| Local / CI (RF=1) | `QUORUM` | `QUORUM` | `SERIAL` |
 
-Configure the level per query; do not rely on the cluster default. Where the per-service data model documents individual queries as “QUORUM read/write”, that annotation is the **production** level; local/CI runs the same queries at `ONE`/`LOCAL_ONE` (see the table above).
+Repositories issue reads and writes at `QUORUM` unconditionally and lightweight transactions at `SERIAL`; do not rely on the cluster default. On a single-node RF=1 cluster `QUORUM` resolves to the only replica, so the same code path runs locally but multi-replica quorum semantics are only exercised in production.
 
 ### 6.3 Replication
 
 - **Production:** replication factor 3; `QUORUM` (2 of 3 replicas must acknowledge) with `SERIAL` for conditional statements.
-- **Local/CI:** replication factor 1; `ONE`/`LOCAL_ONE`. A single-node cluster cannot exercise multi-replica availability — production durability is validated in the cloud deployment, not locally.
+- **Local/CI:** replication factor 1; application consistency remains `QUORUM`, which resolves to the single replica. A single-node cluster cannot exercise multi-replica availability — production durability is validated in the cloud deployment, not locally.
 - **AWS Keyspaces:** replication is managed; application code still uses `QUORUM`/`SERIAL`, which AWS honours.
 
 ## 7. Data Migration Strategy
@@ -203,5 +208,5 @@ CREATE TABLE schema_migrations (
 
 - Cassandra snapshots are taken regularly per keyspace.
 - Snapshots are stored in durable object storage (S3, GCS).
-- Point-in-time recovery uses Amazon Keyspaces PITR (production) or Cassandra incremental backups with commitlog archiving (self-managed); snapshots alone give last-snapshot, not arbitrary-point, recovery. See [`12-operations/backup-recovery.md`](./12-operations/backup-recovery.md).
-- Backup strategy is documented in [`12-operations/backup-recovery.md`](./12-operations/backup-recovery.md).
+- Point-in-time recovery uses Amazon Keyspaces PITR (production) or Cassandra incremental backups with commitlog archiving (self-managed); snapshots alone give last-snapshot, not arbitrary-point, recovery.
+- The full backup and recovery strategy is documented in [`12-operations/backup-recovery.md`](./12-operations/backup-recovery.md).

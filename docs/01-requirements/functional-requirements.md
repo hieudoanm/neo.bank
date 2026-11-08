@@ -70,7 +70,7 @@ This document specifies the functional requirements for NEO Bank, organized by b
 - Balance endpoint: `GET /api/v1/accounts/{accountId}/balance`.
 - Response: `{ accountId, balanceCents, currency, updatedAt }` where `updatedAt` is ISO 8601 UTC.
 - Balance amounts are integers in minor units (cents); no floating-point representation.
-- Unauthenticated requests return `401 Unauthorized` with error envelope `UNAUTHENTICATED` or `TOKEN_EXPIRED`.
+- Unauthenticated requests return `401 Unauthorized` with error envelope `UNAUTHORIZED` or `TOKEN_EXPIRED`.
 - Account must belong to the authenticated user; cross-account access returns `404` (not `403`) to avoid information leakage.
 
 **Rationale:** Balance inquiry is a read-heavy operation. Using integer cents avoids floating-point rounding errors in financial data. Returning `404` for unauthorized account access prevents account enumeration.
@@ -102,7 +102,7 @@ This document specifies the functional requirements for NEO Bank, organized by b
 
 - Transfer endpoint: `POST /api/v1/transfers` with headers `Authorization: Bearer <accessToken>` and `Idempotency-Key: <key>` (required), and body `{ destinationAccountId, amountCents }`. The source account is derived from the authenticated user; the client cannot supply a source account.
 - On initiation, returns `202 Accepted` with `{ transferId, status: "pending" }`.
-- Validation errors return `400 Bad Request` with error envelope reason codes (`INSUFFICIENT_FUNDS`, `SAME_ACCOUNT`, `INVALID_AMOUNT`, `ACCOUNT_NOT_FOUND` for a missing destination account).
+- Validation errors return `400 Bad Request` with `VALIDATION_ERROR`; insufficient funds return `422` with `INSUFFICIENT_FUNDS`; a missing destination account returns `404` with `ACCOUNT_NOT_FOUND`.
 - Transfer events are published to the `transfers` Kafka topic, keyed by source account ID for ordering.
 - The saga orchestrator (Transfer Service) coordinates debit → credit with compensation on failure.
 - Status endpoint: `GET /api/v1/transfers/{transferId}` returns `{ transferId, status, amountCents, sourceAccountId, destinationAccountId, createdAt, updatedAt }`.

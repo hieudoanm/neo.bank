@@ -42,11 +42,9 @@ All error responses follow the standard error envelope:
 
 | Status | Code | Condition | Retryable |
 |--------|------|-----------|-----------|
-| `400` | `VALIDATION_ERROR` | Input validation failed (including malformed pagination cursor) | No |
-| `400` | `INVALID_AMOUNT` | Transfer amount not positive | No |
-| `400` | `INSUFFICIENT_FUNDS` | Source balance too low | No |
-| `400` | `SAME_ACCOUNT` | Source and destination accounts are the same | No |
-| `401` | `UNAUTHENTICATED` | Missing or invalid JWT | No (after re-login) |
+| `400` | `VALIDATION_ERROR` | Input validation failed — malformed body/cursor, non-positive or over-limit amount, same-account transfer, invalid destination format | No |
+| `422` | `INSUFFICIENT_FUNDS` | Source balance too low | No |
+| `401` | `UNAUTHORIZED` | Missing or invalid JWT | No (after re-login) |
 | `401` | `INVALID_CREDENTIALS` | Wrong email or password | No |
 | `401` | `TOKEN_EXPIRED` | Access token expired | Yes (use refresh) |
 | `401` | `INVALID_REFRESH_TOKEN` | Refresh token expired/revoked/already used | No |
