@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1060" height="150" viewBox="0 0 1060 150" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="1060" height="150" fill="#ffffff"/>
+
+  <g font-size="15" font-weight="600" fill="#0f172a" text-anchor="middle">
+    <g><rect x="20" y="40" width="220" height="70" rx="10" fill="#f1f5f9" stroke="#334155" stroke-width="1.5"/><text x="130" y="68">Milestone 1</text><text x="130" y="90" font-size="12" font-weight="400" fill="#475569">Core Authentication</text><text x="130" y="104" font-size="11" font-weight="400" fill="#64748b">End of Week 3</text></g>
+    <g><rect x="320" y="40" width="220" height="70" rx="10" fill="#f1f5f9" stroke="#334155" stroke-width="1.5"/><text x="430" y="68">Milestone 2</text><text x="430" y="90" font-size="12" font-weight="400" fill="#475569">Basic Banking</text><text x="430" y="104" font-size="11" font-weight="400" fill="#64748b">End of Week 5</text></g>
+    <g><rect x="620" y="40" width="220" height="70" rx="10" fill="#f1f5f9" stroke="#334155" stroke-width="1.5"/><text x="730" y="68">Milestone 3</text><text x="730" y="90" font-size="12" font-weight="400" fill="#475569">Complete MVP</text><text x="730" y="104" font-size="11" font-weight="400" fill="#64748b">End of Week 7</text></g>
+    <g><rect x="920" y="40" width="120" height="70" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/><text x="980" y="68">Milestone 4</text><text x="980" y="90" font-size="12" font-weight="400" fill="#475569">Cloud Deploy</text><text x="980" y="104" font-size="11" font-weight="400" fill="#64748b">Week 8+</text></g>
+  </g>
+
+  <g stroke="#475569" stroke-width="2" fill="none">
+    <line x1="244" y1="75" x2="314" y2="75" marker-end="url(#arr)"/>
+    <line x1="544" y1="75" x2="614" y2="75" marker-end="url(#arr)"/>
+    <line x1="844" y1="75" x2="914" y2="75" marker-end="url(#arr)"/>
+  </g>
+</svg>

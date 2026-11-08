@@ -59,9 +59,7 @@ See [`definition-of-done.md`](./10-implementation-plan/definition-of-done.md) �
 
 ## 7. Dependency Graph
 
-```
-Phase 0 → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7 → Phase 8 → Phase 9 → Phase 10 → Phase 11
-```
+![Phase dependency flow](./10-implementation-plan/svg/phase-flow.svg)
 
 - Phase 0 has no dependencies.
 - Phase 1 depends on Phase 0 (project structure).

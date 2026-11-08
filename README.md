@@ -6,15 +6,11 @@ built as an event-driven microservices system.
 
 ## Architecture
 
-```
-React SPA ──> API Gateway ──> Auth Service      (auth_keyspace)
-                          ├─> Account Service   (account_keyspace)
-                          ├─> Transfer Service  (transfer_keyspace, saga orchestrator)
-                          └─> Transaction Service (transaction_keyspace, read model)
+![High-level architecture](docs/04-architecture/svg/01-high-level-architecture.svg)
 
-Services communicate over Kafka (`transfers`, `transfers.dlq`) for the
-transfer saga; each service owns its own Cassandra keyspace.
-```
+The frontend talks only to the API Gateway; the Transfer Service orchestrates
+the debit/credit saga over Kafka (`transfers`, `transfers.dlq`), and each
+service owns its own Cassandra keyspace.
 
 - **Backend**: Go 1.22+ microservices (Gin, Cassandra via gocql, Kafka).
 - **Frontend**: React 19 + TypeScript, TanStack Query, Tailwind/daisyUI.
@@ -56,8 +52,8 @@ make typecheck   # go vet + tsc --noEmit
 make lint        # gofmt + go vet + frontend ESLint
 ```
 
-Backend tests require no external services for unit coverage; Cassandra/Kafka
-integration paths are exercised in CI (`.github/workflows/ci.yml`).
+Backend tests currently use fakes and require no external services; real
+Cassandra/Kafka integration tests are planned per `docs/09-testing-strategy.md`.
 
 ## Documentation
 
