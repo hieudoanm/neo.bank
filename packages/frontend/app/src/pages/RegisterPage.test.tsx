@@ -6,11 +6,15 @@ import { AuthProvider } from '@/context/AuthContext'
 import { RegisterPage } from './RegisterPage'
 import * as authApi from '@/lib/api/client'
 
-vi.mock('@/lib/api/client', () => ({
-  authApi: {
-    register: vi.fn(),
-  },
-}))
+vi.mock('@/lib/api/client', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/api/client')>()
+  return {
+    ...actual,
+    authApi: {
+      register: vi.fn(),
+    },
+  }
+})
 
 const mockedRegister = vi.mocked(authApi.authApi.register)
 
@@ -98,9 +102,11 @@ describe('RegisterPage', () => {
   })
 
   it('shows server error when email already registered', async () => {
-    const error = new Error('boom') as any
-    error.status = 409
-    error.error = { code: 'EMAIL_ALREADY_REGISTERED', message: 'Email is already registered', requestId: 'r1' }
+    const error = new authApi.HttpError(
+      409,
+      { code: 'EMAIL_ALREADY_REGISTERED', message: 'Email is already registered', requestId: 'r1' },
+      'Email is already registered',
+    )
     mockedRegister.mockRejectedValue(error)
     renderPage()
     const { email, password, confirmPassword } = getInputs()

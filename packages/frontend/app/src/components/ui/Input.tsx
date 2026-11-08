@@ -6,13 +6,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   className?: string
 }
 
-export const Input = ({
-  label,
-  error,
-  className = '',
-  id,
-  ...props
-}: InputProps) => {
+export const Input = ({ label, error, className = '', id, ...props }: InputProps) => {
   const inputId = id ?? props.name
   return (
     <div className="form-control w-full">

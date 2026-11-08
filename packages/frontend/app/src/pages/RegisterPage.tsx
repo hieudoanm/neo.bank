@@ -1,17 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
-import { authApi } from '@/lib/api/client'
+import { authApi, HttpError } from '@/lib/api/client'
 import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
 import { Alert } from '@/components/ui/Alert'
-import {
-  validateEmail,
-  validatePassword,
-  validateConfirmPassword,
-} from '@/lib/validation/auth'
+import { validateEmail, validatePassword, validateConfirmPassword } from '@/lib/validation/auth'
 
 interface FormData {
   email: string
@@ -39,39 +35,40 @@ export const RegisterPage = () => {
       )
       navigate('/', { replace: true })
     },
-    onError: (err: any) => {
+    onError: (err) => {
       setFieldErrors({})
       setServerError(null)
       setNetworkError(null)
-      if (err?.status === 400) {
-        setServerError(err.error?.message ?? 'Request could not be completed')
-      } else if (err?.status === 409) {
+      const status = err instanceof HttpError ? err.status : 0
+      const message = err instanceof HttpError ? err.error.message : undefined
+      if (status === 400) {
+        setServerError(message ?? 'Request could not be completed')
+      } else if (status === 409) {
         setFieldErrors({ email: 'Email is already registered' })
         setServerError('Email is already registered')
-      } else if (err?.status >= 500 || err?.status === 0) {
+      } else if (status >= 500 || status === 0) {
         setNetworkError(
-          err?.status === 0
+          status === 0
             ? 'Unable to connect to the server. Please try again later.'
             : 'The server is temporarily unavailable. Please try again later.',
         )
       } else {
-        setServerError(err.error?.message ?? 'An unexpected error occurred')
+        setServerError(message ?? 'An unexpected error occurred')
       }
     },
   })
 
-  const handleChange =
-    (key: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      setForm((prev) => ({ ...prev, [key]: e.target.value }))
-      if (fieldErrors[key]) {
-        setFieldErrors((prev) => {
-          const next = { ...prev }
-          delete next[key]
-          return next
-        })
-      }
-      if (serverError) setServerError(null)
+  const handleChange = (key: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm((prev) => ({ ...prev, [key]: e.target.value }))
+    if (fieldErrors[key]) {
+      setFieldErrors((prev) => {
+        const next = { ...prev }
+        delete next[key]
+        return next
+      })
     }
+    if (serverError) setServerError(null)
+  }
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -102,9 +99,7 @@ export const RegisterPage = () => {
         <h1 className="text-text-primary text-2xl font-semibold tracking-tight text-center mb-1">
           Create your account
         </h1>
-        <p className="text-text-secondary text-center text-sm mb-6">
-          Join NEO Bank today
-        </p>
+        <p className="text-text-secondary text-center text-sm mb-6">Join NEO Bank today</p>
 
         {networkError && (
           <Alert type="error" className="mb-4" role="alert">

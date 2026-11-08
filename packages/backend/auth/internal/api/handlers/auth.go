@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 
@@ -24,6 +25,12 @@ type AuthHandler struct {
 
 func NewAuthHandler(service AuthService) *AuthHandler {
 	return &AuthHandler{service: service}
+}
+
+func decodeJSON(c *gin.Context, v any) error {
+	dec := json.NewDecoder(c.Request.Body)
+	dec.DisallowUnknownFields()
+	return dec.Decode(v)
 }
 
 func writeJSON(c *gin.Context, status int, body any) {
@@ -56,7 +63,7 @@ func writeError(c *gin.Context, err error, requestID string) {
 func (h *AuthHandler) Register(c *gin.Context) {
 	requestID := getRequestID(c)
 	var req models.RegisterRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := decodeJSON(c, &req); err != nil {
 		writeError(c, applierrors.ValidationError(map[string]string{"body": "invalid request body"}), requestID)
 		return
 	}
@@ -78,7 +85,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 func (h *AuthHandler) Login(c *gin.Context) {
 	requestID := getRequestID(c)
 	var req models.LoginRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := decodeJSON(c, &req); err != nil {
 		writeError(c, applierrors.ValidationError(map[string]string{"body": "invalid request body"}), requestID)
 		return
 	}
@@ -100,7 +107,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 func (h *AuthHandler) Refresh(c *gin.Context) {
 	requestID := getRequestID(c)
 	var req models.RefreshRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := decodeJSON(c, &req); err != nil {
 		writeError(c, applierrors.ValidationError(map[string]string{"body": "invalid request body"}), requestID)
 		return
 	}
@@ -118,7 +125,7 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 func (h *AuthHandler) Logout(c *gin.Context) {
 	requestID := getRequestID(c)
 	var req models.LogoutRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := decodeJSON(c, &req); err != nil {
 		writeError(c, applierrors.ValidationError(map[string]string{"body": "invalid request body"}), requestID)
 		return
 	}

@@ -1,4 +1,3 @@
-
 export const validateEmail = (email: string): string | null => {
   if (!email) return 'Email is required'
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Enter a valid email address'

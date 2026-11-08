@@ -36,7 +36,7 @@ func testRouter(t *testing.T) (*gin.Engine, *rsa.PrivateKey) {
 		t.Fatalf("key manager: %v", err)
 	}
 	svc := services.NewTransferService(nil, nil)
-	router := NewRouter(handlers.NewTransferHandler(svc), middleware.NewAuthMiddleware(km))
+	router := NewRouter(handlers.NewTransferHandler(svc), middleware.NewAuthMiddleware(km), nil)
 	gin.SetMode(gin.TestMode)
 	return router, priv
 }

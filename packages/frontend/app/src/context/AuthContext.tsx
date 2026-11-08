@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useReducer,
-  useCallback,
-  ReactNode,
-} from 'react'
+import { createContext, useContext, useReducer, useCallback, ReactNode } from 'react'
 
 export type User = {
   userId: string
@@ -65,22 +59,16 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(authReducer, initialState)
 
-  const login = useCallback(
-    (user: User, accessToken: string, refreshToken: string) => {
-      dispatch({
-        type: 'LOGIN',
-        payload: { user, accessToken, refreshToken },
-      })
-    },
-    [],
-  )
+  const login = useCallback((user: User, accessToken: string, refreshToken: string) => {
+    dispatch({
+      type: 'LOGIN',
+      payload: { user, accessToken, refreshToken },
+    })
+  }, [])
 
-  const refresh = useCallback(
-    (accessToken: string, refreshToken: string) => {
-      dispatch({ type: 'REFRESH', payload: { accessToken, refreshToken } })
-    },
-    [],
-  )
+  const refresh = useCallback((accessToken: string, refreshToken: string) => {
+    dispatch({ type: 'REFRESH', payload: { accessToken, refreshToken } })
+  }, [])
 
   const logout = useCallback(() => {
     dispatch({ type: 'LOGOUT' })

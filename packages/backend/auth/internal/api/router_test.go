@@ -30,7 +30,7 @@ func (stubService) Logout(_ context.Context, _ string) error { return nil }
 
 func newTestEngine() *gin.Engine {
 	gin.SetMode(gin.TestMode)
-	return NewRouter(handlers.NewAuthHandler(stubService{}))
+	return NewRouter(handlers.NewAuthHandler(stubService{}), nil)
 }
 
 func TestHealthRoutes(t *testing.T) {
@@ -43,16 +43,6 @@ func TestHealthRoutes(t *testing.T) {
 		}
 		if w.Body.String() != `{"status":"ok"}` {
 			t.Fatalf("%s body = %s", path, w.Body.String())
-		}
-	}
-}
-
-func TestHealthHandlers(t *testing.T) {
-	for _, h := range []http.HandlerFunc{HealthzHandler, ReadyzHandler} {
-		w := httptest.NewRecorder()
-		h(w, httptest.NewRequest(http.MethodGet, "/", nil))
-		if w.Code != http.StatusOK || w.Body.String() != "ok" {
-			t.Fatalf("health handler = %d %q", w.Code, w.Body.String())
 		}
 	}
 }

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"regexp"
@@ -53,7 +54,9 @@ func (h *TransferHandler) CreateTransfer(c *gin.Context) {
 	}
 
 	var body models.CreateTransferRequest
-	if err := c.ShouldBindJSON(&body); err != nil {
+	dec := json.NewDecoder(c.Request.Body)
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&body); err != nil {
 		writeError(c, applierrors.ValidationError(map[string]string{"body": "invalid body"}), reqID)
 		return
 	}

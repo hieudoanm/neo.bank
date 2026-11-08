@@ -6,7 +6,9 @@ import App from './App'
 const renderAt = (path: string) => {
   window.history.pushState({}, '', path)
   return render(
-    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+    <QueryClientProvider
+      client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+    >
       <App />
     </QueryClientProvider>,
   )

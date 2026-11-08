@@ -40,7 +40,7 @@ func main() {
 	transferHandler := handlers.NewTransferHandler(transferService)
 	authMiddleware := middleware.NewAuthMiddleware(keyManager)
 
-	router := api.NewRouter(transferHandler, authMiddleware)
+	router := api.NewRouter(transferHandler, authMiddleware, session)
 
 	log.Printf("transfer listening on :%s", cfg.Port)
 	if err := http.ListenAndServe(":"+cfg.Port, router); err != nil {

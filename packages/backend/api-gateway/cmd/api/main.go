@@ -27,7 +27,7 @@ func main() {
 		UserPerMinute: cfg.RateLimitUserPerMin,
 		LoginFailures: cfg.LoginLockoutFailures,
 		LoginWindow:   cfg.LoginLockoutWindow,
-	})
+	}, cfg.CORSOrigins)
 
 	server := &http.Server{
 		Addr:         ":" + cfg.Port,

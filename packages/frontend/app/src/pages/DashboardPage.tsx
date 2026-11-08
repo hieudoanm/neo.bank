@@ -10,13 +10,9 @@ export const DashboardPage = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-text-primary text-2xl font-semibold tracking-tight mb-2">
-        Dashboard
-      </h1>
+      <h1 className="text-text-primary text-2xl font-semibold tracking-tight mb-2">Dashboard</h1>
 
-      {state.user && (
-        <p className="text-text-secondary text-sm">Account: {state.user.accountId}</p>
-      )}
+      {state.user && <p className="text-text-secondary text-sm">Account: {state.user.accountId}</p>}
 
       {isError && (
         <Alert type="error" className="mb-4">
