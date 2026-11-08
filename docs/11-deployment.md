@@ -28,3 +28,10 @@ This document covers:
 - [CI/CD Pipeline](./11-deployment/ci-cd-pipeline.md)
 - [Cloud Deployment (AWS)](./11-deployment/cloud-deployment-aws.md)
 - [Cloud Deployment (GCP)](./11-deployment/cloud-deployment-gcp.md)
+
+![Local Docker Compose topology](./11-deployment/svg/01-local-topology.svg)
+
+## Related documents
+
+- [Technology decisions](./08-tech-stack.md) — why Docker Compose, Kubernetes, Terraform, and GitHub Actions were chosen ([`infrastructure/`](./08-tech-stack/infrastructure/README.md) for best practices).
+- [Operations](./12-operations.md) — backup, monitoring, security, rollback, and disaster recovery for deployed environments.

@@ -21,3 +21,8 @@ This document covers:
 - [Security](./12-operations/security.md)
 - [Rollback Strategy](./12-operations/rollback-strategy.md)
 - [Disaster Recovery](./12-operations/disaster-recovery.md)
+
+## Related documents
+
+- [Deployment](./11-deployment.md) — local topology, CI/CD, and cloud deployment that these procedures operate on.
+- [Data model](./05-data-model.md) — retention and backup implications of the per-service Cassandra keyspaces.

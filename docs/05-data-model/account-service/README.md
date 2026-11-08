@@ -4,6 +4,8 @@
 
 Manages accounts and balances. Authoritative for account validation and balance reads/writes related to transfers. Private Cassandra keyspace; no other service may access these tables directly. All balance updates use lightweight transactions (Paxos) to ensure atomicity and prevent negative balances.
 
+For the cross-service entity overview see [`../svg/01-data-model-overview.svg`](../svg/01-data-model-overview.svg).
+
 ## Tables
 
 ### accounts

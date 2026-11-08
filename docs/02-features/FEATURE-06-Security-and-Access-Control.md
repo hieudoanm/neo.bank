@@ -27,7 +27,7 @@ The system enforces account ownership for every operation. Users can only access
 
 | Status | Code | Condition |
 |--------|------|-----------|
-| `401` | `UNAUTHENTICATED` | Missing or invalid JWT token |
+| `401` | `UNAUTHORIZED` | Missing or invalid JWT token |
 | `404` | `ACCOUNT_NOT_FOUND` | Account not found or not owned by user |
 | `429` | `RATE_LIMITED` | Rate limit exceeded |
 
@@ -53,7 +53,7 @@ Authorization: Bearer <accessToken>
 Response (401 - missing/invalid token):
 {
   "error": {
-    "code": "UNAUTHENTICATED",
+    "code": "UNAUTHORIZED",
     "message": "Authentication required",
     "requestId": "req_..."
   }
@@ -89,7 +89,7 @@ Response (429 - rate limited):
 
 ## Edge cases
 
-- **Invalid or expired access token**: Returns `401 UNAUTHENTICATED`; no account existence information revealed.
+- **Invalid or expired access token**: Returns `401 UNAUTHORIZED`; no account existence information revealed.
 - **User attempts to access another account**: Returns `404 ACCOUNT_NOT_FOUND` (same message as non-existent account).
 - **Rate limit exceeded**: Returns `429 RATE_LIMITED` with `Retry-After` header indicating the wait time.
 - **CORS violation**: The API Gateway rejects requests from origins not in the allowlist before handling; the browser blocks the response. No `403` is returned for account access, and CORS rejections do not use a canonical error-envelope code.

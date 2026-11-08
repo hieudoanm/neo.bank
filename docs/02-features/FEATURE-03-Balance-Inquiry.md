@@ -39,7 +39,7 @@ On error:
 
 | Status | Code | Condition |
 |--------|------|-----------|
-| `401` | `UNAUTHENTICATED` | Missing or invalid access token |
+| `401` | `UNAUTHORIZED` | Missing or invalid access token |
 | `404` | `ACCOUNT_NOT_FOUND` | Account does not exist (generic, no enumeration) |
 | `503` | `SERVICE_UNAVAILABLE` | Account Service temporarily unavailable |
 
@@ -69,7 +69,7 @@ Response (200):
 Response (401):
 {
   "error": {
-    "code": "UNAUTHENTICATED",
+    "code": "UNAUTHORIZED",
     "message": "Authentication required",
     "requestId": "req_..."
   }
@@ -96,7 +96,7 @@ Response (404):
 
 ## Edge cases
 
-- **Invalid or expired access token**: Returns `401 UNAUTHENTICATED`; client redirects to login.
+- **Invalid or expired access token**: Returns `401 UNAUTHORIZED`; client redirects to login.
 - **Account does not exist**: Returns `404 ACCOUNT_NOT_FOUND` (should not happen for an authenticated user with a valid account).
 - **Network error during fetch**: Frontend shows error state with retry option.
 - **Concurrent balance updates**: The most recently committed balance is returned (Cassandra QUORUM read).
@@ -107,7 +107,7 @@ Response (404):
 - Valid access token returns balance in minor units (cents) with currency code.
 - Response includes account ID and last updated timestamp (ISO 8601 UTC).
 - Invalid or expired token returns `401` error.
-- Non-existent account returns `404 ACCOUNT_NOT_FOUND` (distinct from `401 UNAUTHENTICATED`, so unauthenticated and not-found cases are never conflated).
+- Non-existent account returns `404 ACCOUNT_NOT_FOUND` (distinct from `401 UNAUTHORIZED`, so unauthenticated and not-found cases are never conflated).
 - Cross-account access (user A querying user B's balance) returns `404`, not `403`.
 - Balance inquiry completes within 100 ms (p95) per [`NFR-003`](../01-requirements/non-functional-requirements.md#performance).
 - All CQL queries are parameterised; account ID is never interpolated into queries.

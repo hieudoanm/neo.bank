@@ -28,7 +28,7 @@ User stories guide implementation and testing. Each story states a role, a goal,
 
 Each authenticated user has access to their own account and can perform operations within that account's scope. The system does not support shared accounts, joint accounts, or beneficiaries in the initial release.
 
-## User Stories
+## 3. User Stories
 
 Each user story is documented in a separate file:
 

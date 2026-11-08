@@ -37,11 +37,14 @@ service names are `zookeeper`, `kafka`, `kafka-init`, `cassandra`, `api-gateway`
 `auth-service`, `account-service`, `transfer-service`, `transaction-service`,
 `account-consumer`, `transfer-consumer`, `transaction-consumer`, and `frontend`.
 
+![Local Docker Compose topology](../11-deployment/svg/01-local-topology.svg)
+
+
 ### Core Services
 
 - **cassandra**: Apache Cassandra 4.1 (primary database, `cassandra:4.1`)
   - Port: 9042 (CQL native transport)
-  - Configuration: single-node cluster — `SimpleStrategy`, `replication_factor: 1`; queries run at `ONE`/`LOCAL_ONE` (a single-node `QUORUM` equals `ONE`, so production `QUORUM` semantics are not exercised locally)
+  - Configuration: single-node cluster — `SimpleStrategy`, `replication_factor: 1`; repositories issue reads/writes at `QUORUM` (on a single-node RF=1 cluster this resolves to the only replica, so multi-node quorum behaviour is not exercised locally)
   - Persistence: named volume `cassandra_data`
 
 - **zookeeper**: Apache ZooKeeper (Kafka coordination), image `confluentinc/cp-zookeeper:7.4.0`
@@ -52,10 +55,10 @@ service names are `zookeeper`, `kafka`, `kafka-init`, `cassandra`, `api-gateway`
   - Dependencies: zookeeper
   - Configuration: **ZooKeeper mode** (single broker) — `KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181`, no `KAFKA_NODE_ID`/`KAFKA_PROCESS_ROLES`/`KAFKA_CLUSTER_ID`; `KAFKA_DEFAULT_REPLICATION_FACTOR=1`, `KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1`, `KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1`, `KAFKA_MIN_INSYNC_REPLICAS=1`; `KAFKA_AUTO_CREATE_TOPICS_ENABLE=false`
   - Listeners: `INTERNAL` advertises `kafka:9092` (container clients use `KAFKA_BROKERS=kafka:9092`); `EXTERNAL` advertises `localhost:29092` (host-run clients use `localhost:29092`)
-  - Note: local runs at RF=1 with consistency `ONE`/`LOCAL_ONE`; production uses RF=3 and `QUORUM` (see [`NFR-012`](../01-requirements/non-functional-requirements.md#availability))
+  - Note: local runs at RF=1 so `QUORUM` resolves to the single replica; production uses RF=3 and true multi-node `QUORUM` (see [`NFR-012`](../01-requirements/non-functional-requirements.md#availability))
 
 - **kafka-init**: one-shot container that creates topics after the broker is healthy (auto-create is disabled)
-  - Topics: `transfers`, `transfers.dlq`, `transfers-test`
+  - Topics: `transfers`, `transfers.dlq`
 
 ### Application Services
 
@@ -267,8 +270,12 @@ The root Makefile provides repository-wide checks:
 make build      # go build ./... for every backend service, then pnpm build
 make test       # go test ./... for every backend service, then pnpm test
 make typecheck  # go vet ./... for every backend service, then pnpm typecheck
-make lint       # lint stub (configure golangci-lint and eslint)
+make lint       # gofmt + go vet for every backend service, eslint + prettier --check for the frontend
 make clean      # remove frontend build output and caches
+make compose-up    # docker compose up -d --build (full local stack)
+make compose-down  # docker compose down
+make compose-logs  # tail logs from the local stack
+make compose-ps    # show running stack containers
 ```
 
 ## Troubleshooting Common Issues

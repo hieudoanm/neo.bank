@@ -114,6 +114,19 @@
           "body": ""
         },
         {
+          "name": "422",
+          "status": "Client Error",
+          "code": 422,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "X-Request-ID",
+              "value": "e7f8a9b0-1c2d-4e5f-8a9b-0c1d2e3f4a5b"
+            }
+          ],
+          "body": "{}"
+        },
+        {
           "name": "429",
           "status": "Client Error",
           "code": 429,

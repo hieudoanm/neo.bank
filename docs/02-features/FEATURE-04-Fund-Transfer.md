@@ -46,10 +46,10 @@ On error:
 
 | Status | Code | Condition |
 |--------|------|-----------|
-| `400` | `INSUFFICIENT_FUNDS` | Source account balance is too low |
-| `400` | `SAME_ACCOUNT` | Source and destination are the same |
-| `400` | `INVALID_AMOUNT` | Amount is not a positive integer |
-| `401` | `UNAUTHENTICATED` | Missing or invalid access token |
+| `422` | `INSUFFICIENT_FUNDS` | Source account balance is too low |
+| `400` | `VALIDATION_ERROR` | Source and destination are the same |
+| `400` | `VALIDATION_ERROR` | Amount is not a positive integer |
+| `401` | `UNAUTHORIZED` | Missing or invalid access token |
 | `404` | `ACCOUNT_NOT_FOUND` | Destination account does not exist (same code as any unknown or foreign account; no enumeration) |
 | `409` | `IDEMPOTENCY_KEY_EXISTS` | Same `Idempotency-Key` replayed with a different payload |
 | `429` | `RATE_LIMITED` | Too many transfer requests |
@@ -143,10 +143,10 @@ Response (200):
 
 ## Edge cases
 
-- **Insufficient funds**: Rejects at initiation with `400 INSUFFICIENT_FUNDS`; no Kafka event published.
+- **Insufficient funds**: Rejects at initiation with `422 INSUFFICIENT_FUNDS`; no Kafka event published.
 - **Invalid destination account ID**: Rejects at initiation with `404 ACCOUNT_NOT_FOUND` (same generic code used for any unknown account).
-- **Transfer to same account**: Rejects at initiation with `400 SAME_ACCOUNT`.
-- **Amount ≤ 0**: Rejects at initiation with `400 INVALID_AMOUNT`.
+- **Transfer to same account**: Rejects at initiation with `400 VALIDATION_ERROR`.
+- **Amount ≤ 0**: Rejects at initiation with `400 VALIDATION_ERROR`.
 - **Duplicate transfer request (same idempotency key, same payload)**: Returns the cached original `202` response with the original `transferId` without reprocessing.
 - **Same idempotency key, different payload**: Returns `409 IDEMPOTENCY_KEY_EXISTS`.
 - **Kafka consumer failure mid-processing**: Compensation reverses any partial debit; transfer marked `failed`.

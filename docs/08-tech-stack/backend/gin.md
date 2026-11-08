@@ -157,7 +157,7 @@ func writeGinError(c *gin.Context, err error, requestID string) {
 func (m *AuthMiddleware) RequireAuth(c *gin.Context) {
     tokenStr := extractBearerToken(c.Request)
     if tokenStr == "" {
-        c.JSON(http.StatusUnauthorized, errorResponse("UNAUTHENTICATED", "Authentication required", "", getRequestID(c)))
+        c.JSON(http.StatusUnauthorized, errorResponse("UNAUTHORIZED", "Authentication required", "", getRequestID(c)))
         c.Abort()
         return
     }

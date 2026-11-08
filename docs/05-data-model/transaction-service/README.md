@@ -4,6 +4,8 @@
 
 Append-only read model for transaction history. Consumes transfer/account lifecycle events from Kafka to build a denormalised view optimised for paginated reads by account. Exposes paginated transaction queries via REST API. Private Cassandra keyspace; no other service may access these tables directly. The Transaction Service is a pure projection — it never participates in saga write paths and never writes another service's keyspace.
 
+For the cross-service entity overview see [`../svg/01-data-model-overview.svg`](../svg/01-data-model-overview.svg).
+
 ## Tables
 
 ### transactions

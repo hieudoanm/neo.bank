@@ -32,7 +32,7 @@ Implement the balance inquiry endpoint and frontend dashboard. Phase 3 delivers 
 
 - Authenticated user can view their balance after login.
 - Balance returned in minor units (cents) with currency code (e.g., USD).
-- Unauthenticated request returns `401 UNAUTHENTICATED`.
+- Unauthenticated request returns `401 UNAUTHORIZED`.
 - Authorised access to another account's balance returns `404` (no leakage).
 - Balance inquiry completes within 100 ms (p95).
 - Tests pass (unit, integration, frontend).

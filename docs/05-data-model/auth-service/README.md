@@ -4,6 +4,8 @@
 
 Owns identity: users, credentials (Argon2id hashes), refresh tokens, and its own audit log. Private Cassandra keyspace; no other service may access these tables directly. Passwords are never stored in plain text; refresh tokens are hashed (SHA-256) at rest.
 
+For the cross-service entity overview see [`../svg/01-data-model-overview.svg`](../svg/01-data-model-overview.svg).
+
 ## Tables
 
 ### users
