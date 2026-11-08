@@ -25,6 +25,8 @@ type fakeStore struct {
 	apply         bool
 }
 
+func (f *fakeStore) WriteAudit(_ context.Context, _ models.AuditEvent) error { return nil }
+
 func (f *fakeStore) FindByID(_ context.Context, _ uuid.UUID) (*models.Transfer, error) {
 	if f.findErr != nil {
 		return nil, f.findErr

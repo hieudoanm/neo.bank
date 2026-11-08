@@ -100,7 +100,7 @@ export const authApi = {
       body: JSON.stringify(body),
     }),
   refresh: (body: RefreshRequest) =>
-    request<{ accessToken: string; refreshToken: string }>('/api/v1/refresh', {
+    request<TokenResponse>('/api/v1/refresh', {
       method: 'POST',
       body: JSON.stringify(body),
     }),

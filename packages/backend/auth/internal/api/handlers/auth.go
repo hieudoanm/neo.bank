@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -27,10 +28,27 @@ func NewAuthHandler(service AuthService) *AuthHandler {
 	return &AuthHandler{service: service}
 }
 
+// maxRequestBodyBytes bounds JSON request bodies; auth payloads are a few
+// hundred bytes, so 1 MiB is generous while preventing memory exhaustion.
+const maxRequestBodyBytes = 1 << 20
+
 func decodeJSON(c *gin.Context, v any) error {
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxRequestBodyBytes)
 	dec := json.NewDecoder(c.Request.Body)
 	dec.DisallowUnknownFields()
-	return dec.Decode(v)
+	if err := dec.Decode(v); err != nil {
+		return err
+	}
+	// Reject trailing data: a second JSON value or garbage after the first
+	// document means the body is not a single well-formed request.
+	var extra json.RawMessage
+	if err := dec.Decode(&extra); err != io.EOF {
+		if err == nil {
+			return errors.New("unexpected trailing data")
+		}
+		return err
+	}
+	return nil
 }
 
 func writeJSON(c *gin.Context, status int, body any) {
@@ -116,9 +134,13 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 		writeError(c, err, requestID)
 		return
 	}
-	writeJSON(c, http.StatusOK, gin.H{
-		"accessToken":  result.AccessToken,
-		"refreshToken": result.RefreshToken,
+	writeJSON(c, http.StatusOK, models.TokenResponse{
+		UserID:       result.UserID,
+		AccountID:    result.AccountID,
+		AccessToken:  result.AccessToken,
+		RefreshToken: result.RefreshToken,
+		TokenType:    "Bearer",
+		ExpiresIn:    services.AccessTokenExpiresIn(),
 	})
 }
 

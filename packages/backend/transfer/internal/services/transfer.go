@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -21,6 +22,7 @@ type TransferStore interface {
 	FindByID(ctx context.Context, transferID uuid.UUID) (*models.Transfer, error)
 	Create(ctx context.Context, t *models.Transfer) error
 	Delete(ctx context.Context, t *models.Transfer) error
+	WriteAudit(ctx context.Context, ev models.AuditEvent) error
 }
 
 // EventPublisher abstracts the Kafka producer so the service can be unit
@@ -110,6 +112,25 @@ func (s *TransferService) InitiateTransfer(ctx context.Context, sourceAccountID 
 			return nil, errors.ErrInternal
 		}
 		return nil, errors.ErrServiceUnavailable
+	}
+
+	// Audit writes are best-effort: a failure is logged but does not fail the
+	// transfer, which has already been accepted.
+	if err := s.repo.WriteAudit(ctx, models.AuditEvent{
+		Day:           now,
+		Timestamp:     now,
+		EventID:       newUUID(),
+		Action:        "transfer_initiated",
+		ResourceType:  "transfer",
+		ResourceID:    t.ID,
+		CorrelationID: correlationID,
+		Metadata: map[string]string{
+			"sourceAccountId":      src.String(),
+			"destinationAccountId": dest.String(),
+			"amountCents":          fmt.Sprintf("%d", t.AmountCents),
+		},
+	}); err != nil {
+		log.Printf("transfer audit write failed: transferId=%s err=%v", t.ID, err)
 	}
 
 	return models.NewTransferResponse(t), nil

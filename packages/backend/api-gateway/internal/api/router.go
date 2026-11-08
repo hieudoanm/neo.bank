@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"log/slog"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -89,6 +90,19 @@ func newReverseProxy(target string) (*httputil.ReverseProxy, error) {
 		return nil, err
 	}
 	proxy := httputil.NewSingleHostReverseProxy(u)
+	// Bound upstream waits: without a transport timeout a hung service would
+	// hold gateway connections (and client requests) open indefinitely.
+	proxy.Transport = &http.Transport{
+		Proxy:                 http.ProxyFromEnvironment,
+		DialContext:           (&net.Dialer{Timeout: 5 * time.Second, KeepAlive: 30 * time.Second}).DialContext,
+		ForceAttemptHTTP2:     true,
+		MaxIdleConns:          100,
+		MaxIdleConnsPerHost:   20,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   5 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+		ResponseHeaderTimeout: 10 * time.Second,
+	}
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
 		logger.Error("upstream request failed", "err", err, "path", r.URL.Path, "requestId", r.Header.Get("X-Request-ID"))
 		body, _ := json.Marshal(gin.H{
@@ -109,9 +123,16 @@ func healthHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
+// maxRequestIDLength bounds client-supplied request IDs; the value is
+// echoed into logs and responses, so it must not be attacker-controlled size.
+const maxRequestIDLength = 128
+
 func requestIDMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		rid := c.GetHeader("X-Request-ID")
+		if len(rid) > maxRequestIDLength {
+			rid = ""
+		}
 		if rid == "" {
 			rid = uuid.New().String()
 		}

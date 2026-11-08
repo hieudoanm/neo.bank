@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/hieudoanm/neo.bank/packages/backend/transactions/internal/api"
 	"github.com/hieudoanm/neo.bank/packages/backend/transactions/internal/api/handlers"
@@ -38,8 +39,16 @@ func main() {
 
 	router := api.NewRouter(transactionHandler, authMiddleware, session)
 
+	server := &http.Server{
+		Addr:              ":" + cfg.Port,
+		Handler:           router,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      15 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
 	log.Printf("transactions listening on :%s", cfg.Port)
-	if err := http.ListenAndServe(":"+cfg.Port, router); err != nil {
+	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
 }

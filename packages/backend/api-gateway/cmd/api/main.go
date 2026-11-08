@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/hieudoanm/neo.bank/packages/backend/api-gateway/internal/api"
 	"github.com/hieudoanm/neo.bank/packages/backend/api-gateway/internal/api/middleware"
@@ -30,10 +31,12 @@ func main() {
 	}, cfg.CORSOrigins)
 
 	server := &http.Server{
-		Addr:         ":" + cfg.Port,
-		Handler:      router,
-		ReadTimeout:  cfg.ReadTimeout,
-		WriteTimeout: cfg.WriteTimeout,
+		Addr:              ":" + cfg.Port,
+		Handler:           router,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       cfg.ReadTimeout,
+		WriteTimeout:      cfg.WriteTimeout,
+		IdleTimeout:       60 * time.Second,
 	}
 
 	log.Printf("api-gateway listening on :%s", cfg.Port)

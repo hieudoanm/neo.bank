@@ -25,6 +25,7 @@ const (
 	insertByAccount  = `INSERT INTO transfers_by_account (account_id, transfer_id, direction, counterparty_account_id, amount_cents, status, correlation_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
 	deleteByAccount  = `DELETE FROM transfers_by_account WHERE account_id = ? AND transfer_id = ?`
 	deleteIdem       = `DELETE FROM idempotency_keys WHERE idempotency_key = ?`
+	insertAudit      = `INSERT INTO audit_events (service, day, timestamp, event_id, actor_user_id, action, resource_type, resource_id, correlation_id, metadata) VALUES ('transfer', ?, ?, ?, null, ?, 'transfer', ?, ?, ?)`
 )
 
 type TransferRepository struct {
@@ -68,7 +69,7 @@ func (r *TransferRepository) ReserveIdempotency(ctx context.Context, key string,
 
 func (r *TransferRepository) Create(ctx context.Context, t *models.Transfer) error {
 	if err := r.session.Query(insertTransfer, t.ID, t.SourceAccountID, t.DestAccountID, t.AmountCents, t.Status, t.IdempotencyKey, t.CorrelationID, t.CreatedAt, t.UpdatedAt).
-		WithContext(ctx).Consistency(gocql.One).Exec(); err != nil {
+		WithContext(ctx).Consistency(gocql.Quorum).Exec(); err != nil {
 		return fmt.Errorf("insert transfer: %w", err)
 	}
 	if err := r.insertLookup(ctx, t.SourceAccountID, t, "source", t.DestAccountID); err != nil {
@@ -79,7 +80,7 @@ func (r *TransferRepository) Create(ctx context.Context, t *models.Transfer) err
 
 func (r *TransferRepository) insertLookup(ctx context.Context, accountID uuid.UUID, t *models.Transfer, direction string, counterparty uuid.UUID) error {
 	if err := r.session.Query(insertByAccount, accountID, t.ID, direction, counterparty, t.AmountCents, t.Status, t.CorrelationID, t.CreatedAt, t.UpdatedAt).
-		WithContext(ctx).Consistency(gocql.One).Exec(); err != nil {
+		WithContext(ctx).Consistency(gocql.Quorum).Exec(); err != nil {
 		return fmt.Errorf("insert transfers_by_account: %w", err)
 	}
 	return nil
@@ -88,15 +89,15 @@ func (r *TransferRepository) insertLookup(ctx context.Context, accountID uuid.UU
 // Delete removes a pending transfer and its lookup rows, and releases the
 // idempotency marker. Used to roll back when publishing to Kafka fails.
 func (r *TransferRepository) Delete(ctx context.Context, t *models.Transfer) error {
-	if err := r.session.Query(deleteTransfer, t.ID).WithContext(ctx).Consistency(gocql.One).Exec(); err != nil {
+	if err := r.session.Query(deleteTransfer, t.ID).WithContext(ctx).Consistency(gocql.Quorum).Exec(); err != nil {
 		return fmt.Errorf("delete transfer: %w", err)
 	}
 	for _, accountID := range []uuid.UUID{t.SourceAccountID, t.DestAccountID} {
-		if err := r.session.Query(deleteByAccount, accountID, t.ID).WithContext(ctx).Consistency(gocql.One).Exec(); err != nil {
+		if err := r.session.Query(deleteByAccount, accountID, t.ID).WithContext(ctx).Consistency(gocql.Quorum).Exec(); err != nil {
 			return fmt.Errorf("delete transfers_by_account: %w", err)
 		}
 	}
-	if err := r.session.Query(deleteIdem, t.IdempotencyKey).WithContext(ctx).Consistency(gocql.One).Exec(); err != nil {
+	if err := r.session.Query(deleteIdem, t.IdempotencyKey).WithContext(ctx).Consistency(gocql.Quorum).Exec(); err != nil {
 		return fmt.Errorf("delete idempotency: %w", err)
 	}
 	return nil
@@ -105,7 +106,7 @@ func (r *TransferRepository) Delete(ctx context.Context, t *models.Transfer) err
 func (r *TransferRepository) FindByID(ctx context.Context, transferID uuid.UUID) (*models.Transfer, error) {
 	var t models.Transfer
 	var failureReason *string
-	err := r.session.Query(selectTransfer, transferID).WithContext(ctx).Consistency(gocql.One).Scan(
+	err := r.session.Query(selectTransfer, transferID).WithContext(ctx).Consistency(gocql.Quorum).Scan(
 		&t.ID, &t.SourceAccountID, &t.DestAccountID, &t.AmountCents, &t.Status, &t.IdempotencyKey, &t.CorrelationID, &t.CreatedAt, &t.UpdatedAt, &failureReason)
 	if err != nil {
 		if err == gocql.ErrNotFound {
@@ -140,4 +141,12 @@ func (r *TransferRepository) Transition(ctx context.Context, t *models.Transfer,
 		}
 	}
 	return true, nil
+}
+
+func (r *TransferRepository) WriteAudit(ctx context.Context, ev models.AuditEvent) error {
+	if err := r.session.Query(insertAudit, ev.Day, ev.Timestamp, ev.EventID, ev.Action, ev.ResourceID, ev.CorrelationID, ev.Metadata).
+		WithContext(ctx).Consistency(gocql.Quorum).Exec(); err != nil {
+		return fmt.Errorf("insert audit event: %w", err)
+	}
+	return nil
 }

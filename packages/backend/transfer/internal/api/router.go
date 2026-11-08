@@ -33,9 +33,16 @@ func NewRouter(transferHandler *handlers.TransferHandler, authMiddleware *middle
 	return r
 }
 
+// maxRequestIDLength bounds client-supplied request IDs; the value is
+// echoed into logs and responses, so it must not be attacker-controlled size.
+const maxRequestIDLength = 128
+
 func requestIDMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		rid := c.GetHeader("X-Request-ID")
+		if len(rid) > maxRequestIDLength {
+			rid = ""
+		}
 		if rid == "" {
 			rid = uuid.New().String()
 		}

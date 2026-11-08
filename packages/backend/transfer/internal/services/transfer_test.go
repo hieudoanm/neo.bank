@@ -115,6 +115,8 @@ func (f *fakeStore) Create(_ context.Context, t *models.Transfer) error {
 	return nil
 }
 
+func (f *fakeStore) WriteAudit(_ context.Context, _ models.AuditEvent) error { return nil }
+
 func (f *fakeStore) Delete(_ context.Context, t *models.Transfer) error {
 	delete(f.transfers, t.ID)
 	return nil

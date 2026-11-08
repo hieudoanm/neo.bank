@@ -23,6 +23,7 @@ const fetchBackoff = time.Second
 type SagaStore interface {
 	FindByID(ctx context.Context, transferID uuid.UUID) (*models.Transfer, error)
 	Transition(ctx context.Context, t *models.Transfer, fromStatus, toStatus string, failureReason *string) (bool, error)
+	WriteAudit(ctx context.Context, ev models.AuditEvent) error
 }
 
 // EventPublisher publishes saga commands and transfer lifecycle events.
@@ -180,6 +181,7 @@ func (c *SagaConsumer) onAccountDebitFailed(ctx context.Context, msg kafka.Messa
 	if !applied {
 		return nil
 	}
+	c.writeAudit(ctx, "transfer_failed", t, models.StatusFailed)
 	return c.publishTransferEvent(ctx, models.EventTypeTransferFailed, t)
 }
 
@@ -202,6 +204,7 @@ func (c *SagaConsumer) onAccountCredited(ctx context.Context, msg kafka.Message)
 	if !applied {
 		return nil
 	}
+	c.writeAudit(ctx, "transfer_completed", t, models.StatusCompleted)
 	return c.publishTransferEvent(ctx, models.EventTypeTransferCompleted, t)
 }
 
@@ -236,7 +239,30 @@ func (c *SagaConsumer) onAccountCreditFailed(ctx context.Context, msg kafka.Mess
 	if !applied {
 		return nil
 	}
+	c.writeAudit(ctx, "transfer_failed", t, models.StatusFailed)
 	return c.publishTransferEvent(ctx, models.EventTypeTransferFailed, t)
+}
+
+// writeAudit records a terminal saga transition. Audit writes are best-effort:
+// a failure is logged but does not block event publication.
+func (c *SagaConsumer) writeAudit(ctx context.Context, action string, t *models.Transfer, toStatus string) {
+	now := time.Now().UTC()
+	if err := c.repo.WriteAudit(ctx, models.AuditEvent{
+		Day:           now,
+		Timestamp:     now,
+		EventID:       newUUID(),
+		Action:        action,
+		ResourceType:  "transfer",
+		ResourceID:    t.ID,
+		CorrelationID: t.CorrelationID,
+		Metadata: map[string]string{
+			"toStatus":             toStatus,
+			"sourceAccountId":      t.SourceAccountID.String(),
+			"destinationAccountId": t.DestAccountID.String(),
+		},
+	}); err != nil {
+		c.logger.Error("write transfer audit", "err", err, "transferId", t.ID, "action", action)
+	}
 }
 
 func (c *SagaConsumer) loadTransfer(ctx context.Context, transferID string) (*models.Transfer, error) {

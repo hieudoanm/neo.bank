@@ -26,6 +26,7 @@ const (
 	selectByID          = `SELECT user_id, email, account_id, password_hash, created_at, updated_at FROM users WHERE user_id = ?`
 	deleteEmail         = `DELETE FROM users_by_email WHERE email = ?`
 	deleteUser          = `DELETE FROM users WHERE user_id = ?`
+	insertAudit         = `INSERT INTO audit_events (service, day, timestamp, event_id, actor_user_id, action, resource_type, resource_id, correlation_id, metadata) VALUES ('auth', ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 )
 
 func (r *UserRepository) Create(ctx context.Context, email string, accountID uuid.UUID, passwordHash string) (*models.User, error) {
@@ -46,9 +47,9 @@ func (r *UserRepository) Create(ctx context.Context, email string, accountID uui
 
 	if err := r.session.Query(insertUser, gocql.UUID(userID), email, gocql.UUID(accountID), passwordHash, now, now).
 		WithContext(ctx).
-		Consistency(gocql.One).
+		Consistency(gocql.Quorum).
 		Exec(); err != nil {
-		r.session.Query(deleteEmail, email).WithContext(ctx).Exec()
+		r.session.Query(deleteEmail, email).WithContext(ctx).Consistency(gocql.Quorum).Exec()
 		return nil, fmt.Errorf("create user: %w", err)
 	}
 
@@ -66,10 +67,10 @@ func (r *UserRepository) Create(ctx context.Context, email string, accountID uui
 // registration when the provisioning event cannot be published, so the email is
 // freed for a clean retry.
 func (r *UserRepository) Delete(ctx context.Context, userID uuid.UUID, email string) error {
-	if err := r.session.Query(deleteUser, userID).WithContext(ctx).Consistency(gocql.One).Exec(); err != nil {
+	if err := r.session.Query(deleteUser, userID).WithContext(ctx).Consistency(gocql.Quorum).Exec(); err != nil {
 		return fmt.Errorf("delete user: %w", err)
 	}
-	if err := r.session.Query(deleteEmail, email).WithContext(ctx).Consistency(gocql.One).Exec(); err != nil {
+	if err := r.session.Query(deleteEmail, email).WithContext(ctx).Consistency(gocql.Quorum).Exec(); err != nil {
 		return fmt.Errorf("delete email lookup: %w", err)
 	}
 	return nil
@@ -105,4 +106,12 @@ func (r *UserRepository) FindByID(ctx context.Context, userID uuid.UUID) (*model
 	u.CreatedAt = createdAt
 	u.UpdatedAt = updatedAt
 	return &u, nil
+}
+
+func (r *UserRepository) WriteAudit(ctx context.Context, ev models.AuditEvent) error {
+	if err := r.session.Query(insertAudit, ev.Day, ev.Timestamp, ev.EventID, ev.ActorUserID, ev.Action, ev.ResourceType, ev.ResourceID, ev.CorrelationID, ev.Metadata).
+		WithContext(ctx).Consistency(gocql.Quorum).Exec(); err != nil {
+		return fmt.Errorf("insert audit event: %w", err)
+	}
+	return nil
 }
