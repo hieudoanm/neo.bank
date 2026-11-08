@@ -100,12 +100,10 @@ func (c *SagaConsumer) handle(ctx context.Context, msg kafka.Message) error {
 	}
 	if err := json.Unmarshal(msg.Value, &env); err != nil {
 		c.logger.Error("unmarshal saga event", "err", err)
-		c.sendToDLQ(ctx, msg, "malformed payload")
-		return nil
+		return c.sendToDLQ(ctx, msg, "malformed payload")
 	}
 	if env.EventVersion != models.EventVersionV1 {
-		c.sendToDLQ(ctx, msg, fmt.Sprintf("unsupported event version %d", env.EventVersion))
-		return nil
+		return c.sendToDLQ(ctx, msg, fmt.Sprintf("unsupported event version %d", env.EventVersion))
 	}
 
 	switch env.EventType {
@@ -316,21 +314,28 @@ func (c *SagaConsumer) publishTransferEvent(ctx context.Context, eventType strin
 	return c.producer.PublishTransferEvent(ctx, ev)
 }
 
-func (c *SagaConsumer) sendToDLQ(ctx context.Context, msg kafka.Message, reason string) {
+func (c *SagaConsumer) sendToDLQ(ctx context.Context, msg kafka.Message, reason string) error {
 	c.logger.Error("routing to dlq", "reason", reason, "partition", msg.Partition, "offset", msg.Offset)
 	if c.dlq == nil {
-		return
+		return nil
 	}
+	// Copy headers before appending: append may write into the fetched
+	// message's backing array.
+	headers := make([]kafka.Header, 0, len(msg.Headers)+1)
+	headers = append(headers, msg.Headers...)
+	headers = append(headers, kafka.Header{
+		Key:   "failure_reason",
+		Value: []byte(reason),
+	})
 	if err := c.dlq.WriteMessages(ctx, kafka.Message{
-		Key:   msg.Key,
-		Value: msg.Value,
-		Headers: append(msg.Headers, kafka.Header{
-			Key:   "failure_reason",
-			Value: []byte(reason),
-		}),
+		Key:     msg.Key,
+		Value:   msg.Value,
+		Headers: headers,
 	}); err != nil {
 		c.logger.Error("write dlq", "err", err)
+		return fmt.Errorf("write dlq: %w", err)
 	}
+	return nil
 }
 
 func (c *SagaConsumer) Close() error {

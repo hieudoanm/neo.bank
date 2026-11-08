@@ -63,8 +63,37 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
+// Session tokens are persisted in sessionStorage so a page reload does not
+// silently log the user out; the tab session still ends when the tab closes.
+const SESSION_STORAGE_KEY = 'neo.bank.session'
+
+type StoredSession = { user: User; accessToken: string; refreshToken: string }
+
+const readStoredSession = (): StoredSession | null => {
+  try {
+    const raw = sessionStorage.getItem(SESSION_STORAGE_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as StoredSession
+    if (!parsed?.user?.userId || !parsed.accessToken || !parsed.refreshToken) return null
+    return parsed
+  } catch {
+    return null
+  }
+}
+
+const initialStateFromStorage = (): AuthState => {
+  const stored = readStoredSession()
+  if (!stored) return initialState
+  return {
+    user: stored.user,
+    accessToken: stored.accessToken,
+    refreshToken: stored.refreshToken,
+    isAuthenticated: true,
+  }
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [state, dispatch] = useReducer(authReducer, initialState)
+  const [state, dispatch] = useReducer(authReducer, initialState, initialStateFromStorage)
 
   useEffect(() => {
     setSessionRefresher(async () => {
@@ -84,6 +113,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     })
     return () => setSessionRefresher(null)
   }, [])
+
+  useEffect(() => {
+    if (state.isAuthenticated && state.user && state.accessToken && state.refreshToken) {
+      try {
+        sessionStorage.setItem(
+          SESSION_STORAGE_KEY,
+          JSON.stringify({
+            user: state.user,
+            accessToken: state.accessToken,
+            refreshToken: state.refreshToken,
+          }),
+        )
+      } catch {
+        // storage may be unavailable (private mode); session still works in memory
+      }
+      setSessionTokens({ accessToken: state.accessToken, refreshToken: state.refreshToken })
+    } else {
+      try {
+        sessionStorage.removeItem(SESSION_STORAGE_KEY)
+      } catch {
+        // ignore storage errors
+      }
+      clearSessionTokens()
+    }
+  }, [state])
 
   const login = useCallback((user: User, accessToken: string, refreshToken: string) => {
     setSessionTokens({ accessToken, refreshToken })

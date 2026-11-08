@@ -320,6 +320,23 @@ func TestRefreshRejectsInvalidTokens(t *testing.T) {
 	}
 }
 
+func TestRefreshRejectsDeletedUser(t *testing.T) {
+	rt := &models.RefreshToken{
+		UserID:    uuid.New(),
+		AccountID: uuid.New(),
+		ExpiresAt: time.Now().UTC().Add(time.Hour),
+	}
+	tokens := &fakeRefreshTokenStore{getToken: rt}
+	users := &fakeUserStore{findErr: applierrors.ErrInvalidCredentials}
+	svc := NewAuthService(users, tokens, fakeSigner{token: "t"}, &fakePublisher{})
+	if _, err := svc.Refresh(context.Background(), "raw"); !errors.Is(err, applierrors.ErrInvalidRefreshToken) {
+		t.Fatalf("expected ErrInvalidRefreshToken for a deleted user, got %v", err)
+	}
+	if len(tokens.revoked) != 0 {
+		t.Fatal("token must not be rotated for a deleted user")
+	}
+}
+
 func TestRefreshRevokeAndIssueErrors(t *testing.T) {
 	rt := &models.RefreshToken{ExpiresAt: time.Now().UTC().Add(time.Hour)}
 
