@@ -17,9 +17,12 @@ export const validateAmount = (value: string): string | null => {
   return null
 }
 
-export const amountToCents = (value: string): number => Math.round(Number(value) * 100)
+// amountToCents parses the decimal string directly so values like "19.99"
+// never pass through a lossy float multiply.
+export const amountToCents = (value: string): number => {
+  const [whole = '0', fraction = ''] = value.split('.')
+  const cents = Number(whole) * 100 + Number(fraction.padEnd(2, '0').slice(0, 2))
+  return cents
+}
 
-export const newIdempotencyKey = (): string =>
-  `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random()
-    .toString(36)
-    .slice(2)}`
+export const newIdempotencyKey = (): string => crypto.randomUUID()

@@ -3,6 +3,9 @@ import { transfersApi } from '@/lib/api/client'
 import { useAuth } from '@/context/AuthContext'
 
 const POLL_INTERVAL_MS = 2000
+// Stop polling after ~2 minutes; a saga stuck longer than that needs manual
+// investigation rather than an open-ended request loop.
+const MAX_POLL_FETCHES = 60
 
 export const useTransfer = (transferId: string) => {
   const { state } = useAuth()
@@ -14,9 +17,10 @@ export const useTransfer = (transferId: string) => {
     enabled: Boolean(transferId) && Boolean(accessToken),
     refetchInterval: (query) => {
       const status = query.state.data?.status
-      return status === 'completed' || status === 'failed' || status === 'reversed'
-        ? false
-        : POLL_INTERVAL_MS
+      if (status === 'completed' || status === 'failed' || status === 'reversed') {
+        return false
+      }
+      return query.state.dataUpdateCount >= MAX_POLL_FETCHES ? false : POLL_INTERVAL_MS
     },
   })
 }

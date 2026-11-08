@@ -136,9 +136,15 @@ func (m *KeyManager) Validate(tokenString string) (*AccessClaims, error) {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return publicKey, nil
-	})
+	}, jwt.WithIssuedAt())
 	if err != nil {
 		return nil, err
+	}
+	// Reject tokens that declare a different key ID; the signature check is the
+	// real boundary, but this stops a stale kid from being accepted silently
+	// during key rotation.
+	if kid, _ := token.Header["kid"].(string); kid != "" && m.keyID != "" && kid != m.keyID {
+		return nil, fmt.Errorf("unexpected key id")
 	}
 	claims, ok := token.Claims.(*AccessClaims)
 	if !ok || !token.Valid {

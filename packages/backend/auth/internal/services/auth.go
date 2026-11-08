@@ -83,12 +83,12 @@ func (s *AuthService) audit(ctx context.Context, actorID *uuid.UUID, action, res
 	ev := models.AuditEvent{
 		Day:           now,
 		Timestamp:     now,
-		EventID:       uuid.New(),
+		EventID:       newUUID(),
 		ActorUserID:   actorID,
 		Action:        action,
 		ResourceType:  resourceType,
 		ResourceID:    resourceID,
-		CorrelationID: uuid.New().String(),
+		CorrelationID: newUUID().String(),
 		Metadata:      metadata,
 	}
 	if err := s.userRepo.WriteAudit(ctx, ev); err != nil {
@@ -109,7 +109,7 @@ func (s *AuthService) Register(ctx context.Context, email, password string) (*Re
 		return nil, fmt.Errorf("hash password: %w", err)
 	}
 
-	accountID := uuid.New()
+	accountID := newUUID()
 	user, err := s.userRepo.Create(ctx, email, accountID, passwordHash)
 	if err != nil {
 		var appErr *applierrors.AppError
@@ -120,7 +120,7 @@ func (s *AuthService) Register(ctx context.Context, email, password string) (*Re
 	}
 
 	ev := models.UserCreatedEvent{
-		EventID:      uuid.New().String(),
+		EventID:      newUUID().String(),
 		EventType:    models.EventTypeUserCreated,
 		EventVersion: models.EventVersionV1,
 		UserID:       user.ID.String(),
@@ -216,6 +216,15 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*Refres
 		return nil, applierrors.ErrInvalidRefreshToken
 	}
 
+	// The token may outlive the user (for example after an account deletion);
+	// do not mint new credentials for a user that no longer exists.
+	if _, err := s.userRepo.FindByID(ctx, rt.UserID); err != nil {
+		if errors.Is(err, applierrors.ErrInvalidCredentials) {
+			return nil, applierrors.ErrInvalidRefreshToken
+		}
+		return nil, applierrors.ErrInternal
+	}
+
 	// Rotate: revoke the used refresh token, issue a new pair.
 	if err := s.refreshTokenRepo.Revoke(ctx, tokenHash); err != nil {
 		return nil, applierrors.ErrInvalidRefreshToken
@@ -299,4 +308,11 @@ func validatePassword(password string) error {
 		return applierrors.ValidationError(map[string]string{"password": "password must contain uppercase, lowercase, number, and symbol"})
 	}
 	return nil
+}
+
+func newUUID() uuid.UUID {
+	if id, err := uuid.NewV7(); err == nil {
+		return id
+	}
+	return uuid.New()
 }

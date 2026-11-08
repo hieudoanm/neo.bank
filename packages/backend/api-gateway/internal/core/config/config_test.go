@@ -56,10 +56,11 @@ func TestLoadRateLimitOverrides(t *testing.T) {
 	}
 }
 
-func TestLoadInvalidIntFallsBackToDefault(t *testing.T) {
-	cfg := loadWith(t, map[string]string{"RATE_LIMIT_AUTH_PER_MIN": "not-a-number"})
-	if cfg.RateLimitAuthPerMin != 100 {
-		t.Fatalf("expected invalid value to fall back to 100, got %d", cfg.RateLimitAuthPerMin)
+func TestLoadInvalidIntReturnsError(t *testing.T) {
+	t.Setenv("JWT_PUBLIC_KEY_PEM", "test-key")
+	t.Setenv("RATE_LIMIT_AUTH_PER_MIN", "not-a-number")
+	if _, err := Load(); err == nil {
+		t.Fatal("expected an error for a malformed integer env var")
 	}
 }
 

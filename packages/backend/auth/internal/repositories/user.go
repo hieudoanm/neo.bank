@@ -31,7 +31,7 @@ const (
 
 func (r *UserRepository) Create(ctx context.Context, email string, accountID uuid.UUID, passwordHash string) (*models.User, error) {
 	now := time.Now().UTC()
-	userID := uuid.New()
+	userID := newUUID()
 
 	applied, err := r.session.Query(insertEmailLWT, email, gocql.UUID(userID), now).
 		WithContext(ctx).
@@ -114,4 +114,11 @@ func (r *UserRepository) WriteAudit(ctx context.Context, ev models.AuditEvent) e
 		return fmt.Errorf("insert audit event: %w", err)
 	}
 	return nil
+}
+
+func newUUID() uuid.UUID {
+	if id, err := uuid.NewV7(); err == nil {
+		return id
+	}
+	return uuid.New()
 }

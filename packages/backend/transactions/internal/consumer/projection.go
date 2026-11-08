@@ -93,12 +93,10 @@ func (c *ProjectionConsumer) handle(ctx context.Context, msg kafka.Message) erro
 		EventVersion int    `json:"eventVersion"`
 	}
 	if err := json.Unmarshal(msg.Value, &env); err != nil {
-		c.sendToDLQ(ctx, msg, "malformed payload")
-		return nil
+		return c.sendToDLQ(ctx, msg, "malformed payload")
 	}
 	if env.EventVersion != models.EventVersionV1 {
-		c.sendToDLQ(ctx, msg, fmt.Sprintf("unsupported event version %d", env.EventVersion))
-		return nil
+		return c.sendToDLQ(ctx, msg, fmt.Sprintf("unsupported event version %d", env.EventVersion))
 	}
 
 	switch env.EventType {
@@ -120,13 +118,11 @@ func (c *ProjectionConsumer) projectMovement(ctx context.Context, msg kafka.Mess
 	}
 	transferID, err := uuid.Parse(ev.TransferID)
 	if err != nil {
-		c.sendToDLQ(ctx, msg, "invalid transfer id")
-		return nil
+		return c.sendToDLQ(ctx, msg, "invalid transfer id")
 	}
 	accountID, err := uuid.Parse(ev.AccountID)
 	if err != nil {
-		c.sendToDLQ(ctx, msg, "invalid account id")
-		return nil
+		return c.sendToDLQ(ctx, msg, "invalid account id")
 	}
 
 	movement := movementOf(ev)
@@ -184,8 +180,7 @@ func (c *ProjectionConsumer) finalize(ctx context.Context, msg kafka.Message, st
 	}
 	transferID, err := uuid.Parse(ev.TransferID)
 	if err != nil {
-		c.sendToDLQ(ctx, msg, "invalid transfer id")
-		return nil
+		return c.sendToDLQ(ctx, msg, "invalid transfer id")
 	}
 	movements, err := c.store.ListMovements(ctx, transferID)
 	if err != nil {
@@ -220,21 +215,28 @@ func (c *ProjectionConsumer) writeAudit(ctx context.Context, action string, reso
 	}
 }
 
-func (c *ProjectionConsumer) sendToDLQ(ctx context.Context, msg kafka.Message, reason string) {
+func (c *ProjectionConsumer) sendToDLQ(ctx context.Context, msg kafka.Message, reason string) error {
 	c.logger.Error("routing to dlq", "reason", reason, "partition", msg.Partition, "offset", msg.Offset)
 	if c.dlq == nil {
-		return
+		return nil
 	}
+	// Copy headers before appending: append may write into the fetched
+	// message's backing array.
+	headers := make([]kafka.Header, 0, len(msg.Headers)+1)
+	headers = append(headers, msg.Headers...)
+	headers = append(headers, kafka.Header{
+		Key:   "failure_reason",
+		Value: []byte(reason),
+	})
 	if err := c.dlq.WriteMessages(ctx, kafka.Message{
-		Key:   msg.Key,
-		Value: msg.Value,
-		Headers: append(msg.Headers, kafka.Header{
-			Key:   "failure_reason",
-			Value: []byte(reason),
-		}),
+		Key:     msg.Key,
+		Value:   msg.Value,
+		Headers: headers,
 	}); err != nil {
 		c.logger.Error("write dlq", "err", err)
+		return fmt.Errorf("write dlq: %w", err)
 	}
+	return nil
 }
 
 func (c *ProjectionConsumer) Close() error {

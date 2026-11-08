@@ -38,11 +38,23 @@ func Load() (*Config, error) {
 		CORSOrigins:           splitEnv("CORS_ORIGINS", "*"),
 		ReadTimeout:           10 * time.Second,
 		WriteTimeout:          10 * time.Second,
-		RateLimitAuthPerMin:   getEnvInt("RATE_LIMIT_AUTH_PER_MIN", 100),
-		RateLimitUserPerMin:   getEnvInt("RATE_LIMIT_USER_PER_MIN", 1000),
-		LoginLockoutFailures:  getEnvInt("LOGIN_LOCKOUT_FAILURES", 5),
-		LoginLockoutWindow:    time.Duration(getEnvInt("LOGIN_LOCKOUT_WINDOW_MINUTES", 15)) * time.Minute,
 	}
+
+	var err error
+	if cfg.RateLimitAuthPerMin, err = getEnvInt("RATE_LIMIT_AUTH_PER_MIN", 100); err != nil {
+		return nil, err
+	}
+	if cfg.RateLimitUserPerMin, err = getEnvInt("RATE_LIMIT_USER_PER_MIN", 1000); err != nil {
+		return nil, err
+	}
+	if cfg.LoginLockoutFailures, err = getEnvInt("LOGIN_LOCKOUT_FAILURES", 5); err != nil {
+		return nil, err
+	}
+	lockoutMinutes, err := getEnvInt("LOGIN_LOCKOUT_WINDOW_MINUTES", 15)
+	if err != nil {
+		return nil, err
+	}
+	cfg.LoginLockoutWindow = time.Duration(lockoutMinutes) * time.Minute
 
 	var missing []string
 	if len(cfg.JWTPublicKeyPEM) == 0 {
@@ -61,13 +73,18 @@ func getEnv(key, def string) string {
 	return def
 }
 
-func getEnvInt(key string, def int) int {
-	if v := os.Getenv(key); v != "" {
-		if n, err := strconv.Atoi(v); err == nil {
-			return n
-		}
+// getEnvInt parses an integer env var, returning an error for malformed
+// values instead of silently falling back to the default.
+func getEnvInt(key string, def int) (int, error) {
+	v := os.Getenv(key)
+	if v == "" {
+		return def, nil
 	}
-	return def
+	n, err := strconv.Atoi(v)
+	if err != nil {
+		return 0, fmt.Errorf("invalid %s %q: must be an integer", key, v)
+	}
+	return n, nil
 }
 
 func splitEnv(key, def string) []string {
