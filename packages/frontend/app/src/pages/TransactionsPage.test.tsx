@@ -28,7 +28,9 @@ const AutoLogin = () => {
 
 const renderPage = () =>
   render(
-    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+    <QueryClientProvider
+      client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+    >
       <MemoryRouter>
         <AuthProvider>
           <AutoLogin />
@@ -111,9 +113,7 @@ describe('TransactionsPage', () => {
     mockedList.mockRejectedValueOnce(error).mockResolvedValueOnce(debit)
     renderPage()
 
-    expect(
-      await screen.findByText(/unable to load your transactions/i),
-    ).toBeInTheDocument()
+    expect(await screen.findByText(/unable to load your transactions/i)).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: /try again/i }))
     expect(await screen.findByText('Transfer to ACC-1234')).toBeInTheDocument()

@@ -53,7 +53,9 @@ describe('useTransactions', () => {
       await result.current.fetchNextPage()
     })
 
-    await waitFor(() => expect(mockedList).toHaveBeenCalledWith('a1', 'at', 'c1', TRANSACTIONS_PAGE_SIZE))
+    await waitFor(() =>
+      expect(mockedList).toHaveBeenCalledWith('a1', 'at', 'c1', TRANSACTIONS_PAGE_SIZE),
+    )
     await waitFor(() => expect(result.current.hasNextPage).toBe(false))
   })
 

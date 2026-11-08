@@ -31,11 +31,7 @@ export const TransactionRow = ({ transaction }: { transaction: TransactionRespon
         </p>
       </div>
       <div className="text-right">
-        <p
-          className={`text-sm font-semibold ${
-            isCredit ? 'text-success-fg' : 'text-error-fg'
-          }`}
-        >
+        <p className={`text-sm font-semibold ${isCredit ? 'text-success-fg' : 'text-error-fg'}`}>
           {isCredit ? '+' : '-'}
           {formatCurrency(transaction.amountCents)}
         </p>

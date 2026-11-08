@@ -6,11 +6,15 @@ import { AuthProvider } from '@/context/AuthContext'
 import { LoginPage } from './LoginPage'
 import * as authApi from '@/lib/api/client'
 
-vi.mock('@/lib/api/client', () => ({
-  authApi: {
-    login: vi.fn(),
-  },
-}))
+vi.mock('@/lib/api/client', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/api/client')>()
+  return {
+    ...actual,
+    authApi: {
+      login: vi.fn(),
+    },
+  }
+})
 
 const mockedLogin = vi.mocked(authApi.authApi.login)
 
@@ -97,9 +101,11 @@ describe('LoginPage', () => {
   })
 
   it('shows server error message on invalid credentials', async () => {
-    const error = new Error('boom') as any
-    error.status = 401
-    error.error = { code: 'INVALID_CREDENTIALS', message: 'Invalid email or password', requestId: 'r1' }
+    const error = new authApi.HttpError(
+      401,
+      { code: 'INVALID_CREDENTIALS', message: 'Invalid email or password', requestId: 'r1' },
+      'Invalid email or password',
+    )
     mockedLogin.mockRejectedValue(error)
     renderPage()
     const { email, password } = getInputs()

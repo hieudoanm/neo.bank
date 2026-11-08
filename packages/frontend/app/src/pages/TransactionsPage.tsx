@@ -95,7 +95,11 @@ export const TransactionsPage = () => {
 
       {isLoading && (
         <Card className="overflow-hidden p-0">
-          <ul aria-busy="true" aria-label="Loading transactions" className="divide-y divide-border-light">
+          <ul
+            aria-busy="true"
+            aria-label="Loading transactions"
+            className="divide-y divide-border-light"
+          >
             {[0, 1, 2, 3, 4].map((key) => (
               <li key={key} className="flex items-center gap-4 px-4 py-3">
                 <div className="h-10 w-10 animate-pulse rounded-full bg-background-secondary" />
@@ -133,8 +137,8 @@ export const TransactionsPage = () => {
           </ul>
           <div className="flex items-center justify-between border-t border-border px-4 py-3">
             <p className="text-xs text-text-secondary">
-              Page {pageIndex + 1} · {page.transactions.length}{' '}
-              transaction{page.transactions.length === 1 ? '' : 's'}
+              Page {pageIndex + 1} · {page.transactions.length} transaction
+              {page.transactions.length === 1 ? '' : 's'}
             </p>
             <div className="flex gap-2">
               <Button

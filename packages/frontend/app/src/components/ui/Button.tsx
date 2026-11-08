@@ -22,11 +22,7 @@ export const Button = ({
   ...props
 }: ButtonProps) => {
   return (
-    <button
-      className={`${variants[variant]} ${className}`}
-      disabled={disabled}
-      {...props}
-    >
+    <button className={`${variants[variant]} ${className}`} disabled={disabled} {...props}>
       {children}
     </button>
   )

@@ -24,10 +24,7 @@ function authHeader(accessToken?: string): Record<string, string> {
   return accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
 }
 
-async function request<T>(
-  input: RequestInfo | URL,
-  init?: RequestInit,
-): Promise<T> {
+async function request<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const url = `${API_BASE}${typeof input === 'string' ? input : input.toString()}`
 
   let res: Response

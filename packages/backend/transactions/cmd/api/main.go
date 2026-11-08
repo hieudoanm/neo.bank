@@ -36,7 +36,7 @@ func main() {
 	transactionHandler := handlers.NewTransactionHandler(transactionService)
 	authMiddleware := middleware.NewAuthMiddleware(keyManager)
 
-	router := api.NewRouter(transactionHandler, authMiddleware)
+	router := api.NewRouter(transactionHandler, authMiddleware, session)
 
 	log.Printf("transactions listening on :%s", cfg.Port)
 	if err := http.ListenAndServe(":"+cfg.Port, router); err != nil {

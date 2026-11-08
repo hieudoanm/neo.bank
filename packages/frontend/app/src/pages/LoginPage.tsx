@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
-import { authApi } from '@/lib/api/client'
+import { authApi, HttpError } from '@/lib/api/client'
 import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -34,42 +34,43 @@ export const LoginPage = () => {
       )
       navigate('/', { replace: true })
     },
-    onError: (err: any) => {
+    onError: (err) => {
       setFieldErrors({})
       setServerError(null)
       setNetworkError(null)
-      if (err?.status === 400 || err?.status === 429) {
-        setServerError(err.error?.message ?? 'Request could not be completed')
-      } else if (err?.status === 401) {
+      const status = err instanceof HttpError ? err.status : 0
+      const message = err instanceof HttpError ? err.error.message : undefined
+      if (status === 400 || status === 429) {
+        setServerError(message ?? 'Request could not be completed')
+      } else if (status === 401) {
         setFieldErrors({
           email: 'Invalid email or password',
           password: 'Invalid email or password',
         })
         setServerError('Invalid email or password')
-      } else if (err?.status >= 500 || err?.status === 0) {
+      } else if (status >= 500 || status === 0) {
         setNetworkError(
-          err?.status === 0
+          status === 0
             ? 'Unable to connect to the server. Please try again later.'
             : 'The server is temporarily unavailable. Please try again later.',
         )
       } else {
-        setServerError(err.error?.message ?? 'An unexpected error occurred')
+        setServerError(message ?? 'An unexpected error occurred')
       }
     },
   })
 
-  const handleChange =
-    (key: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      setForm((prev) => ({ ...prev, [key]: e.target.value }))
-      if (fieldErrors[key]) {
-        setFieldErrors((prev) => {
-          const next = { ...prev }
-          delete next[key]
-          return next
-        })
-      }
-      if (serverError) setServerError(null)
+  const handleChange = (key: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm((prev) => ({ ...prev, [key]: e.target.value }))
+    if (fieldErrors[key]) {
+      setFieldErrors((prev) => {
+        const next = { ...prev }
+        delete next[key]
+        return next
+      })
     }
+    if (serverError) setServerError(null)
+  }
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -134,12 +135,7 @@ export const LoginPage = () => {
             error={fieldErrors.password}
             required
           />
-          <Button
-            type="submit"
-            variant="primary"
-            className="w-full"
-            disabled={isLoading}
-          >
+          <Button type="submit" variant="primary" className="w-full" disabled={isLoading}>
             {isLoading ? 'Signing in...' : 'Sign in'}
           </Button>
         </form>

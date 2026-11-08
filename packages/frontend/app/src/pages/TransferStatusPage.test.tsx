@@ -19,18 +19,16 @@ const mockedGet = vi.mocked(transfersApi.get)
 const AutoLogin = () => {
   const { login } = useAuth()
   useEffect(() => {
-    login(
-      { userId: 'u1', accountId: 'acc-1', email: 'user@example.com' },
-      'test-token',
-      'rt',
-    )
+    login({ userId: 'u1', accountId: 'acc-1', email: 'user@example.com' }, 'test-token', 'rt')
   }, [login])
   return null
 }
 
 const renderPage = (transferId = 'tr-1') =>
   render(
-    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+    <QueryClientProvider
+      client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+    >
       <MemoryRouter initialEntries={[`/transfer/${transferId}`]}>
         <AuthProvider>
           <AutoLogin />
@@ -77,9 +75,7 @@ describe('TransferStatusPage', () => {
   })
 
   it('shows the failed state with a mapped reason', async () => {
-    mockedGet.mockResolvedValue(
-      transfer({ status: 'failed', failureReason: 'INSUFFICIENT_FUNDS' }),
-    )
+    mockedGet.mockResolvedValue(transfer({ status: 'failed', failureReason: 'INSUFFICIENT_FUNDS' }))
     renderPage()
 
     expect(await screen.findByText('Transfer failed')).toBeInTheDocument()

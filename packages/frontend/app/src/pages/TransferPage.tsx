@@ -99,9 +99,7 @@ export const TransferPage = () => {
   return (
     <div className="mx-auto max-w-2xl">
       <header className="mb-6">
-        <h1 className="text-text-primary text-2xl font-semibold tracking-tight">
-          Transfer money
-        </h1>
+        <h1 className="text-text-primary text-2xl font-semibold tracking-tight">Transfer money</h1>
         <p className="text-text-secondary mt-1 text-sm">Send money to another NEO account.</p>
       </header>
 

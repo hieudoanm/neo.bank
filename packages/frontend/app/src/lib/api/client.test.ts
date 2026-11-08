@@ -55,7 +55,10 @@ describe('api client', () => {
     expect(url).toBe('http://localhost:8080/api/v1/login')
     expect(init.method).toBe('POST')
     expect(init.headers['Content-Type']).toBe('application/json')
-    expect(JSON.parse(init.body)).toEqual({ email: 'user@example.com', password: 'Str0ng!Passw0rd' })
+    expect(JSON.parse(init.body)).toEqual({
+      email: 'user@example.com',
+      password: 'Str0ng!Passw0rd',
+    })
   })
 
   it('posts to /api/v1/register', async () => {
@@ -79,7 +82,12 @@ describe('api client', () => {
 
   it('adds the bearer token to balance requests', async () => {
     fetchMock.mockResolvedValueOnce(
-      okJson({ accountId: 'a1', balanceCents: 500, currencyCode: 'USD', updatedAt: '2026-01-01T00:00:00Z' }),
+      okJson({
+        accountId: 'a1',
+        balanceCents: 500,
+        currencyCode: 'USD',
+        updatedAt: '2026-01-01T00:00:00Z',
+      }),
     )
     const result = await accountsApi.getBalance('a1', 'tok')
     expect(result).toEqual({
@@ -94,7 +102,9 @@ describe('api client', () => {
   })
 
   it('omits the auth header when no access token is supplied', async () => {
-    fetchMock.mockResolvedValueOnce(okJson({ accountId: 'a1', balanceCents: 0, currencyCode: 'USD' }))
+    fetchMock.mockResolvedValueOnce(
+      okJson({ accountId: 'a1', balanceCents: 0, currencyCode: 'USD' }),
+    )
     await accountsApi.getBalance('a1', '')
     expect(fetchMock.mock.calls[0][1].headers.Authorization).toBeUndefined()
   })
@@ -131,7 +141,16 @@ describe('api client', () => {
 
   it('throws an HttpError carrying the error envelope for an API error', async () => {
     fetchMock.mockResolvedValue(
-      okJson({ error: { code: 'INVALID_CREDENTIALS', message: 'Invalid email or password', requestId: 'r1' } }, 401),
+      okJson(
+        {
+          error: {
+            code: 'INVALID_CREDENTIALS',
+            message: 'Invalid email or password',
+            requestId: 'r1',
+          },
+        },
+        401,
+      ),
     )
 
     const err = await authApi

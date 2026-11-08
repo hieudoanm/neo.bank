@@ -12,7 +12,10 @@ test:
 	@cd packages/frontend/app && pnpm test
 
 lint:
-	@echo "lint stub - configure golangci-lint and eslint"
+	@for d in packages/backend/*; do \
+		(cd $$d && test -z "$$(gofmt -l .)" && go vet ./...) || exit 1; \
+	done
+	@cd packages/frontend/app && pnpm lint && pnpm format:check
 
 typecheck:
 	@for d in packages/backend/*; do (cd $$d && go vet ./...); done

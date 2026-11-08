@@ -92,7 +92,7 @@ func newRouter(t *testing.T, limits middleware.RateLimits) (*gin.Engine, *upstre
 	signer := newTestSigner(t)
 	up := newUpstream(t)
 	am := middleware.NewAuthMiddleware(signer.keyManager)
-	r := NewRouter(am, up.server.URL, up.server.URL, up.server.URL, up.server.URL, limits)
+	r := NewRouter(am, up.server.URL, up.server.URL, up.server.URL, up.server.URL, limits, []string{"*"})
 	return r, up, signer.token(t)
 }
 
@@ -256,7 +256,7 @@ func TestProxyErrorHandlerReturnsBadGateway(t *testing.T) {
 	signer := newTestSigner(t)
 	am := middleware.NewAuthMiddleware(signer.keyManager)
 	// Point at a closed port so the reverse proxy fails to dial upstream.
-	r := NewRouter(am, "http://127.0.0.1:1", "http://127.0.0.1:1", "http://127.0.0.1:1", "http://127.0.0.1:1", middleware.RateLimits{})
+	r := NewRouter(am, "http://127.0.0.1:1", "http://127.0.0.1:1", "http://127.0.0.1:1", "http://127.0.0.1:1", middleware.RateLimits{}, []string{"*"})
 
 	w := do(r, http.MethodPost, "/api/v1/register", nil)
 	if w.Code != http.StatusBadGateway {
@@ -276,5 +276,5 @@ func TestNewRouterPanicsOnInvalidServiceURL(t *testing.T) {
 			t.Fatal("expected panic for invalid service URL")
 		}
 	}()
-	NewRouter(am, "://invalid", "http://localhost", "http://localhost", "http://localhost", middleware.RateLimits{})
+	NewRouter(am, "://invalid", "http://localhost", "http://localhost", "http://localhost", middleware.RateLimits{}, []string{"*"})
 }

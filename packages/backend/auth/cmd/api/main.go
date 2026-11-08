@@ -40,7 +40,7 @@ func main() {
 	authService := services.NewAuthService(userRepo, refreshTokenRepo, keyManager, userEvents)
 	authHandler := handlers.NewAuthHandler(authService)
 
-	router := api.NewRouter(authHandler)
+	router := api.NewRouter(authHandler, session)
 
 	port := cfg.Port
 	log.Printf("auth listening on :%s", port)

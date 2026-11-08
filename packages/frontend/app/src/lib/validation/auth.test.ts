@@ -51,7 +51,9 @@ describe('validateConfirmPassword', () => {
   })
 
   it('rejects a mismatch', () => {
-    expect(validateConfirmPassword('Str0ng!Passw0rd', 'Different!Pass1')).toBe('Passwords do not match')
+    expect(validateConfirmPassword('Str0ng!Passw0rd', 'Different!Pass1')).toBe(
+      'Passwords do not match',
+    )
   })
 
   it('accepts a match', () => {

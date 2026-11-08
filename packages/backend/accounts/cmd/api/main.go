@@ -36,7 +36,7 @@ func main() {
 	accountHandler := handlers.NewAccountHandler(accountService)
 	authMiddleware := middleware.NewAuthMiddleware(keyManager)
 
-	router := api.NewRouter(accountHandler, authMiddleware)
+	router := api.NewRouter(accountHandler, authMiddleware, session)
 
 	log.Printf("accounts listening on :%s", cfg.Port)
 	if err := http.ListenAndServe(":"+cfg.Port, router); err != nil {

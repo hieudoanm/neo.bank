@@ -72,9 +72,7 @@ export const TransferStatusPage = () => {
       </div>
       <div className="flex items-center justify-between border-b border-border py-3">
         <dt className="text-text-secondary">Amount</dt>
-        <dd className="text-sm font-semibold text-text-primary">
-          {formatCurrency(amountCents)}
-        </dd>
+        <dd className="text-sm font-semibold text-text-primary">{formatCurrency(amountCents)}</dd>
       </div>
       <div className="flex items-center justify-between py-3">
         <dt className="text-text-secondary">Date</dt>
@@ -86,9 +84,7 @@ export const TransferStatusPage = () => {
   return (
     <div className="mx-auto max-w-2xl">
       <header className="mb-6">
-        <h1 className="text-text-primary text-2xl font-semibold tracking-tight">
-          Transfer status
-        </h1>
+        <h1 className="text-text-primary text-2xl font-semibold tracking-tight">Transfer status</h1>
       </header>
 
       {isAuthError && (
@@ -127,21 +123,24 @@ export const TransferStatusPage = () => {
         </Card>
       )}
 
-      {!isLoading && !isError && data && (data.status === 'pending' || data.status === 'processing') && (
-        <Card className="items-center text-center">
-          <span
-            aria-hidden="true"
-            className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-primary"
-          />
-          <p className="mt-3 text-base font-semibold text-text-primary" aria-live="polite">
-            Processing your transfer
-          </p>
-          <p className="mt-1 text-sm text-text-secondary">
-            This usually takes a few seconds. The page updates automatically.
-          </p>
-          {renderDetails(data.destinationAccountId, data.amountCents, data.createdAt)}
-        </Card>
-      )}
+      {!isLoading &&
+        !isError &&
+        data &&
+        (data.status === 'pending' || data.status === 'processing') && (
+          <Card className="items-center text-center">
+            <span
+              aria-hidden="true"
+              className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-primary"
+            />
+            <p className="mt-3 text-base font-semibold text-text-primary" aria-live="polite">
+              Processing your transfer
+            </p>
+            <p className="mt-1 text-sm text-text-secondary">
+              This usually takes a few seconds. The page updates automatically.
+            </p>
+            {renderDetails(data.destinationAccountId, data.amountCents, data.createdAt)}
+          </Card>
+        )}
 
       {!isLoading && !isError && data && data.status === 'completed' && (
         <Card className="items-center text-center">
@@ -178,8 +177,7 @@ export const TransferStatusPage = () => {
             Transfer failed
           </h2>
           <p className="mt-1 text-sm text-text-secondary">
-            {failureMessages[data.failureReason ?? ''] ??
-              'The transfer could not be completed.'}
+            {failureMessages[data.failureReason ?? ''] ?? 'The transfer could not be completed.'}
           </p>
           {renderDetails(data.destinationAccountId, data.amountCents, data.createdAt)}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">

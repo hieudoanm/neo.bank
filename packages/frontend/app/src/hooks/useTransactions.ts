@@ -14,8 +14,7 @@ export const useTransactions = (limit: number = TRANSACTIONS_PAGE_SIZE) => {
     queryFn: ({ pageParam }) =>
       transactionsApi.list(accountId, accessToken, pageParam ?? undefined, limit),
     initialPageParam: null as string | null,
-    getNextPageParam: (lastPage) =>
-      lastPage.hasMore ? lastPage.nextCursor : null,
+    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextCursor : null),
     enabled: Boolean(accountId) && Boolean(accessToken),
   })
 }
