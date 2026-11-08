@@ -1,208 +1,230 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>NEO Bank — Instant transfers, no waiting</title>
-    <meta
-      name="description"
-      content="NEO Bank is an event-driven banking platform demo: register in minutes, check your balance in real time, and send money instantly with bank-grade security."
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <header class="site-header">
-      <div class="container header-inner">
-        <a class="brand" href="#top" aria-label="NEO Bank home">
-          <img class="logo" src="assets/logo-light.svg" alt="" width="28" height="28" />
-          <span class="brand-name">NEO</span>
-        </a>
-        <nav class="site-nav" aria-label="Primary">
-          <a href="#features">Features</a>
-          <a href="#security">Security</a>
-          <a href="#faq">FAQ</a>
-        </nav>
-        <div class="header-actions">
-          <a class="btn btn-ghost" href="https://app.neo.bank/sign-in">Sign in</a>
-          <a class="btn btn-primary" href="https://app.neo.bank/register">Get started</a>
-        </div>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NEO Bank — Instant transfers, no waiting</title>
+  <meta name="description" content="NEO Bank is an event-driven banking platform demo: register in minutes, check your balance in real time, and send money instantly with bank-grade security." />
+  <link rel="canonical" href="https://hieudoanm.github.io/neo.bank/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="NEO Bank" />
+  <meta property="og:title" content="NEO Bank — Instant transfers, no waiting" />
+  <meta property="og:description" content="NEO Bank is an event-driven banking platform demo: register in minutes, check your balance in real time, and send money instantly with bank-grade security." />
+  <meta property="og:url" content="https://hieudoanm.github.io/neo.bank/" />
+  <meta property="og:image" content="https://hieudoanm.github.io/neo.bank/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NEO Bank — Instant transfers, no waiting" />
+  <meta name="twitter:description" content="NEO Bank is an event-driven banking platform demo: register in minutes, check your balance in real time, and send money instantly with bank-grade security." />
+  <meta name="twitter:image" content="https://hieudoanm.github.io/neo.bank/og-image.png" />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="#top">
+        <img src="assets/logo-light.svg" alt="" width="28" height="28" />
+        <span>NEO Bank</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#security">Security</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#install">Install</a>
+      </nav>
+      <div class="cta-row">
+        <a class="btn btn-ghost btn-sm" href="https://app.neo.bank/sign-in">Sign in</a>
+        <a class="btn btn-primary btn-sm" href="https://app.neo.bank/register">Get started</a>
       </div>
-    </header>
+    </div>
+  </header>
 
-    <main id="top">
-      <section class="hero">
-        <div class="container hero-grid">
-          <div class="hero-copy">
-            <h1>Instant transfers, no waiting.</h1>
-            <p class="lede">
-              Open an account in minutes, watch your balance update the moment a
-              transfer settles, and send money to any NEO account by ID — all
-              behind bank-grade session security.
-            </p>
-            <div class="hero-actions">
-              <a class="btn btn-primary btn-lg" href="https://app.neo.bank/register">
-                Open an account
-              </a>
-              <a class="btn btn-secondary btn-lg" href="#features">See how it works</a>
-            </div>
-            <p class="hero-note">No monthly fees · No minimum balance · Synthetic demo data</p>
-          </div>
-          <figure class="hero-shot">
-            <div class="browser-frame">
-              <div class="browser-bar" aria-hidden="true">
-                <span></span><span></span><span></span>
-              </div>
-              <img
-                src="assets/dashboard.png"
-                alt="NEO Bank dashboard showing an account balance of $12,480.55 USD, recent transactions, and quick actions"
-                width="1200"
-                height="800"
-                fetchpriority="high"
-              />
-            </div>
-            <figcaption class="sr-only">Dashboard screen of the NEO Bank application</figcaption>
-          </figure>
-        </div>
-      </section>
-
-      <section id="features" class="section">
-        <div class="container">
-          <h2>Everything you need to move money</h2>
-          <p class="section-lede">
-            A focused set of features that make everyday banking effortless —
-            no feature bloat, no hidden fees.
-          </p>
-          <div class="feature-grid">
-            <article class="card">
-              <span class="icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
-              </span>
-              <h3>Instant transfers</h3>
-              <p>Send money to any NEO account by ID. The saga debits and credits atomically, so a transfer either completes fully or compensates cleanly.</p>
-            </article>
-            <article class="card">
-              <span class="icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="m9 12 2 2 4-4"/></svg>
-              </span>
-              <h3>Bank-grade security</h3>
-              <p>Argon2id password hashing, RS256 JWT sessions with rotating refresh tokens, and authorisation checks on every account-scoped request.</p>
-            </article>
-            <article class="card">
-              <span class="icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-5 3 3 5-7"/></svg>
-              </span>
-              <h3>Real-time balances</h3>
-              <p>Your balance and transaction history update the moment the saga confirms a movement — amounts are stored as integer cents, never floats.</p>
-            </article>
-            <article class="card">
-              <span class="icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg>
-              </span>
-              <h3>Full audit trail</h3>
-              <p>Every security-relevant event lands in an append-only audit log inside the owning service's keyspace, correlated end to end.</p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section id="security" class="section section-alt">
-        <div class="container security-grid">
-          <div>
-            <h2>Security is architectural, not bolted on</h2>
-            <p>
-              NEO Bank denies by default: every protected endpoint validates a
-              JWT, every account-scoped query is authorised against verified
-              ownership, and cross-account access returns 404 rather than
-              leaking existence.
-            </p>
-            <ul class="check-list">
-              <li>Passwords hashed with Argon2id; refresh tokens stored as SHA-256 hashes and rotated on every use</li>
-              <li>Reuse of a revoked refresh token revokes the entire token family</li>
-              <li>Balance mutations run only in Kafka consumers via Cassandra lightweight transactions — never in request handlers</li>
-              <li>All mutating operations are idempotent via <code>Idempotency-Key</code></li>
-            </ul>
-          </div>
-          <figure class="shot-frame">
-            <img
-              src="assets/transactions.png"
-              alt="NEO Bank transaction history showing debit and credit entries with status badges"
-              width="1200"
-              height="800"
-              loading="lazy"
-            />
-          </figure>
-        </div>
-      </section>
-
-      <section id="faq" class="section">
-        <div class="container faq-wrap">
-          <h2>Questions, answered</h2>
-          <div class="faq-list">
-            <details>
-              <summary>Is this real banking?</summary>
-              <p>
-                No. NEO Bank is a software demonstration. It uses synthetic
-                data, processes no real money, and makes no claim of regulatory
-                compliance.
-              </p>
-            </details>
-            <details>
-              <summary>How are transfers processed?</summary>
-              <p>
-                Asynchronously. The Transfer Service orchestrates a saga over
-                Kafka: it issues debit and credit commands to the Account
-                Service, which applies them with Cassandra lightweight
-                transactions. Failures trigger compensation, and every step is
-                idempotent.
-              </p>
-            </details>
-            <details>
-              <summary>Can I see the source code?</summary>
-              <p>
-                Yes — the entire platform is open source: Go microservices,
-                React frontend, Cassandra, Kafka, Docker Compose, and Terraform.
-                See the repository linked in the footer.
-              </p>
-            </details>
-            <details>
-              <summary>How do I run it locally?</summary>
-              <p>
-                Copy <code>.env.example</code> to <code>.env</code>, fill in the
-                JWT keys, and run <code>docker compose up --build</code>. The
-                frontend is served on port 3000 and the API gateway on 8080.
-              </p>
-            </details>
-          </div>
-        </div>
-      </section>
-
-      <section class="cta-band">
-        <div class="container cta-inner">
-          <h2>Go from signup to a settled transfer.</h2>
-          <p>Register an account and watch the saga do the rest.</p>
-          <a class="btn btn-primary btn-lg" href="https://app.neo.bank/register">Get started</a>
-        </div>
-      </section>
-    </main>
-
-    <footer class="site-footer">
-      <div class="container footer-inner">
-        <div class="footer-brand">
-          <img class="logo" src="assets/logo-light.svg" alt="" width="24" height="24" />
-          <span>NEO Bank</span>
-        </div>
-        <p class="footer-note">
-          A portfolio demonstration — not a financial product. No real money,
-          no real personal data.
+  <main id="top">
+    <section class="hero">
+      <div class="container hero-inner">
+        <h1>Instant transfers, no waiting.</h1>
+        <p class="lede">
+          Open an account in minutes, watch your balance update the moment a
+          transfer settles, and send money to any NEO account by ID — all
+          behind bank-grade session security.
         </p>
-        <a class="footer-link" href="https://github.com/hieudoanm/neo.bank">Source on GitHub</a>
+        <div class="cta-row">
+          <a class="btn btn-primary btn-lg" href="https://app.neo.bank/register">Open an account</a>
+          <a class="btn btn-ghost btn-lg" href="#features">See how it works</a>
+        </div>
+        <dl class="stats">
+          <div><dt>saga</dt><dd>atomic transfers</dd></div>
+          <div><dt>cents</dt><dd>integer money only</dd></div>
+          <div><dt>0</dt><dd>floats in balances</dd></div>
+        </dl>
+        <figure class="shot">
+          <img src="assets/dashboard.png" alt="NEO Bank dashboard showing an account balance of $12,480.55 USD, recent transactions, and quick actions" width="1200" height="800" fetchpriority="high" />
+        </figure>
       </div>
-    </footer>
-  </body>
+    </section>
+
+    <section id="features" class="section">
+      <div class="container">
+        <div class="section-head">
+          <h2>Everything you need to move money</h2>
+          <p>A focused set of features that make everyday banking effortless —
+          no feature bloat, no hidden fees.</p>
+        </div>
+        <div class="grid grid-3">
+          <article class="card">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+            </div>
+            <h3>Instant transfers</h3>
+            <p>Send money to any NEO account by ID. The saga debits and credits
+            atomically, so a transfer either completes fully or compensates
+            cleanly.</p>
+          </article>
+          <article class="card">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="m9 12 2 2 4-4"/></svg>
+            </div>
+            <h3>Bank-grade security</h3>
+            <p>Argon2id password hashing, RS256 JWT sessions with rotating
+            refresh tokens, and authorisation checks on every account-scoped
+            request.</p>
+          </article>
+          <article class="card">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-5 3 3 5-7"/></svg>
+            </div>
+            <h3>Real-time balances</h3>
+            <p>Your balance and transaction history update the moment the saga
+            confirms a movement — amounts are stored as integer cents, never
+            floats.</p>
+          </article>
+          <article class="card">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg>
+            </div>
+            <h3>Full audit trail</h3>
+            <p>Every security-relevant event lands in an append-only audit log
+            inside the owning service's keyspace, correlated end to end.</p>
+          </article>
+          <article class="card">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="7" rx="2"/><rect x="2" y="14" width="20" height="7" rx="2"/><path d="M6 6.5h.01M6 17.5h.01"/></svg>
+            </div>
+            <h3>Event-driven core</h3>
+            <p>Go microservices over Kafka and Cassandra — an API gateway, Auth,
+            Account, Transfer, and Transaction services, each owning its own
+            keyspace.</p>
+          </article>
+          <article class="card">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+            </div>
+            <h3>Open source</h3>
+            <p>The entire platform — Go microservices, React frontend,
+            Cassandra, Kafka, Docker Compose, and Terraform — is on GitHub.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="security" class="section section-alt">
+      <div class="container">
+        <div class="section-head">
+          <h2>Security is architectural, not bolted on</h2>
+          <p>NEO Bank denies by default: every protected endpoint validates a
+          JWT, every account-scoped query is authorised against verified
+          ownership, and cross-account access returns 404 rather than leaking
+          existence.</p>
+        </div>
+        <ul class="check-list">
+          <li>Passwords hashed with Argon2id; refresh tokens stored as SHA-256 hashes and rotated on every use</li>
+          <li>Reuse of a revoked refresh token revokes the entire token family</li>
+          <li>Balance mutations run only in Kafka consumers via Cassandra lightweight transactions — never in request handlers</li>
+          <li>All mutating operations are idempotent via Idempotency-Key</li>
+        </ul>
+        <figure class="shot">
+          <img src="assets/transactions.png" alt="NEO Bank transaction history showing debit and credit entries with status badges" width="1200" height="800" loading="lazy" />
+        </figure>
+      </div>
+    </section>
+
+    <section id="how-it-works" class="section">
+      <div class="container">
+        <div class="section-head">
+          <h2>How it works</h2>
+          <p>From signup to a settled transfer in three steps.</p>
+        </div>
+        <div class="grid grid-3">
+          <article class="card step">
+            <span class="step-num">01</span>
+            <h3>Register</h3>
+            <p>Open an account in minutes. Credentials are hashed with
+            Argon2id and sessions run on rotating RS256 JWT refresh
+            tokens.</p>
+            <code class="snippet">app.neo.bank/register</code>
+          </article>
+          <article class="card step">
+            <span class="step-num">02</span>
+            <h3>Send</h3>
+            <p>Enter a recipient account ID and amount. The Transfer Service
+            orchestrates a saga over Kafka: debit and credit commands go to
+            the Account Service.</p>
+            <code class="snippet">POST /api/v1/transfers</code>
+          </article>
+          <article class="card step">
+            <span class="step-num">03</span>
+            <h3>Settle</h3>
+            <p>Cassandra lightweight transactions apply the balance changes
+            atomically. Failures trigger compensation, and every step is
+            idempotent.</p>
+            <code class="snippet">balance updated · audit logged</code>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="install" class="section section-alt">
+      <div class="container container-narrow">
+        <div class="section-head">
+          <h2>Run it locally</h2>
+          <p>Copy .env.example to .env, fill in the JWT keys, and bring the
+          whole stack up with Docker Compose — gateway, four Go services,
+          Cassandra, Kafka, and the React frontend.</p>
+        </div>
+        <figure class="terminal">
+          <figcaption>Install</figcaption>
+          <pre><code><span class="prompt">$</span> git clone https://github.com/hieudoanm/neo.bank
+<span class="prompt">$</span> cd neo.bank
+<span class="prompt">$</span> cp .env.example .env   <span class="terminal-dim"># fill in JWT keys</span>
+<span class="prompt">$</span> docker compose up --build
+<span class="out">frontend → :3000 · api gateway → :8080</span></code></pre>
+        </figure>
+        <p class="install-note">NEO Bank is a software demonstration — synthetic
+        data, no real money. See the
+        <a href="https://github.com/hieudoanm/neo.bank#readme" target="_blank" rel="noreferrer">README</a>
+        for the full stack overview.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary btn-lg" href="https://app.neo.bank/register">Get started</a>
+          <a class="btn btn-ghost btn-lg" href="https://github.com/hieudoanm/neo.bank" target="_blank" rel="noreferrer">Source on GitHub</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <span>© 2026 NEO Bank</span>
+      <span>A portfolio demonstration — not a financial product</span>
+      <nav>
+        <a href="https://github.com/hieudoanm/neo.bank" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="https://app.neo.bank" target="_blank" rel="noreferrer">App</a>
+      </nav>
+    </div>
+  </footer>
+</body>
 </html>

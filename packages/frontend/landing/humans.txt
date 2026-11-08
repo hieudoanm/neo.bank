@@ -1,0 +1,9 @@
+/* TEAM */
+Project: NEO Bank — Instant transfers, no waiting
+Site: https://hieudoanm.github.io/neo.bank/
+Source: https://github.com/hieudoanm/neo.bank
+
+/* SITE */
+Last update: 2026/11/08
+Language: English
+Doctype: HTML5
