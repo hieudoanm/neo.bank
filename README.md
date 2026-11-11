@@ -1,5 +1,8 @@
 # NEO Bank
 
+[![CI](https://github.com/hieudoanm/neo.bank/actions/workflows/ci.yaml/badge.svg?branch=master)](https://github.com/hieudoanm/neo.bank/actions/workflows/ci.yaml?branch=master)  [![License: GPLv3](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
+
+
 A full-stack banking application demonstrating core financial operations —
 account registration, authentication, balance inquiry, and fund transfers —
 built as an event-driven microservices system.
