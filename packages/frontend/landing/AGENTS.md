@@ -13,7 +13,7 @@ Pages as-is at `https://hieudoanm.github.io/neo.bank/`.
   page works under the `/neo.bank/` Pages base path and from `file://`.
   Raster assets live in `assets/`; root-level files are the standard
   metadata set (`robots.txt`, `sitemap.xml`, `humans.txt`, `404.html`,
-  `favicon.*`, `og-image.png`).
+  `favicon.*`, `og.png`).
 - Light theme only; design follows the "AI unslop" rules (see
   `hieudoanm/notes/ai-unslop-design.md` in the notes repo): no filler
   badges, monospace only for code, one accent colour, real UI
