@@ -13,7 +13,7 @@ Deployed to GitHub Pages at <https://hieudoanm.github.io/neo.bank/>.
 | `styles.css` | All styling |
 | `assets/` | Images and SVG logos referenced by the page |
 | `favicon.svg`, `favicon.ico` | Browser icons |
-| `og-image.png` | Social share image (1200×630) |
+| `og.png` | Social share image (1200×630) |
 | `robots.txt`, `sitemap.xml`, `humans.txt` | Crawler/credit metadata |
 | `404.html` | GitHub Pages 404 page |
 
