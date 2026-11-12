@@ -1,9 +1,23 @@
 {
+  "name": "neo.bank",
+  "version": "0.0.1",
+  "private": true,
+  "description": "NEO Bank",
+  "license": "GPL-3.0",
+  "author": {
+    "name": "Hieu Doan",
+    "email": "hieu.doan.professional@gmail.com",
+    "url": "https://hieudoanm.github.io"
+  },
+  "packageManager": "pnpm@12.18.0",
+  "engines": {
+    "node": "26.13.1"
+  },
+  "scripts": {
+    "prepare": "husky || true"
+  },
   "devDependencies": {
     "husky": "9.1.7",
     "lint-staged": "17.6.0"
-  },
-  "scripts": {
-    "prepare": "husky"
   }
 }
