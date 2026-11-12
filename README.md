@@ -1,4 +1,4 @@
-# NEO Bank
+# neo.bank
 
 [![CI](https://github.com/hieudoanm/neo.bank/actions/workflows/ci.yaml/badge.svg?branch=master)](https://github.com/hieudoanm/neo.bank/actions/workflows/ci.yaml?branch=master)  [![License: GPLv3](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 
@@ -6,6 +6,10 @@
 A full-stack banking application demonstrating core financial operations —
 account registration, authentication, balance inquiry, and fund transfers —
 built as an event-driven microservices system.
+
+<p align="center">
+  <img src="assets/branding/png/og.png" alt="neo.bank — a full-stack banking application" width="720">
+</p>
 
 ## Architecture
 
@@ -36,7 +40,7 @@ docs/                 # Normative project documentation (start at docs/README.md
 scripts/              # Coverage enforcement and other helpers
 ```
 
-## Quickstart
+## Get Started
 
 ```sh
 cp .env.example .env   # fill in JWT keys (see comments in the file)
@@ -46,7 +50,7 @@ docker compose up --build
 The frontend is served at <http://localhost:3000>; the API gateway listens on
 <http://localhost:8080> (`/healthz`, `/readyz` at the root, API under `/api/v1`).
 
-## Common commands
+## Usage
 
 ```sh
 make build       # build all backend modules and the frontend
@@ -63,3 +67,7 @@ Cassandra/Kafka integration tests are planned per `docs/09-testing-strategy.md`.
 `docs/` contains the normative specifications: requirements, features, data
 model, API specification, UI/UX design, tech stack, testing strategy, and
 deployment/operations guides. Read `AGENTS.md` for contributor conventions.
+
+## License
+
+This project is licensed under the [GPL-3.0 License](LICENSE).
