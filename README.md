@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/hieudoanm/neo.bank/actions/workflows/ci.yaml/badge.svg?branch=master)](https://github.com/hieudoanm/neo.bank/actions/workflows/ci.yaml?branch=master)  [![License: GPLv3](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 
-keywords: `banking`, `microservices`, `go`, `event-driven`, `nextjs`
+Topics: `banking`, `microservices`, `go`, `event-driven`, `nextjs`
 
 
 A full-stack banking application demonstrating core financial operations —
