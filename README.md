@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/hieudoanm/neo.bank/actions/workflows/ci.yaml/badge.svg?branch=master)](https://github.com/hieudoanm/neo.bank/actions/workflows/ci.yaml?branch=master)  [![License: GPLv3](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 
+keywords: `banking`, `microservices`, `go`, `event-driven`, `nextjs`
+
 
 A full-stack banking application demonstrating core financial operations —
 account registration, authentication, balance inquiry, and fund transfers —
@@ -10,6 +12,8 @@ built as an event-driven microservices system.
 <p align="center">
   <img src="assets/branding/png/og.png" alt="neo.bank — a full-stack banking application" width="720">
 </p>
+
+**Live demo:** <https://hieudoanm.github.io/neo.bank/>
 
 ## Architecture
 
@@ -41,6 +45,15 @@ scripts/              # Coverage enforcement and other helpers
 ```
 
 ## Get Started
+
+One-command setup — creates `.env` with a generated development RSA key pair
+and starts the full stack:
+
+```sh
+./scripts/install.sh
+```
+
+Or manually:
 
 ```sh
 cp .env.example .env   # fill in JWT keys (see comments in the file)
