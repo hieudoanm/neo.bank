@@ -8,6 +8,8 @@ Pages as-is at `https://hieudoanm.github.io/neo.bank/`.
 
 ## Conventions
 
+- **Fonts:** Inter (sans) loaded via the Google Fonts `<link>` in `index.html`; mono stack `ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace`. Tokens: `--font-sans` / `--font-mono`. Do not add other typefaces.
+
 - Keep it dependency-free: edit `index.html`/`styles.css` directly.
 - Asset URLs are relative (`styles.css`, `assets/…`, `favicon.svg`) so the
   page works under the `/neo.bank/` Pages base path and from `file://`.
