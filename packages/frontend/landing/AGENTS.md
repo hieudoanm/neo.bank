@@ -3,7 +3,7 @@
 ## Overview
 
 Static landing page for NEO Bank. A single `index.html` + `styles.css` +
-`assets/` — no framework, no build step, no JavaScript. Deployed to GitHub
+`assets/` — no framework, no build step, no JavaScript except a tiny year-injection snippet. Deployed to GitHub
 Pages as-is at `https://hieudoanm.github.io/neo.bank/`.
 
 ## Conventions
@@ -30,3 +30,11 @@ There are none — serve statically:
 ```bash
 python3 -m http.server 8000 -d packages/frontend/landing
 ```
+
+## Footer
+
+The footer follows the shared contract: `© {year} {repo-name}` (lowercase
+repo name, dynamic year via `<span id="year">` + the year script), a
+one-line tagline/license descriptor, and a right-aligned `<nav
+aria-label="Footer">` with exactly two links — `GitHub` (repo root) and
+`README` (`<repo>#readme`), both `target="_blank" rel="noreferrer"`.
