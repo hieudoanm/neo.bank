@@ -220,13 +220,16 @@
 
   <footer class="footer">
     <div class="container footer-inner">
-      <span>© 2026 NEO Bank</span>
+      <span>© <span id="year">2026</span> neo.bank</span>
       <span>A portfolio demonstration — not a financial product</span>
-      <nav>
+      <nav aria-label="Footer">
         <a href="https://github.com/hieudoanm/neo.bank" target="_blank" rel="noreferrer">GitHub</a>
-        <a href="https://app.neo.bank" target="_blank" rel="noreferrer">App</a>
+        <a href="https://github.com/hieudoanm/neo.bank#readme" target="_blank" rel="noreferrer">README</a>
       </nav>
     </div>
   </footer>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
