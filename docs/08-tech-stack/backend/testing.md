@@ -213,7 +213,7 @@ go test ./...
 go test -cover ./...
 
 # Per-module coverage gate (enforced: ≥ 80%, excludes cmd/, internal/db/, internal/repositories/)
-bash scripts/coverage/backend.sh packages/backend/auth
+bash scripts/coverage/backend.sh works/auth
 bash scripts/coverage/backend.sh --all
 
 # Specific package

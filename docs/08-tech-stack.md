@@ -254,7 +254,7 @@ New significant decisions (for example splitting the consumer into per-event ser
 - **Considered:** npm, yarn.
 - **Why:** pnpm uses a content-addressable store with hard links/symlinks instead of copying packages into every `node_modules`; the project has one frontend app and potentially multiple future packages, so disk usage and install speed stay low and the store is shared across versions. pnpm's strict dependency resolution surfaces missing/hoisted dependencies as errors rather than silently allowing them, matching the "no undeclared dependencies" rule in [`08-tech-stack/frontend/README.md`](./08-tech-stack/frontend/README.md). It ships a lockfile (`pnpm-lock.yaml`) without extra configuration and works with the GitHub Actions `setup-node` + `pnpm/action-setup` flow.
 - **Consequences:** All install, run, and test commands use `pnpm`; the lockfile is committed; the root toolchain is referenced from `AGENTS.md`. Husky lifecycle scripts rely on `pnpm install` running `prepare`.
-- **How:** [`08-tech-stack/frontend/tools/README.md`](./08-tech-stack/frontend/tools/README.md), `packages/frontend/app/package.json`.
+- **How:** [`08-tech-stack/frontend/tools/README.md`](./08-tech-stack/frontend/tools/README.md), `packages/app/package.json`.
 
 ### 13.2 Husky
 

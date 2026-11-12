@@ -76,7 +76,7 @@ services:
   # them to complete so they never start against a missing keyspace.
   auth-migrate:
     build:
-      context: ./packages/backend/auth
+      context: ./works/auth
     entrypoint: ["/migrate"]
     environment:
       CASSANDRA_HOST: cassandra
@@ -87,7 +87,7 @@ services:
 
   account-migrate:
     build:
-      context: ./packages/backend/accounts
+      context: ./works/accounts
     entrypoint: ["/migrate"]
     environment:
       CASSANDRA_HOST: cassandra
@@ -98,7 +98,7 @@ services:
 
   transfer-migrate:
     build:
-      context: ./packages/backend/transfer
+      context: ./works/transfer
     entrypoint: ["/migrate"]
     environment:
       CASSANDRA_HOST: cassandra
@@ -109,7 +109,7 @@ services:
 
   transaction-migrate:
     build:
-      context: ./packages/backend/transactions
+      context: ./works/transactions
     entrypoint: ["/migrate"]
     environment:
       CASSANDRA_HOST: cassandra
@@ -120,7 +120,7 @@ services:
 
   api-gateway:
     build:
-      context: ./packages/backend/api-gateway
+      context: ./works/api-gateway
     ports:
       - "8080:8080"
     environment:
@@ -147,7 +147,7 @@ services:
 
   auth-service:
     build:
-      context: ./packages/backend/auth
+      context: ./works/auth
     ports:
       - "8081:8081"
     environment:
@@ -172,7 +172,7 @@ services:
 
   account-service:
     build:
-      context: ./packages/backend/accounts
+      context: ./works/accounts
     ports:
       - "8082:8082"
     environment:
@@ -198,7 +198,7 @@ services:
 
   transfer-service:
     build:
-      context: ./packages/backend/transfer
+      context: ./works/transfer
     ports:
       - "8083:8083"
     environment:
@@ -224,7 +224,7 @@ services:
 
   transaction-service:
     build:
-      context: ./packages/backend/transactions
+      context: ./works/transactions
     ports:
       - "8084:8084"
     environment:
@@ -250,7 +250,7 @@ services:
 
   account-consumer:
     build:
-      context: ./packages/backend/accounts
+      context: ./works/accounts
     entrypoint: ["/consumer"]
     environment:
       APP_ENV: ${APP_ENV:-development}
@@ -274,7 +274,7 @@ services:
 
   transfer-consumer:
     build:
-      context: ./packages/backend/transfer
+      context: ./works/transfer
     entrypoint: ["/consumer"]
     environment:
       APP_ENV: ${APP_ENV:-development}
@@ -296,7 +296,7 @@ services:
 
   transaction-consumer:
     build:
-      context: ./packages/backend/transactions
+      context: ./works/transactions
     entrypoint: ["/consumer"]
     environment:
       APP_ENV: ${APP_ENV:-development}
@@ -318,7 +318,7 @@ services:
 
   frontend:
     build:
-      context: ./packages/frontend/app
+      context: ./packages/app
     ports:
       - "${FRONTEND_PORT:-3000}:80"
     depends_on:

@@ -9,7 +9,7 @@ Defines Go project structure, code organization, and dependency injection patter
 ## Project Structure
 
 ```text
-packages/backend/<service>/
+works/<service>/
 ├── cmd/
 │   ├── api/           # API server entry point (main.go)
 │   ├── consumer/      # Kafka consumer entry point (main.go)

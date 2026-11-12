@@ -4,7 +4,7 @@
 
 - Docker and Docker Compose (v2.0+)
 - Go (version declared in each service's `go.mod`; Go 1.22+ required)
-- Node.js (version pinned in `packages/frontend/app/package.json` `engines` and CI)
+- Node.js (version pinned in `packages/app/package.json` `engines` and CI)
 - pnpm
 - GNU Make (optional, for convenience commands)
 - Git (v2.30+)
@@ -64,31 +64,31 @@ service names are `zookeeper`, `kafka`, `kafka-init`, `cassandra`, `api-gateway`
 
 - **api-gateway**: Go API gateway (routing, auth enforcement, rate limiting)
   - Port: 8080 (HTTP API under `/api/v1`, health endpoints at root)
-  - Build context: `./packages/backend/api-gateway`
+  - Build context: `./works/api-gateway`
   - Dependencies: auth-service, account-service, transfer-service, transaction-service
   - Environment: `AUTH_SERVICE_URL`, `ACCOUNT_SERVICE_URL`, `TRANSFER_SERVICE_URL`, `TRANSACTION_SERVICE_URL`, `JWT_PUBLIC_KEY_PEM`, `JWT_KEY_ID`, `CORS_ORIGINS`, `RATE_LIMIT_AUTH_PER_MIN`, `RATE_LIMIT_USER_PER_MIN`, `LOGIN_LOCKOUT_FAILURES`, `LOGIN_LOCKOUT_WINDOW_MINUTES`, `LOG_LEVEL`
 
 - **auth-service**: Go Auth Service (owns `auth_keyspace`)
   - Port: 8081
-  - Build context: `./packages/backend/auth`
+  - Build context: `./works/auth`
   - Dependencies: cassandra, kafka
   - Environment: `CASSANDRA_HOST`, `CASSANDRA_KEYSPACE=auth_keyspace`, `KAFKA_BROKERS`, `JWT_PRIVATE_KEY_PEM`, `JWT_PUBLIC_KEY_PEM`, `JWT_KEY_ID`, `LOG_LEVEL`
 
 - **account-service**: Go Account Service (owns `account_keyspace`); the compose container runs the HTTP API only. The saga consumer runs as a separate `account-consumer` container from the same image (entry point `/consumer`)
   - Port: 8082
-  - Build context: `./packages/backend/accounts`
+  - Build context: `./works/accounts`
   - Dependencies: cassandra, kafka
   - Environment: `CASSANDRA_HOST`, `CASSANDRA_KEYSPACE=account_keyspace`, `KAFKA_BROKERS`, `KAFKA_TOPIC_TRANSFERS`, `KAFKA_TOPIC_TRANSFERS_DLQ`, `KAFKA_CONSUMER_GROUP=account-service-saga`, `JWT_PUBLIC_KEY_PEM`, `JWT_KEY_ID`, `LOG_LEVEL`
 
 - **transfer-service**: Go Transfer Service — saga orchestrator (owns `transfer_keyspace`); the compose container runs the HTTP API only. The saga consumer runs as a separate `transfer-consumer` container from the same image (entry point `/consumer`)
   - Port: 8083
-  - Build context: `./packages/backend/transfer`
+  - Build context: `./works/transfer`
   - Dependencies: cassandra, kafka
   - Environment: `CASSANDRA_HOST`, `CASSANDRA_KEYSPACE=transfer_keyspace`, `KAFKA_BROKERS`, `KAFKA_TOPIC_TRANSFERS`, `KAFKA_TOPIC_TRANSFERS_DLQ`, `KAFKA_CONSUMER_GROUP=transfer-service-saga`, `JWT_PUBLIC_KEY_PEM`, `JWT_KEY_ID`, `LOG_LEVEL`
 
 - **transaction-service**: Go Transaction Service — read model (owns `transaction_keyspace`); the compose container runs the HTTP API only. The projection consumer runs as a separate `transaction-consumer` container from the same image (entry point `/consumer`)
   - Port: 8084
-  - Build context: `./packages/backend/transactions`
+  - Build context: `./works/transactions`
   - Dependencies: cassandra, kafka
   - Environment: `CASSANDRA_HOST`, `CASSANDRA_KEYSPACE=transaction_keyspace`, `KAFKA_BROKERS`, `KAFKA_TOPIC_TRANSFERS`, `KAFKA_TOPIC_TRANSFERS_DLQ`, `KAFKA_CONSUMER_GROUP=transaction-service-projection`, `JWT_PUBLIC_KEY_PEM`, `JWT_KEY_ID`, `LOG_LEVEL`
 
@@ -98,7 +98,7 @@ service names are `zookeeper`, `kafka`, `kafka-init`, `cassandra`, `api-gateway`
 
 - **frontend**: React frontend served by nginx from the production build
   - Port: 3000 (host) → 80 (nginx)
-  - Build context: `./packages/frontend/app`
+  - Build context: `./packages/app`
   - Dependencies: api-gateway
   - Environment: the API base URL is compiled into the bundle at build time from `VITE_API_BASE` (empty by default = same-origin; nginx proxies `/api` to the gateway)
 
@@ -211,17 +211,17 @@ Run services on the host for faster iteration. Point Cassandra at `localhost` an
 Kafka at the external listener (`localhost:29092`):
 
 ```bash
-cd packages/backend/api-gateway && go run cmd/api/main.go
-cd packages/backend/auth && go run cmd/api/main.go
-cd packages/backend/accounts && go run cmd/api/main.go
-cd packages/backend/transfer && go run cmd/api/main.go
-cd packages/backend/transactions && go run cmd/api/main.go
+cd works/api-gateway && go run cmd/api/main.go
+cd works/auth && go run cmd/api/main.go
+cd works/accounts && go run cmd/api/main.go
+cd works/transfer && go run cmd/api/main.go
+cd works/transactions && go run cmd/api/main.go
 ```
 
 ### Frontend Development (Hot Module Replacement)
 
 ```bash
-cd packages/frontend/app
+cd packages/app
 pnpm dev
 ```
 
@@ -236,9 +236,9 @@ To run a consumer against the host toolchain instead, use the external listener 
 `localhost:29092`:
 
 ```bash
-cd packages/backend/transfer && go run cmd/consumer/main.go
-cd packages/backend/accounts && go run cmd/consumer/main.go
-cd packages/backend/transactions && go run cmd/consumer/main.go
+cd works/transfer && go run cmd/consumer/main.go
+cd works/accounts && go run cmd/consumer/main.go
+cd works/transactions && go run cmd/consumer/main.go
 ```
 
 To run one as a detached one-off container from the built image:

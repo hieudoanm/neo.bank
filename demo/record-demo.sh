@@ -21,7 +21,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DEMO_DIR="$ROOT/demo"
-APP_DIR="$ROOT/packages/frontend/app"
+APP_DIR="$ROOT/packages/app"
 COMPOSE_FILE="$ROOT/docker-compose.yaml"
 OUTPUT="$DEMO_DIR/demo.mp4"
 

@@ -159,15 +159,15 @@ This snapshot reflects the repository state on 2026-10-17. It is intentionally s
 
 ### Implemented
 
-- **Backend services** (`packages/backend/`): `api-gateway`, `auth`, `accounts`, `transfer`, and `transactions` — each an independent Go module with its own Cassandra keyspace, CQL migrations, and `/healthz`/`/readyz` endpoints.
+- **Backend services** (`works/`): `api-gateway`, `auth`, `accounts`, `transfer`, and `transactions` — each an independent Go module with its own Cassandra keyspace, CQL migrations, and `/healthz`/`/readyz` endpoints.
   - Auth: `POST /api/v1/register`, `/login`, `/refresh`, `/logout` (Argon2id passwords, RS256 JWT).
   - Accounts: `GET /api/v1/accounts/{accountId}/balance`.
   - Transfer: `POST /api/v1/transfers` (idempotency key), `GET /api/v1/transfers/{transferId}`.
   - Transactions: `GET /api/v1/accounts/{accountId}/transactions` (cursor pagination, max page size 100).
 - **Event-driven saga** on the `transfers` topic: the Transfer Service orchestrates debit/credit commands, the Account Service applies them with Cassandra LWTs and claims idempotency keys in `processed_commands`, and a Transaction Service projection consumer builds the read model. Consumers run in distinct groups (`transfer-service-saga`, `account-service-saga`, `transaction-service-projection`).
-- **Frontend** (`packages/frontend/app/`): React + TypeScript + TanStack Query with Login, Register, Dashboard (balance), Transfer form, Transfer Status (polling), and Transactions (cursor-paginated) screens. Protected calls send `Authorization: Bearer`.
+- **Frontend** (`packages/app/`): React + TypeScript + TanStack Query with Login, Register, Dashboard (balance), Transfer form, Transfer Status (polling), and Transactions (cursor-paginated) screens. Protected calls send `Authorization: Bearer`.
 - **Local topology**: `docker-compose.yaml` runs gateway + 4 services + 3 consumers + Cassandra + Kafka + ZooKeeper + frontend.
-- **API Gateway rate limiting** (`packages/backend/api-gateway/`): per-IP sliding-window limit on the public auth routes, per-user (JWT subject) limit on authenticated routes, and a per-IP login lockout after repeated failures; rejects with `429 RATE_LIMITED` and a `Retry-After` header (limits in [`06-api-specification.md` §8](06-api-specification.md#8-rate-limiting)).
+- **API Gateway rate limiting** (`works/api-gateway/`): per-IP sliding-window limit on the public auth routes, per-user (JWT subject) limit on authenticated routes, and a per-IP login lockout after repeated failures; rejects with `429 RATE_LIMITED` and a `Retry-After` header (limits in [`06-api-specification.md` §8](06-api-specification.md#8-rate-limiting)).
 - **Tests**: Go unit tests with fakes covering API Gateway rate limiting, security (cross-account access returns `404`, injection payloads rejected before reaching Cassandra), and idempotency (duplicate transfer keys and duplicate Kafka events), plus Vitest frontend tests for the authentication, transfer, transfer-status, and transactions screens, UI primitives, hooks, routing, and the API client, with an enforced **80% coverage** threshold (`pnpm test` runs `vitest --coverage`).
 - **CI** (`.github/workflows/ci.yml`): per-service Go formatting (`gofmt`), `go vet`, build and tests; frontend typecheck, tests, and build; and Trivy security scanning (filesystem dependencies plus each container image) with SARIF upload to GitHub code scanning, failing on fixable Critical/High findings.
 

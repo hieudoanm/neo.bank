@@ -13,7 +13,7 @@ Build small, deterministic, non-root images with a multi-stage build.
 Every service is an independent Go module with its own binary, so each owns a small Dockerfile. The example below is `auth-service`; `api-gateway`, `account-service`, `transfer-service`, and `transaction-service` follow the same shape.
 
 ```dockerfile
-# packages/backend/auth/Dockerfile
+# works/auth/Dockerfile
 FROM golang:1.27-alpine AS build
 WORKDIR /src
 COPY go.mod go.sum ./
@@ -49,7 +49,7 @@ Rules:
 ### Frontend
 
 ```dockerfile
-# packages/frontend/app/Dockerfile
+# packages/app/Dockerfile
 FROM node:24.22.0-alpine AS build
 WORKDIR /src
 COPY package.json pnpm-lock.yaml ./
@@ -68,7 +68,7 @@ ENTRYPOINT ["nginx", "-g", "daemon off;"]
 Keep the context small and explicit.
 
 ```dockerignore
-# packages/backend/auth/.dockerignore
+# works/auth/.dockerignore
 .git
 **/*_test.go
 coverage.out
@@ -160,7 +160,7 @@ services:
 
   api-gateway:
     build:
-      context: ./packages/backend/api-gateway
+      context: ./works/api-gateway
       dockerfile: Dockerfile
     depends_on:
       - auth-service
@@ -172,7 +172,7 @@ services:
 
   auth-service:
     build:
-      context: ./packages/backend/auth
+      context: ./works/auth
       dockerfile: Dockerfile
     depends_on:
       cassandra:
@@ -188,7 +188,7 @@ services:
 
   frontend:
     build:
-      context: ./packages/frontend/app
+      context: ./packages/app
       dockerfile: Dockerfile
     depends_on:
       - api-gateway
@@ -201,13 +201,13 @@ volumes:
 
 Rules:
 
-- Services: `zookeeper`, `kafka`, `kafka-init`, `cassandra`, `api-gateway`, `auth-service`, `account-service`, `transfer-service`, `transaction-service`, `account-consumer`, `transfer-consumer`, `transaction-consumer`, `frontend`. `account-service`, `transfer-service`, and `transaction-service` follow the `auth-service` shape (build context `./packages/backend/<service>`, health-gated `depends_on`, their own keyspace variable).
+- Services: `zookeeper`, `kafka`, `kafka-init`, `cassandra`, `api-gateway`, `auth-service`, `account-service`, `transfer-service`, `transaction-service`, `account-consumer`, `transfer-consumer`, `transaction-consumer`, `frontend`. `account-service`, `transfer-service`, and `transaction-service` follow the `auth-service` shape (build context `./works/<service>`, health-gated `depends_on`, their own keyspace variable).
 - **Kafka consumers run as their own containers** from the same image, with the entry point overridden, e.g.:
 
   ```yaml
   account-consumer:
     build:
-      context: ./packages/backend/accounts
+      context: ./works/accounts
     entrypoint: ["/consumer"]
     environment:
       - CASSANDRA_HOST=cassandra

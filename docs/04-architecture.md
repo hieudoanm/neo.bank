@@ -165,7 +165,7 @@ neo.bank/
 Each Go service follows the same internal boundaries (API/handlers, core/config/security/errors, db, models, repositories, services/commands, consumers/projections):
 
 ```text
-packages/backend/<service>/
+works/<service>/
 ├── cmd/api/main.go
 ├── cmd/consumer/main.go
 ├── cmd/migrate/main.go

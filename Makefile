@@ -8,22 +8,22 @@ help:
 	@echo "  compose-ps      Show running stack containers"
 
 build:
-	@for d in packages/backend/*; do (cd $$d && go build ./...); done
-	@cd packages/frontend/app && pnpm build
+	@for d in works/*; do (cd $$d && go build ./...); done
+	@cd packages/app && pnpm build
 
 test:
 	@bash scripts/coverage/backend.sh --all
-	@cd packages/frontend/app && pnpm test
+	@cd packages/app && pnpm test
 
 lint:
-	@for d in packages/backend/*; do \
+	@for d in works/*; do \
 		(cd $$d && test -z "$$(gofmt -l .)" && go vet ./...) || exit 1; \
 	done
-	@cd packages/frontend/app && pnpm lint && pnpm format:check
+	@cd packages/app && pnpm lint && pnpm format:check
 
 typecheck:
-	@for d in packages/backend/*; do (cd $$d && go vet ./...); done
-	@cd packages/frontend/app && pnpm typecheck
+	@for d in works/*; do (cd $$d && go vet ./...); done
+	@cd packages/app && pnpm typecheck
 
 compose-up:
 	docker compose up -d --build
@@ -38,4 +38,4 @@ compose-ps:
 	docker compose ps
 
 clean:
-	@rm -rf packages/frontend/app/dist packages/frontend/app/node_modules/.cache
+	@rm -rf packages/app/dist packages/app/node_modules/.cache

@@ -185,7 +185,7 @@ Repositories issue reads and writes at `QUORUM` unconditionally and lightweight 
 
 CQL migrations are versioned and applied in order. Each migration is a CQL script that is idempotent.
 
-Migrations live with the owning service under `packages/backend/<service>/internal/db/migrations/` with filenames like `001_create_tables.cql`, `002_add_lookup_tables.cql`, etc. Each service owns and applies only its own migrations.
+Migrations live with the owning service under `works/<service>/internal/db/migrations/` with filenames like `001_create_tables.cql`, `002_add_lookup_tables.cql`, etc. Each service owns and applies only its own migrations.
 
 Migration state is tracked in a `schema_migrations` table per keyspace:
 

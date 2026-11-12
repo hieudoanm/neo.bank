@@ -34,8 +34,8 @@ Compose lint-staged for staged-file-only checks to keep `pre-commit` fast:
 ```json
 {
   "lint-staged": {
-    "packages/frontend/app/src/**/*.{ts,tsx}": [
-      "pnpm -C packages/frontend/app exec tsc --noEmit --skipLibCheck"
+    "packages/app/src/**/*.{ts,tsx}": [
+      "pnpm -C packages/app exec tsc --noEmit --skipLibCheck"
     ]
   }
 }

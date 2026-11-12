@@ -68,7 +68,7 @@ Run the relevant checks through the root Makefile or CI pipeline. Never weaken a
 
 ### Structure
 
-Each service lives in `packages/backend/<service>/` and is an independent Go module. It owns its binary, its CQL migrations, and its Cassandra keyspace.
+Each service lives in `works/<service>/` and is an independent Go module. It owns its binary, its CQL migrations, and its Cassandra keyspace.
 
 - `cmd/api/main.go` — HTTP API server entry point.
 - `cmd/consumer/main.go` — Kafka consumer entry point.

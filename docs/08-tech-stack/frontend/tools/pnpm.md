@@ -9,11 +9,11 @@ pnpm is the root-level package manager for the repository (see [tech stack §13.
 | Task           | Command                                                        |
 | -------------- | -------------------------------------------------------------- |
 | Install (root) | `pnpm install`                                                 |
-| Frontend dev   | `pnpm -C packages/frontend/app dev`                            |
-| Frontend build | `pnpm -C packages/frontend/app build`                          |
-| Typecheck      | `pnpm -C packages/frontend/app typecheck`                      |
-| Tests          | `pnpm -C packages/frontend/app test`                           |
-| Add dependency | `pnpm -C packages/frontend/app add <pkg>` (runtime) / `add -D` |
+| Frontend dev   | `pnpm -C packages/app dev`                            |
+| Frontend build | `pnpm -C packages/app build`                          |
+| Typecheck      | `pnpm -C packages/app typecheck`                      |
+| Tests          | `pnpm -C packages/app test`                           |
+| Add dependency | `pnpm -C packages/app add <pkg>` (runtime) / `add -D` |
 | Add at root    | `pnpm add -D <pkg>` (run from repo root)                       |
 
 Rules:
@@ -25,7 +25,7 @@ Rules:
 
 ## 2. Workspaces
 
-A root `pnpm-workspace.yaml` (if added) declares `packages/*`; the frontend app is `packages/frontend/app`. Until then, the frontend is a standalone package and dev tooling lives at the root via `pnpm add -D` (run from repo root).
+A root `pnpm-workspace.yaml` (if added) declares `packages/*`; the frontend app is `packages/app`. Until then, the frontend is a standalone package and dev tooling lives at the root via `pnpm add -D` (run from repo root).
 
 ## 3. CI Caching
 

@@ -29,15 +29,15 @@ jobs:
           go-version: "1.27.4"
       - name: Verify formatting
         run: |
-          cd packages/backend/${{ matrix.service }}
+          cd works/${{ matrix.service }}
           test -z "$(gofmt -l .)"
       - name: Vet, build, and test with coverage
         run: |
-          cd packages/backend/${{ matrix.service }}
+          cd works/${{ matrix.service }}
           go vet ./...
           go build ./...
           cd "$GITHUB_WORKSPACE"
-          bash scripts/coverage/backend.sh packages/backend/${{ matrix.service }}
+          bash scripts/coverage/backend.sh works/${{ matrix.service }}
 
   frontend:
     runs-on: ubuntu-latest
@@ -54,7 +54,7 @@ jobs:
           node-version-file: .nvmrc
       - name: Build and test
         run: |
-          cd packages/frontend/app
+          cd packages/app
           pnpm install --no-frozen-lockfile
           pnpm typecheck
           pnpm lint
@@ -83,7 +83,7 @@ jobs:
             exit 0
           fi
           git fetch --depth=1 origin "${{ github.event.before }}"
-          if git diff --name-only "${{ github.event.before }}" HEAD | grep -q '^packages/frontend/landing/'; then
+          if git diff --name-only "${{ github.event.before }}" HEAD | grep -q '^packages/landing/'; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "changed=false" >> "$GITHUB_OUTPUT"
@@ -92,7 +92,7 @@ jobs:
         if: github.ref == 'refs/heads/master' && steps.changes.outputs.changed == 'true'
         uses: actions/upload-pages-artifact@v5.0.0
         with:
-          path: packages/frontend/landing
+          path: packages/landing
 
   landing-deploy:
     name: Landing - Deploy

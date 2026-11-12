@@ -12,7 +12,7 @@
 #   * internal/repositories/  Cassandra CQL queries and row mapping
 #
 # Usage:
-#   ./scripts/coverage/backend.sh packages/backend/auth [threshold]
+#   ./scripts/coverage/backend.sh works/auth [threshold]
 #   ./scripts/coverage/backend.sh --all [threshold]
 #
 # The threshold defaults to 80 (percent). Exit code is non-zero if any module
@@ -62,8 +62,8 @@ status=0
 if [ "${1:-}" = "--all" ]; then
   threshold="${2:-}"
   [ -n "${threshold}" ] && THRESHOLD="${threshold}"
-  for dir in "${REPO_ROOT}"/packages/backend/*/; do
-    check_module "packages/backend/$(basename "${dir}")" || status=1
+  for dir in "${REPO_ROOT}"/works/*/; do
+    check_module "works/$(basename "${dir}")" || status=1
   done
 else
   [ "$#" -ge 1 ] || { echo "usage: $0 <module-dir> [threshold] | --all [threshold]" >&2; exit 2; }
