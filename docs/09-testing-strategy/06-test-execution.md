@@ -10,8 +10,8 @@ Defines how to run tests locally and in CI, including commands, dependencies, an
 
 ```bash
 # Unit tests only (fast, no external dependencies)
-# Each service is its own module under packages/backend/<service>/ — run per service.
-cd packages/backend/<service>
+# Each service is its own module under works/<service>/ — run per service.
+cd works/<service>
 go test -short ./...
 
 # All backend tests including integration
@@ -33,7 +33,7 @@ go tool cover -html=coverage.out
 
 ```bash
 # Unit tests
-cd packages/frontend/app
+cd packages/app
 pnpm test
 
 # Unit tests with coverage

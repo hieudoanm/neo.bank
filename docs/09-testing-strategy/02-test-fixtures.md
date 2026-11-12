@@ -71,7 +71,7 @@ Seed data is loaded before test suites via a seed script:
 ### Seed Script
 
 ```go
-// packages/backend/<service>/tests/seeds/seed.go
+// works/<service>/tests/seeds/seed.go
 func SeedTestData(session *gocql.Session) error {
     // Create test accounts
     // Create test users

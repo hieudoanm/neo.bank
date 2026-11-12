@@ -29,12 +29,12 @@ at `http://localhost:8080` — the same path a real user takes.
    the credit in their history.
 
 The spec lives in
-[`packages/frontend/app/e2e/demo.spec.ts`](../packages/frontend/app/e2e/demo.spec.ts).
+[`packages/app/e2e/demo.spec.ts`](../packages/app/e2e/demo.spec.ts).
 
 ## Prerequisites
 
 - Docker with the Compose v2 plugin (`docker compose`).
-- Node and pnpm (the repo pins `pnpm` and Node in `packages/frontend/app/package.json`).
+- Node and pnpm (the repo pins `pnpm` and Node in `packages/app/package.json`).
 - `ffmpeg` on `PATH` (or Playwright's bundled copy, which the script falls back to).
 - A local `.env` with a JWT key pair — the services refuse to start without it:
 
@@ -65,7 +65,7 @@ The script:
    it returns `201`/`409` rather than a boot-time `5xx`);
 3. installs Playwright's Chromium if needed and runs the demo spec, recording
    the browser (the video is written under
-   `packages/frontend/app/test-results/`);
+   `packages/app/test-results/`);
 4. converts the recording to **`demo/demo.mp4`** with `ffmpeg`;
 5. tears the stack down.
 
@@ -89,16 +89,16 @@ KEEP_STACK=1 DEMO_SLOWMO=600 demo/record-demo.sh
 With a stack already running (e.g. start it yourself and pass `KEEP_STACK=1`):
 
 ```bash
-cd packages/frontend/app
+cd packages/app
 pnpm e2e:install   # first time only
 pnpm e2e           # or: pnpm exec playwright test
 ```
 
-Playwright records every run, so `packages/frontend/app/test-results/` always
+Playwright records every run, so `packages/app/test-results/` always
 holds the latest `.webm`. Convert it by hand if you want:
 
 ```bash
-ffmpeg -y -i packages/frontend/app/test-results/*/video.webm \
+ffmpeg -y -i packages/app/test-results/*/video.webm \
   -c:v libx264 -pix_fmt yuv420p -movflags +faststart demo/demo.mp4
 ```
 

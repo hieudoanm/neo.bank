@@ -12,7 +12,7 @@ Set up the project structure, tooling, local infrastructure, and CI pipeline tha
 
 | Deliverable | Description |
 |-------------|-------------|
-| Monorepo structure | pnpm workspace with the frontend app at `packages/frontend/app/` and Go service modules under `packages/backend/` (`api-gateway`, `auth`, `accounts`, `transfer`, `transactions`) |
+| Monorepo structure | pnpm workspace with the frontend app at `packages/app/` and Go service modules under `works/` (`api-gateway`, `auth`, `accounts`, `transfer`, `transactions`) |
 | Go service skeletons | `go.mod` per service, `cmd/api/main.go` (plus `cmd/consumer/main.go` and `cmd/migrate/main.go` where applicable), and `internal/` layout per `AGENTS.md` section 4 |
 | API Gateway routing skeleton | `GET /healthz` and `GET /readyz` at the root (outside `/api/v1`), plus a reverse-proxy route table that forwards `/api/v1/*` to each service. No JWT enforcement yet — that is added in Phase 2 |
 | React frontend skeleton | Vite + TypeScript + Tailwind + DaisyUI scaffold |

@@ -4,10 +4,10 @@ _Backend · part of the [NEO Bank tech stack](../../08-tech-stack.md) decision r
 
 ## 1. Schema Organization
 
-All schema lives in versioned migration scripts under each service's own module, `packages/backend/<service>/internal/db/migrations/`. Each service owns and applies only its own migrations; no service reads or writes another service's keyspace.
+All schema lives in versioned migration scripts under each service's own module, `works/<service>/internal/db/migrations/`. Each service owns and applies only its own migrations; no service reads or writes another service's keyspace.
 
 ```
-packages/backend/<service>/
+works/<service>/
 └── internal/db/
     ├── cassandra.go            # session, cluster config, health
     ├── migrations.go           # runner + schema_migrations tracking

@@ -45,8 +45,8 @@ jobs:
         with:
           go-version: '1.22'
           cache: true
-      - run: cd packages/backend/${{ matrix.service }} && golangci-lint run
-      - run: cd packages/backend/${{ matrix.service }} && go test ./... -coverprofile=coverage.out
+      - run: cd works/${{ matrix.service }} && golangci-lint run
+      - run: cd works/${{ matrix.service }} && go test ./... -coverprofile=coverage.out
 
   frontend:
     runs-on: ubuntu-latest
@@ -66,7 +66,7 @@ jobs:
 Rules:
 
 - Independent jobs (`backend`, `frontend`) run in parallel; keep them independent.
-- The backend job is a **matrix over the independent Go modules** under `packages/backend/` (the gateway plus each service, named by its directory: `api-gateway`, `auth`, `accounts`, `transfer`, `transactions`); there is no single Go module at `packages/backend/`.
+- The backend job is a **matrix over the independent Go modules** under `works/` (the gateway plus each service, named by its directory: `api-gateway`, `auth`, `accounts`, `transfer`, `transactions`); there is no single Go module at `works/`.
 - Cache dependencies with the built-in `cache:` option (`go`, `pnpm`); pin the tool version.
 - `pnpm install --frozen-lockfile` — CI never updates the lock file.
 - Fail on the first real error; do not mask exit codes with `|| true`.
@@ -120,8 +120,8 @@ jobs:
           --health-retries 12
     steps:
       - uses: actions/checkout@v4
-      - run: cd packages/backend/${{ matrix.service }} && go run cmd/migrate/main.go
-      - run: cd packages/backend/${{ matrix.service }} && go test ./...
+      - run: cd works/${{ matrix.service }} && go run cmd/migrate/main.go
+      - run: cd works/${{ matrix.service }} && go test ./...
 
 Rules:
 
@@ -151,7 +151,7 @@ Rules:
         if: always()
         with:
           name: playwright-report
-          path: packages/frontend/app/playwright-report/
+          path: packages/app/playwright-report/
 ```
 
 Rules:

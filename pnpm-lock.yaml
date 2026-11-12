@@ -15,7 +15,7 @@ importers:
         specifier: 17.6.0
         version: 17.6.0
 
-  packages/frontend/app:
+  packages/app:
     dependencies:
       '@tanstack/react-query':
         specifier: 5.107.1
@@ -152,10 +152,6 @@ packages:
     resolution: {integrity: sha512-fWegr+WsEsiMVW4KUNdIIzzMTZSzNiqhy0//6+2MRi2d5NFNsL/AYwBQW8eBnRbTBVRnDVzjaJEUqKaCWjMMdQ==}
     engines: {node: '>=6.9.0'}
 
-  '@babel/helper-string-parser@7.29.7':
-    resolution: {integrity: sha512-Pb5ijPrZ89GDH8223L4UP8i6QApWxs04RbPQJTeWDV0/keR2E36MeKnyr6LYmUUvqRRI+Iv87SuF1W6ErINzYw==}
-    engines: {node: '>=6.9.0'}
-
   '@babel/helper-validator-identifier@7.29.7':
     resolution: {integrity: sha512-qehxGkRj55h/ff8EMaJ+cYhyaKlHIxqYDn682wQD7RNp9UujOQsHog2uS0r2vzr4pW+sXf90NeeayjcNaX3fFg==}
     engines: {node: '>=6.9.0'}
@@ -173,11 +169,6 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
-  '@babel/parser@7.29.9':
-    resolution: {integrity: sha512-CjXrNHTnvqBVqHgdBysY3vk2T8tpJHb5/RMeHJBTyVa9xgugCB0CJTx/3oO8RV2QRQP391RWpB7D6hLjm8V9uA==}
-    engines: {node: '>=6.0.0'}
-    hasBin: true
-
   '@babel/runtime@7.29.10':
     resolution: {integrity: sha512-NpugTzbKgGrNe45Ui32cN8vCFFMxVtP/9rtfwv0nP5FRDAjvYBxJcLVpYA9mr1jxP6cnIT7x9LUzuDTbWYYNRA==}
     engines: {node: '>=6.9.0'}
@@ -192,10 +183,6 @@ packages:
 
   '@babel/types@7.29.11':
     resolution: {integrity: sha512-WCsemW40Cpc6gouC1SrY6PBaZ+oLRlEVY9XBvZBI7il/HyUrb2nJ505wE1MHEFyDZNnrWDEuy4jL50WVHfTTSQ==}
-    engines: {node: '>=6.9.0'}
-
-  '@babel/types@7.29.8':
-    resolution: {integrity: sha512-Vj1jF3cPfxg7OAfoI7QnVKLoILlm2JF9pnVHrX8qx7AHMiYWT+NDAA7jChlNgRS4WTLc/fD1lXLmPixluj+3Gg==}
     engines: {node: '>=6.9.0'}
 
   '@bcoe/v8-coverage@1.0.2':
@@ -1618,8 +1605,6 @@ snapshots:
 
   '@babel/helper-string-parser@7.29.13': {}
 
-  '@babel/helper-string-parser@7.29.7': {}
-
   '@babel/helper-validator-identifier@7.29.7': {}
 
   '@babel/helper-validator-option@7.29.7': {}
@@ -1633,16 +1618,12 @@ snapshots:
     dependencies:
       '@babel/types': 7.29.11
 
-  '@babel/parser@7.29.9':
-    dependencies:
-      '@babel/types': 7.29.8
-
   '@babel/runtime@7.29.10': {}
 
   '@babel/template@7.29.7':
     dependencies:
       '@babel/code-frame': 7.29.7
-      '@babel/parser': 7.29.9
+      '@babel/parser': 7.29.13
       '@babel/types': 7.29.11
 
   '@babel/traverse@7.29.13':
@@ -1660,11 +1641,6 @@ snapshots:
   '@babel/types@7.29.11':
     dependencies:
       '@babel/helper-string-parser': 7.29.13
-      '@babel/helper-validator-identifier': 7.29.7
-
-  '@babel/types@7.29.8':
-    dependencies:
-      '@babel/helper-string-parser': 7.29.7
       '@babel/helper-validator-identifier': 7.29.7
 
   '@bcoe/v8-coverage@1.0.2': {}
@@ -2206,7 +2182,7 @@ snapshots:
   eslint-plugin-react-hooks@7.1.1(eslint@10.14.0(jiti@2.7.0)):
     dependencies:
       '@babel/core': 7.29.13
-      '@babel/parser': 7.29.9
+      '@babel/parser': 7.29.13
       eslint: 10.14.0(jiti@2.7.0)
       hermes-parser: 0.25.1
       zod: 4.6.7
@@ -2502,8 +2478,8 @@ snapshots:
 
   magicast@0.5.5:
     dependencies:
-      '@babel/parser': 7.29.9
-      '@babel/types': 7.29.8
+      '@babel/parser': 7.29.13
+      '@babel/types': 7.29.11
       source-map-js: 1.2.2
 
   min-indent@1.0.1: {}
