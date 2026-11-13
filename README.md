@@ -9,9 +9,7 @@ A full-stack banking application demonstrating core financial operations —
 account registration, authentication, balance inquiry, and fund transfers —
 built as an event-driven microservices system.
 
-<p align="center">
-  <img src="assets/branding/png/og.png" alt="neo.bank — a full-stack banking application" width="720">
-</p>
+![neo.bank — a full-stack banking application](assets/branding/png/og.png)
 
 **Live demo:** <https://hieudoanm.github.io/neo.bank/>
 
@@ -30,7 +28,7 @@ service owns its own Cassandra keyspace.
 
 ## Repository layout
 
-```
+```text
 packages/
   backend/
     api-gateway/      # Routing, JWT auth enforcement, rate limiting, CORS
