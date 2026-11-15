@@ -1,0 +1,19 @@
+# NEO Bank
+
+> Event-driven banking platform demo: register in minutes, check your balance
+> in real time, and send money instantly with bank-grade security.
+
+NEO Bank is a full-stack banking application built as event-driven
+microservices — an API gateway in front of Auth, Account, Transfer (saga
+orchestrator), and Transaction services, each owning its own Cassandra
+keyspace, with Kafka for asynchronous events, Docker Compose for local
+topology, and Kubernetes/Terraform for cloud deployment.
+
+## Pages
+
+- [Landing page](https://hieudoanm.github.io/neo.bank/)
+
+## Source
+
+- Repository: https://github.com/hieudoanm/neo.bank
+- Documentation: `docs/` in the repository (normative product and architecture docs)
