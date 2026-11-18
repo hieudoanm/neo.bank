@@ -1,3 +1,1 @@
-pnpm -C packages/app exec tsc --noEmit
-pnpm -C packages/app lint
-pnpm -C packages/app format:check
+pnpm exec lint-staged

@@ -1,0 +1,13 @@
+node_modules/
+vendor/
+pnpm-lock.yaml
+dist/
+coverage/
+target/
+.next/
+gen/
+test-results/
+playwright-report/
+e2e/artifacts/
+**/.intellijPlatform/
+*.tsbuildinfo

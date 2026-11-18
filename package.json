@@ -17,7 +17,15 @@
     "prepare": "husky || true"
   },
   "devDependencies": {
+    "@commitlint/cli": "21.2.4",
+    "@commitlint/config-conventional": "21.2.4",
     "husky": "9.1.7",
-    "lint-staged": "17.6.1"
+    "lint-staged": "17.6.1",
+    "prettier": "3.10.1",
+    "prettier-plugin-tailwindcss": "0.8.1"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs,cjs,json,jsonc,md,mdx,css,scss,html,yml,yaml}": "prettier --cache --write",
+    "!(vendor)/**/*.rs": "rustfmt --edition 2024"
   }
 }
