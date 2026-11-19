@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "5.108.1",
-    "autoprefixer": "10.6.2",
+    "autoprefixer": "10.7.0",
     "clsx": "2.1.1",
     "daisyui": "5.8.1",
     "postcss": "8.5.33",
