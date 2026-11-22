@@ -602,10 +602,80 @@
       "confidence": "high"
     },
     {
+      "name": "jwt",
+      "displayName": "JWT",
+      "family": "go",
+      "version": null,
+      "confidence": "high"
+    },
+    {
+      "name": "kafka",
+      "displayName": "Kafka clients",
+      "family": "go",
+      "version": null,
+      "confidence": "high"
+    },
+    {
+      "name": "mongo",
+      "displayName": "MongoDB driver",
+      "family": "go",
+      "version": null,
+      "confidence": "medium"
+    },
+    {
+      "name": "playwright",
+      "displayName": "Playwright",
+      "family": "ecmascript",
+      "version": "1.65.2",
+      "confidence": "high"
+    },
+    {
       "name": "react",
       "displayName": "React",
       "family": "ecmascript",
       "version": "eslint",
+      "confidence": "high"
+    },
+    {
+      "name": "tailwindcss",
+      "displayName": "Tailwind CSS",
+      "family": "ecmascript",
+      "version": "eslint",
+      "confidence": "medium"
+    },
+    {
+      "name": "tanstack",
+      "displayName": "TanStack",
+      "family": "ecmascript",
+      "version": "eslint",
+      "confidence": "high"
+    },
+    {
+      "name": "uuid",
+      "displayName": "UUID",
+      "family": "go",
+      "version": null,
+      "confidence": "high"
+    },
+    {
+      "name": "validator",
+      "displayName": "validator",
+      "family": "go",
+      "version": null,
+      "confidence": "medium"
+    },
+    {
+      "name": "vite",
+      "displayName": "Vite",
+      "family": "ecmascript",
+      "version": "tanstack",
+      "confidence": "medium"
+    },
+    {
+      "name": "vitest",
+      "displayName": "Vitest",
+      "family": "ecmascript",
+      "version": "tanstack",
       "confidence": "high"
     }
   ],
@@ -10973,6 +11043,46 @@
       }
     },
     {
+      "id": "framework:jwt",
+      "kind": "framework",
+      "name": "JWT",
+      "metadata": {
+        "confidence": "high",
+        "family": "go",
+        "framework": "jwt"
+      }
+    },
+    {
+      "id": "framework:kafka",
+      "kind": "framework",
+      "name": "Kafka clients",
+      "metadata": {
+        "confidence": "high",
+        "family": "go",
+        "framework": "kafka"
+      }
+    },
+    {
+      "id": "framework:mongo",
+      "kind": "framework",
+      "name": "MongoDB driver",
+      "metadata": {
+        "confidence": "medium",
+        "family": "go",
+        "framework": "mongo"
+      }
+    },
+    {
+      "id": "framework:playwright:1.65.2",
+      "kind": "framework",
+      "name": "Playwright",
+      "metadata": {
+        "confidence": "high",
+        "family": "ecmascript",
+        "framework": "playwright"
+      }
+    },
+    {
       "id": "framework:react:eslint",
       "kind": "framework",
       "name": "React",
@@ -10980,6 +11090,66 @@
         "confidence": "high",
         "family": "ecmascript",
         "framework": "react"
+      }
+    },
+    {
+      "id": "framework:tailwindcss:eslint",
+      "kind": "framework",
+      "name": "Tailwind CSS",
+      "metadata": {
+        "confidence": "medium",
+        "family": "ecmascript",
+        "framework": "tailwindcss"
+      }
+    },
+    {
+      "id": "framework:tanstack:eslint",
+      "kind": "framework",
+      "name": "TanStack",
+      "metadata": {
+        "confidence": "high",
+        "family": "ecmascript",
+        "framework": "tanstack"
+      }
+    },
+    {
+      "id": "framework:uuid",
+      "kind": "framework",
+      "name": "UUID",
+      "metadata": {
+        "confidence": "high",
+        "family": "go",
+        "framework": "uuid"
+      }
+    },
+    {
+      "id": "framework:validator",
+      "kind": "framework",
+      "name": "validator",
+      "metadata": {
+        "confidence": "medium",
+        "family": "go",
+        "framework": "validator"
+      }
+    },
+    {
+      "id": "framework:vite:tanstack",
+      "kind": "framework",
+      "name": "Vite",
+      "metadata": {
+        "confidence": "medium",
+        "family": "ecmascript",
+        "framework": "vite"
+      }
+    },
+    {
+      "id": "framework:vitest:tanstack",
+      "kind": "framework",
+      "name": "Vitest",
+      "metadata": {
+        "confidence": "high",
+        "family": "ecmascript",
+        "framework": "vitest"
       }
     },
     {
@@ -342956,7 +343126,77 @@
     },
     {
       "source": "repository:.",
+      "target": "framework:jwt",
+      "kind": "uses_framework",
+      "status": "resolved_internal",
+      "origin": "syntax"
+    },
+    {
+      "source": "repository:.",
+      "target": "framework:kafka",
+      "kind": "uses_framework",
+      "status": "resolved_internal",
+      "origin": "syntax"
+    },
+    {
+      "source": "repository:.",
+      "target": "framework:mongo",
+      "kind": "uses_framework",
+      "status": "resolved_internal",
+      "origin": "syntax"
+    },
+    {
+      "source": "repository:.",
+      "target": "framework:playwright:1.65.2",
+      "kind": "uses_framework",
+      "status": "resolved_internal",
+      "origin": "syntax"
+    },
+    {
+      "source": "repository:.",
       "target": "framework:react:eslint",
+      "kind": "uses_framework",
+      "status": "resolved_internal",
+      "origin": "syntax"
+    },
+    {
+      "source": "repository:.",
+      "target": "framework:tailwindcss:eslint",
+      "kind": "uses_framework",
+      "status": "resolved_internal",
+      "origin": "syntax"
+    },
+    {
+      "source": "repository:.",
+      "target": "framework:tanstack:eslint",
+      "kind": "uses_framework",
+      "status": "resolved_internal",
+      "origin": "syntax"
+    },
+    {
+      "source": "repository:.",
+      "target": "framework:uuid",
+      "kind": "uses_framework",
+      "status": "resolved_internal",
+      "origin": "syntax"
+    },
+    {
+      "source": "repository:.",
+      "target": "framework:validator",
+      "kind": "uses_framework",
+      "status": "resolved_internal",
+      "origin": "syntax"
+    },
+    {
+      "source": "repository:.",
+      "target": "framework:vite:tanstack",
+      "kind": "uses_framework",
+      "status": "resolved_internal",
+      "origin": "syntax"
+    },
+    {
+      "source": "repository:.",
+      "target": "framework:vitest:tanstack",
       "kind": "uses_framework",
       "status": "resolved_internal",
       "origin": "syntax"
@@ -351105,8 +351345,8 @@
   "statistics": {
     "files": 342,
     "packages": 67,
-    "nodes": 5195,
-    "edges": 17355,
+    "nodes": 5205,
+    "edges": 17365,
     "symbols": 3684,
     "unresolvedEdges": 4440,
     "diagnostics": 260,
@@ -351116,7 +351356,7 @@
       "constructor": 1,
       "external_symbol": 221,
       "file": 342,
-      "framework": 3,
+      "framework": 13,
       "function": 631,
       "interface": 28,
       "method": 223,
@@ -351137,7 +351377,7 @@
       "exports": 1778,
       "imports": 991,
       "inherits": 13,
-      "uses_framework": 3,
+      "uses_framework": 13,
       "uses_type": 1565
     },
     "byLanguage": {
@@ -351151,13 +351391,23 @@
     },
     "byStatus": {
       "resolved_external": 1393,
-      "resolved_internal": 11522,
+      "resolved_internal": 11532,
       "unresolved": 4440
     },
     "byFramework": {
       "echo": 1,
       "gin": 1,
-      "react": 1
+      "jwt": 1,
+      "kafka": 1,
+      "mongo": 1,
+      "playwright": 1,
+      "react": 1,
+      "tailwindcss": 1,
+      "tanstack": 1,
+      "uuid": 1,
+      "validator": 1,
+      "vite": 1,
+      "vitest": 1
     }
   }
 };</script>
