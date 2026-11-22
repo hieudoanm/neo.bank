@@ -7808,6 +7808,24 @@
       "language": "python"
     },
     {
+      "id": "external:tsx:@/lib/api/client.TransactionListResponse",
+      "kind": "external_symbol",
+      "name": "TransactionListResponse",
+      "language": "tsx"
+    },
+    {
+      "id": "external:tsx:@/lib/api/client.TransactionResponse",
+      "kind": "external_symbol",
+      "name": "TransactionResponse",
+      "language": "tsx"
+    },
+    {
+      "id": "external:tsx:@/lib/api/client.TransactionStatus",
+      "kind": "external_symbol",
+      "name": "TransactionStatus",
+      "language": "tsx"
+    },
+    {
       "id": "external:tsx:Intl.NumberFormat",
       "kind": "external_symbol",
       "name": "NumberFormat",
@@ -7901,6 +7919,30 @@
       "id": "external:tsx:lib::map",
       "kind": "external_symbol",
       "name": "map",
+      "language": "tsx"
+    },
+    {
+      "id": "external:tsx:react.ButtonHTMLAttributes",
+      "kind": "external_symbol",
+      "name": "ButtonHTMLAttributes",
+      "language": "tsx"
+    },
+    {
+      "id": "external:tsx:react.ErrorInfo",
+      "kind": "external_symbol",
+      "name": "ErrorInfo",
+      "language": "tsx"
+    },
+    {
+      "id": "external:tsx:react.InputHTMLAttributes",
+      "kind": "external_symbol",
+      "name": "InputHTMLAttributes",
+      "language": "tsx"
+    },
+    {
+      "id": "external:tsx:react.ReactNode",
+      "kind": "external_symbol",
+      "name": "ReactNode",
       "language": "tsx"
     },
     {
@@ -49970,21 +50012,9 @@
       "language": "python"
     },
     {
-      "id": "unresolved:tsx:ButtonHTMLAttributes",
-      "kind": "unknown",
-      "name": "ButtonHTMLAttributes",
-      "language": "tsx"
-    },
-    {
       "id": "unresolved:tsx:Dispatch",
       "kind": "unknown",
       "name": "Dispatch",
-      "language": "tsx"
-    },
-    {
-      "id": "unresolved:tsx:ErrorInfo",
-      "kind": "unknown",
-      "name": "ErrorInfo",
       "language": "tsx"
     },
     {
@@ -49997,30 +50027,6 @@
       "id": "unresolved:tsx:HTMLInputElement",
       "kind": "unknown",
       "name": "HTMLInputElement",
-      "language": "tsx"
-    },
-    {
-      "id": "unresolved:tsx:InputHTMLAttributes",
-      "kind": "unknown",
-      "name": "InputHTMLAttributes",
-      "language": "tsx"
-    },
-    {
-      "id": "unresolved:tsx:TransactionListResponse",
-      "kind": "unknown",
-      "name": "TransactionListResponse",
-      "language": "tsx"
-    },
-    {
-      "id": "unresolved:tsx:TransactionResponse",
-      "kind": "unknown",
-      "name": "TransactionResponse",
-      "language": "tsx"
-    },
-    {
-      "id": "unresolved:tsx:TransactionStatus",
-      "kind": "unknown",
-      "name": "TransactionStatus",
       "language": "tsx"
     },
     {
@@ -173537,9 +173543,9 @@
     },
     {
       "source": "function:packages/app/src/components/transactions/TransactionRow.tsx::TransactionRow",
-      "target": "unresolved:tsx:TransactionResponse",
+      "target": "external:tsx:@/lib/api/client.TransactionResponse",
       "kind": "uses_type",
-      "status": "unresolved",
+      "status": "resolved_external",
       "origin": "syntax",
       "sites": [
         {
@@ -173558,7 +173564,7 @@
     },
     {
       "source": "function:packages/app/src/context/AuthContext.test.tsx::wrapper",
-      "target": "external:tsx:lib::ReactNode",
+      "target": "external:tsx:react.ReactNode",
       "kind": "uses_type",
       "status": "resolved_external",
       "origin": "syntax",
@@ -174041,7 +174047,7 @@
     },
     {
       "source": "function:packages/app/src/context/AuthContext.tsx::AuthProvider",
-      "target": "external:tsx:lib::ReactNode",
+      "target": "external:tsx:react.ReactNode",
       "kind": "uses_type",
       "status": "resolved_external",
       "origin": "syntax",
@@ -174320,7 +174326,7 @@
     },
     {
       "source": "function:packages/app/src/hooks/useBalance.test.tsx::wrapper",
-      "target": "external:tsx:lib::ReactNode",
+      "target": "external:tsx:react.ReactNode",
       "kind": "uses_type",
       "status": "resolved_external",
       "origin": "syntax",
@@ -174536,7 +174542,7 @@
     },
     {
       "source": "function:packages/app/src/hooks/useTransactions.test.tsx::wrapper",
-      "target": "external:tsx:lib::ReactNode",
+      "target": "external:tsx:react.ReactNode",
       "kind": "uses_type",
       "status": "resolved_external",
       "origin": "syntax",
@@ -174752,7 +174758,7 @@
     },
     {
       "source": "function:packages/app/src/hooks/useTransfer.test.tsx::wrapper",
-      "target": "external:tsx:lib::ReactNode",
+      "target": "external:tsx:react.ReactNode",
       "kind": "uses_type",
       "status": "resolved_external",
       "origin": "syntax",
@@ -271949,7 +271955,7 @@
     },
     {
       "source": "interface:packages/app/src/components/ErrorBoundary.tsx::ErrorBoundaryProps",
-      "target": "external:tsx:lib::ReactNode",
+      "target": "external:tsx:react.ReactNode",
       "kind": "uses_type",
       "status": "resolved_external",
       "origin": "syntax",
@@ -271991,7 +271997,7 @@
     },
     {
       "source": "interface:packages/app/src/components/ui/Alert.tsx::AlertProps",
-      "target": "external:tsx:lib::ReactNode",
+      "target": "external:tsx:react.ReactNode",
       "kind": "uses_type",
       "status": "resolved_external",
       "origin": "syntax",
@@ -272012,9 +272018,9 @@
     },
     {
       "source": "interface:packages/app/src/components/ui/Button.tsx::ButtonProps",
-      "target": "unresolved:tsx:ButtonHTMLAttributes",
+      "target": "external:tsx:react.ButtonHTMLAttributes",
       "kind": "inherits",
-      "status": "unresolved",
+      "status": "resolved_external",
       "origin": "syntax",
       "sites": [
         {
@@ -272075,7 +272081,7 @@
     },
     {
       "source": "interface:packages/app/src/components/ui/Card.tsx::CardProps",
-      "target": "external:tsx:lib::ReactNode",
+      "target": "external:tsx:react.ReactNode",
       "kind": "uses_type",
       "status": "resolved_external",
       "origin": "syntax",
@@ -272090,6 +272096,27 @@
             "line": 5,
             "column": 22,
             "byte": 104
+          }
+        }
+      ]
+    },
+    {
+      "source": "interface:packages/app/src/components/ui/Input.tsx::InputProps",
+      "target": "external:tsx:react.InputHTMLAttributes",
+      "kind": "inherits",
+      "status": "resolved_external",
+      "origin": "syntax",
+      "sites": [
+        {
+          "start": {
+            "line": 3,
+            "column": 30,
+            "byte": 79
+          },
+          "end": {
+            "line": 3,
+            "column": 49,
+            "byte": 98
           }
         }
       ]
@@ -272111,27 +272138,6 @@
             "line": 3,
             "column": 66,
             "byte": 115
-          }
-        }
-      ]
-    },
-    {
-      "source": "interface:packages/app/src/components/ui/Input.tsx::InputProps",
-      "target": "unresolved:tsx:InputHTMLAttributes",
-      "kind": "inherits",
-      "status": "unresolved",
-      "origin": "syntax",
-      "sites": [
-        {
-          "start": {
-            "line": 3,
-            "column": 30,
-            "byte": 79
-          },
-          "end": {
-            "line": 3,
-            "column": 49,
-            "byte": 98
           }
         }
       ]
@@ -274085,9 +274091,9 @@
     },
     {
       "source": "method:packages/app/src/components/ErrorBoundary.tsx::ErrorBoundary.componentDidCatch",
-      "target": "unresolved:tsx:ErrorInfo",
+      "target": "external:tsx:react.ErrorInfo",
       "kind": "uses_type",
-      "status": "unresolved",
+      "status": "resolved_external",
       "origin": "syntax",
       "sites": [
         {
@@ -274169,7 +274175,7 @@
     },
     {
       "source": "method:packages/app/src/components/ErrorBoundary.tsx::ErrorBoundary.render",
-      "target": "external:tsx:lib::ReactNode",
+      "target": "external:tsx:react.ReactNode",
       "kind": "uses_type",
       "status": "resolved_external",
       "origin": "syntax",
@@ -302748,6 +302754,27 @@
     },
     {
       "source": "module:packages/app/src/components/transactions/TransactionRow.tsx",
+      "target": "external:tsx:@/lib/api/client.TransactionStatus",
+      "kind": "uses_type",
+      "status": "resolved_external",
+      "origin": "syntax",
+      "sites": [
+        {
+          "start": {
+            "line": 4,
+            "column": 28,
+            "byte": 194
+          },
+          "end": {
+            "line": 4,
+            "column": 45,
+            "byte": 211
+          }
+        }
+      ]
+    },
+    {
+      "source": "module:packages/app/src/components/transactions/TransactionRow.tsx",
       "target": "external:tsx:lib::Record",
       "kind": "uses_type",
       "status": "resolved_external",
@@ -302763,27 +302790,6 @@
             "line": 4,
             "column": 27,
             "byte": 193
-          }
-        }
-      ]
-    },
-    {
-      "source": "module:packages/app/src/components/transactions/TransactionRow.tsx",
-      "target": "unresolved:tsx:TransactionStatus",
-      "kind": "uses_type",
-      "status": "unresolved",
-      "origin": "syntax",
-      "sites": [
-        {
-          "start": {
-            "line": 4,
-            "column": 28,
-            "byte": 194
-          },
-          "end": {
-            "line": 4,
-            "column": 45,
-            "byte": 211
           }
         }
       ]
@@ -319845,9 +319851,9 @@
     },
     {
       "source": "module:packages/app/src/pages/TransactionsPage.test.tsx",
-      "target": "unresolved:tsx:TransactionListResponse",
+      "target": "external:tsx:@/lib/api/client.TransactionListResponse",
       "kind": "uses_type",
-      "status": "unresolved",
+      "status": "resolved_external",
       "origin": "syntax",
       "sites": [
         {
@@ -355543,16 +355549,16 @@
   "statistics": {
     "files": 342,
     "packages": 67,
-    "nodes": 5164,
+    "nodes": 5165,
     "edges": 17710,
     "symbols": 3684,
-    "unresolvedEdges": 2783,
+    "unresolvedEdges": 2777,
     "diagnostics": 50,
     "byNodeKind": {
       "class": 2,
       "constant": 298,
       "constructor": 1,
-      "external_symbol": 338,
+      "external_symbol": 345,
       "file": 342,
       "framework": 13,
       "function": 631,
@@ -355565,7 +355571,7 @@
       "repository": 1,
       "struct": 108,
       "type": 27,
-      "unknown": 377,
+      "unknown": 371,
       "variable": 1831
     },
     "byEdgeKind": {
@@ -355584,13 +355590,13 @@
       "javascript": 9,
       "markdown": 301,
       "python": 98,
-      "tsx": 421,
+      "tsx": 422,
       "typescript": 281
     },
     "byStatus": {
-      "resolved_external": 2625,
+      "resolved_external": 2631,
       "resolved_internal": 12302,
-      "unresolved": 2783
+      "unresolved": 2777
     },
     "byFramework": {
       "echo": 1,
