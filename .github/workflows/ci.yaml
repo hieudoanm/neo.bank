@@ -2,9 +2,11 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    branches:
+      - master
   pull_request:
-    branches: [master]
+    branches:
+      - master
   workflow_dispatch:
 
 permissions:
@@ -19,14 +21,19 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [api-gateway, auth, accounts, transfer, transactions]
+        service:
+          - api-gateway
+          - auth
+          - accounts
+          - transfer
+          - transactions
     steps:
       - name: Checkout
         uses: actions/checkout@v7.0.1
       - name: Set up Go
         uses: actions/setup-go@v7.1.0
         with:
-          go-version: "1.27.4"
+          go-version: '1.27.4'
       - name: Verify formatting
         run: |
           cd works/${{ matrix.service }}
