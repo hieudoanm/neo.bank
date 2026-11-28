@@ -210,8 +210,8 @@ importers:
         specifier: 5.108.4
         version: 5.108.4(@types/react@19.3.3)(react@19.3.1)
       autoprefixer:
-        specifier: 10.7.0
-        version: 10.7.0(postcss@8.5.34)
+        specifier: 10.7.1
+        version: 10.7.1(postcss@8.5.34)
       clsx:
         specifier: 2.1.1
         version: 2.1.1
@@ -1008,8 +1008,8 @@ packages:
   ast-v8-to-istanbul@1.0.8:
     resolution: {integrity: sha512-lPdpagk13ANXV+HClJEpCZM7kUsl5XcvgqKzZhaj6Ve1ZFICcY2sGhAN1n1vT0tML6EclT7bfVgTxqL57Gkpow==}
 
-  autoprefixer@10.7.0:
-    resolution: {integrity: sha512-M4rWhYFPp8YSAfqLDT/wRN9trfe/Z/aZLPxrLQJUQRTPrChss2T+hmgaV5770J52bLuGOMzt6Hjl8tEb6YWv5Q==}
+  autoprefixer@10.7.1:
+    resolution: {integrity: sha512-31gytPEDUG/d6BMWYKP32EyyLmA0fxcR1sRuLsaOXrxq4qNVFcRLx9SUuWRqqoNzpynlxcyDHvCuOMjnWNJ9mQ==}
     engines: {node: ^10 || ^12 || >=14}
     hasBin: true
     peerDependencies:
@@ -2741,7 +2741,7 @@ snapshots:
       estree-walker: 3.0.3
       js-tokens: 10.0.2
 
-  autoprefixer@10.7.0(postcss@8.5.34):
+  autoprefixer@10.7.1(postcss@8.5.34):
     dependencies:
       browserslist: 4.29.6
       caniuse-lite: 1.0.30001828
